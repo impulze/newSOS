@@ -275,8 +275,6 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
                 .setGroup(ADVANCED_GROUP).setOrder(SettingDefinitionProvider.ORDER_2).setKey(DATABASE_CONCEPT_KEY);
         choiceSettingDefinition.addOption(DatabaseConcept.SERIES_CONCEPT.name(),
                 DatabaseConcept.SERIES_CONCEPT.getDisplayName());
-        choiceSettingDefinition.addOption(DatabaseConcept.EREPORTING_CONCEPT.name(),
-                DatabaseConcept.EREPORTING_CONCEPT.getDisplayName());
         choiceSettingDefinition.addOption(DatabaseConcept.OLD_CONCEPT.name(),
                 DatabaseConcept.OLD_CONCEPT.getDisplayName());
         choiceSettingDefinition.setDefaultValue(DatabaseConcept.SERIES_CONCEPT.name());
@@ -385,8 +383,6 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
         switch (DatabaseConcept.valueOf(concept)) {
         case SERIES_CONCEPT:
             return HIBERNATE_MAPPING_SERIES_CONCEPT_OBSERVATION_PATH;
-        case EREPORTING_CONCEPT:
-            return HIBERNATE_MAPPING_EREPORTING_CONCEPT_OBSERVATION_PATH;
         case OLD_CONCEPT:
             return HIBERNATE_MAPPING_OLD_CONCEPT_OBSERVATION_PATH;
         default:

@@ -37,7 +37,6 @@ import org.hibernate.Session;
 import org.n52.sos.convert.ConverterException;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
@@ -136,23 +135,8 @@ public class HibernateObservationUtilities {
 
     public static Collection<? extends OmObservation> createSosObservationFromSeries(Series series, AbstractObservationRequest request,
             Locale language, Session session) throws OwsExceptionReport, ConverterException {
-        if (series instanceof EReportingSeries) {
-            return createSosObservationFromEReportingSeries((EReportingSeries) series, request, ServiceConfiguration
-                    .getInstance().getDefaultLanguage(), session);
-        } else {
-            return new SeriesOmObservationCreator(series, request, language, session).create();
-        }
-    }
+        return new SeriesOmObservationCreator(series, request, language, session).create();
 
-    public static Collection<? extends OmObservation> createSosObservationFromEReportingSeries(EReportingSeries series,
-            AbstractObservationRequest r, Session session) throws OwsExceptionReport, ConverterException {
-        return createSosObservationFromEReportingSeries(series, r,
-                ServiceConfiguration.getInstance().getDefaultLanguage(), session);
-    }
-
-    public static Collection<? extends OmObservation> createSosObservationFromEReportingSeries(EReportingSeries series,
-            AbstractObservationRequest r, Locale language, Session session) throws OwsExceptionReport, ConverterException {
-        return new EReportingSeriesOmObservationCreator(series, r, language, session).create();
     }
 
     /**

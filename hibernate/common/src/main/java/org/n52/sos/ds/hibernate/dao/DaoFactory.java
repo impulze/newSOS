@@ -28,11 +28,6 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import org.n52.sos.ds.hibernate.dao.ereporting.EReportingObservationDAO;
-import org.n52.sos.ds.hibernate.dao.ereporting.EReportingObservationTimeDAO;
-import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
-import org.n52.sos.ds.hibernate.dao.ereporting.EReportingValueDAO;
-import org.n52.sos.ds.hibernate.dao.ereporting.EReportingValueTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
@@ -40,9 +35,6 @@ import org.n52.sos.ds.hibernate.dao.series.SeriesObservationTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesValueDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesValueTimeDAO;
 import org.n52.sos.ds.hibernate.entities.Observation;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservation;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservationTime;
-import org.n52.sos.ds.hibernate.entities.ereporting.values.EReportingValue;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
@@ -79,9 +71,7 @@ public class DaoFactory {
     }
 
     public AbstractSeriesDAO getSeriesDAO() throws CodedException {
-        if (HibernateHelper.isEntitySupported(EReportingObservation.class)) {
-            return new EReportingSeriesDAO();
-        } else if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
+        if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
             return new SeriesDAO();
         } else {
             throw new NoApplicableCodeException()
@@ -101,9 +91,7 @@ public class DaoFactory {
      */
     public AbstractObservationDAO getObservationDAO()
             throws OwsExceptionReport {
-        if (HibernateHelper.isEntitySupported(EReportingObservation.class)) {
-            return new EReportingObservationDAO();
-        } else if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
+        if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
             return new SeriesObservationDAO();
         } else if (HibernateHelper.isEntitySupported(Observation.class)) {
             return new ObservationDAO();
@@ -114,9 +102,7 @@ public class DaoFactory {
     }
     
     public AbstractObservationTimeDAO getObservationTimeDAO() throws CodedException {
-        if (HibernateHelper.isEntitySupported(EReportingObservationTime.class)) {
-            return new EReportingObservationTimeDAO();
-        } else if (HibernateHelper.isEntitySupported(SeriesObservationTime.class)) {
+        if (HibernateHelper.isEntitySupported(SeriesObservationTime.class)) {
             return new SeriesObservationTimeDAO();
         } else {
             throw new NoApplicableCodeException()
@@ -125,9 +111,7 @@ public class DaoFactory {
     }
     
     public AbstractValueDAO getValueDAO() throws CodedException {
-        if (HibernateHelper.isEntitySupported(EReportingValue.class)) {
-            return new EReportingValueDAO();
-        } else if (HibernateHelper.isEntitySupported(SeriesValue.class)) {
+        if (HibernateHelper.isEntitySupported(SeriesValue.class)) {
             return new SeriesValueDAO();
 //        } else if (HibernateHelper.isEntitySupported(ObservationValue.class)) {
 //            return new ObserervationValueDAO();
@@ -138,9 +122,7 @@ public class DaoFactory {
     }
     
     public AbstractValueTimeDAO getValueTimeDAO() throws CodedException {
-        if (HibernateHelper.isEntitySupported(EReportingObservation.class)) {
-            return new EReportingValueTimeDAO();
-        } else if (HibernateHelper.isEntitySupported(SeriesValueTime.class)) {
+        if (HibernateHelper.isEntitySupported(SeriesValueTime.class)) {
             return new SeriesValueTimeDAO();
 //        } else if (HibernateHelper.isEntitySupported(ObservationValueTime.class)) {
 //            return new ObservationValueTimeDAO();
