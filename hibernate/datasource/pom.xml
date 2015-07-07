@@ -13,7 +13,6 @@
     <modules>
         <module>postgres</module>
         <module>h2</module>
-        <module>mysql</module>
         <module>common</module>
     </modules>
     <dependencies>
@@ -51,18 +50,4 @@
             <artifactId>mockito-all</artifactId>
         </dependency>
     </dependencies>
-    <profiles>
-        <profile>
-            <id>oracle</id>
-            <modules>
-                <module>oracle</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>sqlserver</id>
-            <modules>
-                <module>sqlserver</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>
