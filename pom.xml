@@ -55,7 +55,7 @@
         <!-- Logger configuration -->
         <config.logger.fileappender.filepath>${catalina.base}/logs</config.logger.fileappender.filepath>
         <config.logger.fileappender.filename>${conf.sos.name}</config.logger.fileappender.filename>
-        <config.logger.level>INFO</config.logger.level>
+        <config.logger.level>FINEST</config.logger.level>
         <config.logger.level.test.n52>ERROR</config.logger.level.test.n52>
         <config.logger.level.test.global>ERROR</config.logger.level.test.global>
         <config.logger.history.max>30</config.logger.history.max>
