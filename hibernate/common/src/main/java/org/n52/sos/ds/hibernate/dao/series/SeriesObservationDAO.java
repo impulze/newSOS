@@ -41,6 +41,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.ScrollMode;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
@@ -239,8 +240,8 @@ public class SeriesObservationDAO extends AbstractSeriesObservationDAO {
     		//addIndeterminateTimeRestriction(rawCriteria, sosIndeterminateTime);
     	}
 
-	calculatedCriteria.setReadOnly(true).setCacheable(false);
-	rawCriteria.setReadOnly(true).setCacheable(false);
+	calculatedCriteria.setReadOnly(true).setCacheable(false).addOrder(Order.asc("date"));
+	rawCriteria.setReadOnly(true).setCacheable(false).addOrder(Order.asc("date"));
 
        @SuppressWarnings("unchecked")
        List<CalculatedData> calculatedDataList;
