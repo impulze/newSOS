@@ -36,7 +36,6 @@ import org.n52.sos.ds.hibernate.cache.AbstractThreadableDatasourceCacheUpdate;
 import org.n52.sos.ds.hibernate.dao.RelatedFeatureDAO;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.RelatedFeatureRole;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,6 @@ public class RelatedFeaturesCacheUpdate extends AbstractThreadableDatasourceCach
         LOGGER.debug("Executing RelatedFeaturesCacheUpdate");
         startStopwatch();
         // TODO Carsten: use RelatedFeatures and query...
-        if (HibernateHelper.isEntitySupported(RelatedFeature.class)) {
             List<RelatedFeature> relatedFeatures = new RelatedFeatureDAO().getRelatedFeatureObjects(getSession());
             for (RelatedFeature relatedFeature : relatedFeatures) {
                 Set<String> roles = new HashSet<String>(relatedFeature.getRelatedFeatureRoles().size());
@@ -62,7 +60,6 @@ public class RelatedFeaturesCacheUpdate extends AbstractThreadableDatasourceCach
                 }
                 getCache().setRolesForRelatedFeature(relatedFeature.getFeatureOfInterest().getIdentifier(), roles);
             }
-        }
         LOGGER.debug("Finished executing RelatedFeaturesCacheUpdate ({})", getStopwatchResult());        
     }
 }
