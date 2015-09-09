@@ -170,18 +170,11 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
         try {
             final List<SmlIo<?>> outputs = Lists.newArrayListWithExpectedSize(observableProperties.size());
             int i = 1;
-            final boolean supportsObservationConstellation =
-                    HibernateHelper.isEntitySupported(ObservationConstellation.class);
                 for (String observableProperty : observableProperties) {
                     final SmlIo<?> output;
-                    if (supportsObservationConstellation) {
                         output =
                                 createOutputFromObservationConstellation(procedure.getIdentifier(), observableProperty,
                                         session);
-                    } else {
-                        output =
-                                createOutputFromExampleObservation(procedure.getIdentifier(), observableProperty, session);
-                    }
                     if (output != null) {
                         output.setIoName("output#" + i++);
                         outputs.add(output);

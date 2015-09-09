@@ -44,12 +44,8 @@ import org.n52.sos.ds.hibernate.cache.ProcedureFlag;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
-import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
-import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Offering;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.ObservationConstellationInfo;
 import org.n52.sos.i18n.I18NDAORepository;
 import org.n52.sos.i18n.LocaleHelper;
@@ -89,8 +85,6 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
 
     private final Offering offering;
 
-    private boolean obsConstSupported;
-
     private boolean hasSamplingGeometry;
 
     /**
@@ -129,7 +123,6 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
         getCache().addOffering(offeringId);
         addOfferingNamesAndDescriptionsToCache(offeringId, session);
         // only check once, check flag in other methods
-        obsConstSupported = HibernateHelper.isEntitySupported(ObservationConstellation.class);
         // Procedures
         final Map<ProcedureFlag, Set<String>> procedureIdentifiers = getProcedureIdentifier(session);
         getCache().setProceduresForOffering(prefixedOfferingId, procedureIdentifiers.get(ProcedureFlag.PARENT));
@@ -234,7 +227,6 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
     protected Map<ProcedureFlag, Set<String>> getProcedureIdentifier(Session session) throws OwsExceptionReport {
         Set<String> procedures = new HashSet<String>(0);
         Set<String> hiddenChilds = new HashSet<String>(0);
-        if (obsConstSupported) {
             if (CollectionHelper.isNotEmpty(observationConstellationInfos)) {
                 procedures.addAll(DatasourceCacheUpdateHelper
                         .getAllProcedureIdentifiersFromObservationConstellationInfos(observationConstellationInfos,
@@ -243,12 +235,6 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
                         .getAllProcedureIdentifiersFromObservationConstellationInfos(observationConstellationInfos,
                                 ProcedureFlag.HIDDEN_CHILD));
             }
-        } else {
-            List<String> list = new ProcedureDAO().getProcedureIdentifiersForOffering(offeringId, session);
-            for (String procedureIdentifier : list) {
-                procedures.add(CacheHelper.addPrefixOrGetProcedureIdentifier(procedureIdentifier));
-            }
-        }
         Map<ProcedureFlag, Set<String>> allProcedures = Maps.newEnumMap(ProcedureFlag.class);
         allProcedures.put(ProcedureFlag.PARENT, procedures);
         allProcedures.put(ProcedureFlag.HIDDEN_CHILD, hiddenChilds);
@@ -264,27 +250,15 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
     }
 
     protected Set<String> getObservablePropertyIdentifier(Session session) throws OwsExceptionReport {
-        if (obsConstSupported) {
             if (CollectionHelper.isNotEmpty(observationConstellationInfos)) {
                 return DatasourceCacheUpdateHelper
                         .getAllObservablePropertyIdentifiersFromObservationConstellationInfos(observationConstellationInfos);
             } else {
                 return Sets.newHashSet();
             }
-        } else {
-            Set<String> observableProperties = Sets.newHashSet();
-            List<String> list =
-                    new ObservablePropertyDAO().getObservablePropertyIdentifiersForOffering(offeringId, session);
-            for (String observablePropertyIdentifier : list) {
-                observableProperties.add(CacheHelper
-                        .addPrefixOrGetObservablePropertyIdentifier(observablePropertyIdentifier));
-            }
-            return observableProperties;
-        }
     }
 
     protected Set<String> getObservationTypes(Session session) throws OwsExceptionReport {
-        if (obsConstSupported) {
             if (CollectionHelper.isNotEmpty(observationConstellationInfos)) {
                 Set<String> observationTypes = Sets.newHashSet();
                 for (ObservationConstellationInfo oci : observationConstellationInfos) {
@@ -296,9 +270,6 @@ public class OfferingCacheUpdateTask extends AbstractThreadableDatasourceCacheUp
             } else {
                 return Sets.newHashSet();
             }
-        } else {
-            return getObservationTypesFromObservations(session);
-        }
     }
 
     private Set<String> getObservationTypesFromObservations(Session session) throws OwsExceptionReport {

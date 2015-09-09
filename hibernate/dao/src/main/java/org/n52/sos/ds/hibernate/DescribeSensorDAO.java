@@ -49,7 +49,6 @@ import org.n52.sos.ds.hibernate.dao.ValidProcedureTimeDAO;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
 import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.procedure.HibernateProcedureConverter;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
@@ -107,11 +106,7 @@ public class DescribeSensorDAO extends AbstractDescribeSensorDAO {
             response.setOutputFormat(request.getProcedureDescriptionFormat());
             session = sessionHolder.getSession();
             // check for transactional SOS.
-            if (HibernateHelper.isEntitySupported(ValidProcedureTime.class)) {
                 response.setSensorDescriptions(getProcedureDescriptions(request, session));
-            } else {
-                response.addSensorDescription(getProcedureDescription(request, session));
-            }
             return response;
         } catch (final HibernateException he) {
             throw new NoApplicableCodeException().causedBy(he).withMessage(

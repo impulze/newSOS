@@ -44,7 +44,6 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
@@ -54,8 +53,6 @@ import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.TOffering;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.gml.time.TimePeriod;
@@ -118,11 +115,7 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     @SuppressWarnings("unchecked")
     public List<Offering> getOfferingObjectsForCacheUpdate(final Collection<String> identifiers, final Session session) {
-    	 Class<?> clazz = Offering.class;
-    	 if (HibernateHelper.isEntitySupported(TOffering.class)) {
-    		 clazz = TOffering.class;
-    	 }
-    	 Criteria criteria = session.createCriteria(clazz);
+    	Criteria criteria = session.createCriteria(TOffering.class);
 		if (CollectionHelper.isNotEmpty(identifiers)) {
 		    criteria.add(Restrictions.in(Offering.IDENTIFIER, identifiers));
 		}
@@ -175,28 +168,13 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     @SuppressWarnings("unchecked")
     public List<String> getOfferingIdentifiersForProcedure(final String procedureIdentifier, final Session session) throws OwsExceptionReport {
-        final boolean flag = HibernateHelper.isEntitySupported(ObservationConstellation.class);
         Criteria c = null;
-        if (flag) {
             c = session.createCriteria(Offering.class);
             c.add(Subqueries.propertyIn(Offering.ID, getDetachedCriteriaOfferingForProcedureFromObservationConstellation(procedureIdentifier, session)));
             c.setProjection(Projections.distinct(Projections.property(Offering.IDENTIFIER)));
-        } else {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            c = observationDAO.getDefaultObservationInfoCriteria(session);
-            c.createCriteria(AbstractObservation.OFFERINGS).setProjection(
-                    Projections.distinct(Projections.property(Offering.IDENTIFIER)));
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.createCriteria(Series.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-
-            } else {
-                c.createCriteria(AbstractObservation.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-            }
-        }
         LOGGER.debug(
                 "QUERY getOfferingIdentifiersForProcedure(procedureIdentifier) using ObservationContellation entitiy ({}): {}",
-                flag, HibernateHelper.getSqlString(c));
+                true, HibernateHelper.getSqlString(c));
         return c.list();
     }
 
@@ -213,29 +191,14 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
     @SuppressWarnings("unchecked")
     public Collection<String> getOfferingIdentifiersForObservableProperty(final String observablePropertyIdentifier,
             final Session session) throws OwsExceptionReport {
-        final boolean flag = HibernateHelper.isEntitySupported(ObservationConstellation.class);
         Criteria c = null;
-        if (flag) {
             c = session.createCriteria(Offering.class);
             c.add(Subqueries.propertyIn(Offering.ID,
                     getDetachedCriteriaOfferingForObservablePropertyFromObservationConstellation(observablePropertyIdentifier, session)));
             c.setProjection(Projections.distinct(Projections.property(Offering.IDENTIFIER)));
-        } else {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            c = observationDAO.getDefaultObservationInfoCriteria(session);
-            c.createCriteria(AbstractObservation.OFFERINGS).setProjection(
-                    Projections.distinct(Projections.property(Offering.IDENTIFIER)));
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.createCriteria(Series.OBSERVABLE_PROPERTY).add(Restrictions.eq(ObservableProperty.IDENTIFIER, observablePropertyIdentifier));
-
-            } else {
-                c.createCriteria(AbstractObservation.OBSERVABLE_PROPERTY).add(Restrictions.eq(ObservableProperty.IDENTIFIER, observablePropertyIdentifier));
-            }
-        }
         LOGGER.debug(
                 "QUERY getOfferingIdentifiersForObservableProperty(observablePropertyIdentifier) using ObservationContellation entitiy ({}): {}",
-                flag, HibernateHelper.getSqlString(c));
+                true, HibernateHelper.getSqlString(c));
         return c.list();
     }
 
@@ -622,7 +585,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      * @return Allowed FeatureOfInterestTypes
      */
     public List<String> getAllowedFeatureOfInterestTypes(String offeringIdentifier, Session session) {
-        if (HibernateHelper.isEntitySupported(TOffering.class)) {
             Criteria criteria =
                     session.createCriteria(TOffering.class).add(Restrictions.eq(Offering.IDENTIFIER, offeringIdentifier));
             LOGGER.debug("QUERY getAllowedFeatureOfInterestTypes(offering): {}",
@@ -635,7 +597,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
                 }
                 return list;
             }
-        }
         return Lists.newArrayList();
     }
 

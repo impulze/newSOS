@@ -240,11 +240,8 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
         projectionList.add(Projections.property(FeatureOfInterest.IDENTIFIER));
 
         //get parents if transactional profile is active
-        boolean tFoiSupported = HibernateHelper.isEntitySupported(TFeatureOfInterest.class);
-        if (tFoiSupported) {
             criteria.createAlias(TFeatureOfInterest.PARENTS, "pfoi", JoinType.LEFT_OUTER_JOIN);
             projectionList.add(Projections.property("pfoi." + FeatureOfInterest.IDENTIFIER));
-        }
         criteria.setProjection(projectionList);
         //return as List<Object[]> even if there's only one column for consistency
         criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
@@ -256,9 +253,7 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
         for(Object[] result : results) {
             String featureIdentifier = (String) result[0];
             String parentFeatureIdentifier = null;
-            if (tFoiSupported) {
                 parentFeatureIdentifier = (String) result[1];
-            }
             if (parentFeatureIdentifier != null) {
                 CollectionHelper.addToCollectionMap(featureIdentifier, parentFeatureIdentifier, foiMap);
             } else {
