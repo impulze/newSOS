@@ -43,13 +43,15 @@ import javax.servlet.ServletContextListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.n52.sos.config.SettingsManager;
 import org.n52.sos.exception.ConfigurationException;
 import org.n52.sos.util.Cleanupable;
 import org.n52.sos.util.GeometryHandler;
 
 import com.google.common.collect.Sets;
+
+import de.hzg.common.Configuration;
+import de.hzg.common.SOSConfiguration;
 
 /**
  * @since 4.0.0
@@ -62,8 +64,19 @@ public class SosContextListener implements ServletContextListener {
     private static String path = null;
     private static final List<Runnable> hooks = new LinkedList<>();
 
+    public static SOSConfiguration hzgSOSConfiguration;
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        /* initialize HZG specific xml configuration file */
+        try {
+			new Configuration();
+			hzgSOSConfiguration = Configuration.getInstance().getSOSConfiguration();
+		} catch (ConfigurationException|Exception exception) {
+			LOG.error("HZG Configuration cannot be loaded.");
+			throw new RuntimeException(exception);
+		}
+
         setPath(sce.getServletContext().getRealPath("/"));
         if (Configurator.getInstance() == null) {
             instantiateConfigurator(sce.getServletContext());
