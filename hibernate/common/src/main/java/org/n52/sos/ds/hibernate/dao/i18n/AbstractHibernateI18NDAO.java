@@ -28,29 +28,38 @@
  */
 package org.n52.sos.ds.hibernate.dao.i18n;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-
 import org.n52.sos.ds.I18NDAO;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
+import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.OfferingDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractIdentifierNameDescriptionEntity;
+import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
+import org.n52.sos.ds.hibernate.entities.ObservableProperty;
+import org.n52.sos.ds.hibernate.entities.Offering;
+import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.i18n.AbstractHibernateI18NMetadata;
+import org.n52.sos.i18n.I18NSettings;
+import org.n52.sos.i18n.LocaleHelper;
 import org.n52.sos.i18n.LocalizedString;
 import org.n52.sos.i18n.metadata.AbstractI18NMetadata;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.n52.sos.service.SosContextListener;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.Sensor;
 
 public abstract class AbstractHibernateI18NDAO<T extends AbstractIdentifierNameDescriptionEntity,
                                                S extends AbstractI18NMetadata,
@@ -59,13 +68,67 @@ public abstract class AbstractHibernateI18NDAO<T extends AbstractIdentifierNameD
 
     private final HibernateSessionHolder sessionHolder = new HibernateSessionHolder();
 
+    private List<H> getHibernateObjects(Collection<String> ids, Locale locale, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final Locale defLocale = LocaleHelper.fromString(I18NSettings.I18N_DEFAULT_LANGUAGE_DEFINITION.getDefaultValue());
+
+    	if (locale != null && !locale.equals(defLocale)) {
+    		throw new RuntimeException("Only the default locale is supported for now.");
+    	}
+
+    	final List<H> hibernateObjects = new ArrayList<H>();
+
+    	for (final String id: ids) {
+        	final H object = createHibernateObject();
+
+        	object.setLocale(defLocale);
+
+        	if (id == null || id.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+        		// don't use getTProcedureForIdentifier here, recursive call
+        		final List<Sensor> sensors = new ProcedureDAO().getSensorsForIdentifiers(Collections.singletonList(id), session);
+
+        		if (sensors != null && !sensors.isEmpty()) {
+            		final Procedure procedure = ProcedureDAO.createTProcedureNoDescriptionXML(sensors.get(0), session);
+
+        			object.setName(id.substring(sosConfiguration.getProcedureIdentifierPrefix().length()));
+        			object.setObjectId(procedure);
+
+        			hibernateObjects.add(object);
+        		}
+        	} else if (id == null || id.startsWith(sosConfiguration.getFeatureOfInterestIdentifierPrefix())) {
+        		final FeatureOfInterest foi = new FeatureOfInterestDAO().getFeatureOfInterest(id, session);
+
+        		object.setName(id.substring(sosConfiguration.getFeatureOfInterestIdentifierPrefix().length()));
+        		object.setObjectId(foi);
+
+        		hibernateObjects.add(object);
+        	} else if (id == null || id.startsWith(sosConfiguration.getOfferingIdentifierPrefix())) {
+        		final Offering offering = new OfferingDAO().getTOfferingForIdentifier(id, session);
+
+        		object.setName(id.substring(sosConfiguration.getOfferingIdentifierPrefix().length()));
+        		object.setObjectId(offering);
+
+        		hibernateObjects.add(object);
+        	} else if (id == null || id.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
+        		final ObservableProperty observableProperty = new ObservablePropertyDAO().getObservablePropertyForIdentifier(id, session);
+
+        		object.setName(id.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length()));
+        		object.setObjectId(observableProperty);
+
+        		hibernateObjects.add(object);
+        	}
+    	}
+
+    	return hibernateObjects;
+    }
+
     @Override
     public S getMetadata(String id)
             throws OwsExceptionReport {
         Session session = null;
         try {
             session = sessionHolder.getSession();
-            return getMetadata(id, session);
+            return getMetadata(id, session);	
         } finally {
             sessionHolder.returnSession(session);
         }
@@ -144,97 +207,54 @@ public abstract class AbstractHibernateI18NDAO<T extends AbstractIdentifierNameD
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<Locale> getAvailableLocales(Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.setProjection(Projections.distinct(Projections.property(AbstractHibernateI18NMetadata.LOCALE)));
-        return criteria.list();
+    	final Locale locale = LocaleHelper.fromString(I18NSettings.I18N_DEFAULT_LANGUAGE_DEFINITION.getDefaultValue());
+    	return Collections.singletonList(locale);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public S getMetadata(String id, Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.createCriteria(AbstractHibernateI18NMetadata.OBJECT_ID)
-                .add(Restrictions.eq(AbstractIdentifierNameDescriptionEntity.IDENTIFIER, id));
-        List<H> list = criteria.list();
-        return createSosObject(id, list);
+    	return getMetadata(Collections.singletonList(id), session).iterator().next();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<S> getMetadata(Collection<String> id, Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.createCriteria(AbstractHibernateI18NMetadata.OBJECT_ID)
-                .add(Restrictions.in(AbstractIdentifierNameDescriptionEntity.IDENTIFIER, id));
-        List<H> list = criteria.list();
-        return createSosObject(list);
+    	final Locale locale = LocaleHelper.fromString(I18NSettings.I18N_DEFAULT_LANGUAGE_DEFINITION.getDefaultValue());
+    	return getMetadata(id, locale, session);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public S getMetadata(String id, Locale locale, Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.createCriteria(AbstractHibernateI18NMetadata.OBJECT_ID)
-                .add(Restrictions.eq(AbstractIdentifierNameDescriptionEntity.IDENTIFIER, id));
-        criteria.add(Restrictions.eq(AbstractHibernateI18NMetadata.LOCALE, locale));
-        List<H> list = criteria.list();
-        return createSosObject(id, list);
+    	return getMetadata(Collections.singletonList(id), locale, session).iterator().next();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<S> getMetadata(Collection<String> id, Locale locale, Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.createCriteria(AbstractHibernateI18NMetadata.OBJECT_ID)
-                .add(Restrictions.in(AbstractIdentifierNameDescriptionEntity.IDENTIFIER, id));
-        criteria.add(Restrictions.eq(AbstractHibernateI18NMetadata.LOCALE, locale));
-        List<H> list = criteria.list();
-        return createSosObject(list);
+    	final List<H> hibernateObjects = getHibernateObjects(id, locale, session);
+
+        return createSosObject(hibernateObjects);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<S> getMetadata(Session session)
             throws OwsExceptionReport {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        List<H> list = criteria.list();
-        return createSosObject(list);
+    	final Locale locale = LocaleHelper.fromString(I18NSettings.I18N_DEFAULT_LANGUAGE_DEFINITION.getDefaultValue());
+    	return getMetadata((Collection<String>)null, locale, session);
     }
 
     @Override
     public void saveMetadata(S i18n, Session session)
             throws OwsExceptionReport {
-        Transaction transaction = null;
-        try {
-            transaction = session.beginTransaction();
-            deleteOldValues(i18n.getIdentifier(), session);
-            T entity = getEntity(i18n.getIdentifier(), session);
-            for (Locale locale : i18n.getLocales()) {
-                H h18n = createHibernateObject();
-                h18n.setObjectId(entity);
-                h18n.setLocale(locale);
-                fillHibernateObject(i18n, h18n);
-                session.save(h18n);
-            }
-            session.flush();
-            transaction.commit();
-        } catch (HibernateException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        }
+    	throw new RuntimeException("Saving of i18n metadata not supported yet.");
     }
 
     @Override
     public boolean isSupported() {
-        // all i18n DAOs are supported
         return true;
     }
 
@@ -262,23 +282,7 @@ public abstract class AbstractHibernateI18NDAO<T extends AbstractIdentifierNameD
     }
 
     protected void deleteOldValues(String id, Session session) {
-        Criteria criteria = session.createCriteria(getHibernateEntityClass());
-        criteria.createCriteria(AbstractHibernateI18NMetadata.OBJECT_ID)
-                .add(Restrictions.eq(AbstractIdentifierNameDescriptionEntity.IDENTIFIER, id));
-        ScrollableResults scroll = null;
-        try {
-            scroll = criteria.scroll();
-            while (scroll.next()) {
-                @SuppressWarnings("unchecked")
-                H h18n = (H) scroll.get()[0];
-                session.delete(h18n);
-            }
-        } finally {
-            if (scroll != null) {
-                scroll.close();
-            }
-        }
-        session.flush();
+    	throw new RuntimeException("Deleting old i18n values not supported yet.");
     }
 
     protected void fillSosObject(H h18n, S i18n) {

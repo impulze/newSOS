@@ -28,16 +28,22 @@
  */
 package org.n52.sos.ds.hibernate.dao.series;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
+import org.n52.sos.ds.hibernate.dao.UnitDAO;
+import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.exception.CodedException;
-import org.n52.sos.request.GetObservationRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.n52.sos.service.SosContextListener;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
+import de.hzg.measurement.Sensor;
 
 /**
  * Hibernate data access class for series
@@ -46,47 +52,64 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SeriesDAO extends AbstractSeriesDAO {
+    private Series getSeriesFromInstance(ObservedPropertyInstance observedPropertyInstance, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+		final Series series = new Series();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SeriesDAO.class);
+		series.setProcedure(ProcedureDAO.createTProcedure(observedPropertyInstance.getSensor(), session));
+		series.setFeatureOfInterest(new FeatureOfInterestDAO().getFeatureOfInterest(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName(), session));
+		series.setObservableProperty(ObservablePropertyDAO.createObservableProperty(observedPropertyInstance,  session));
+		series.setDeleted(false);
+		series.setPublished(true);
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Series> getSeries(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
-        return getSeriesCriteria(request, features, session).list();
+		if (!observedPropertyInstance.getIsRaw()) {
+			series.setUnit(new UnitDAO().getUnitFromObservedPropertyInstance(observedPropertyInstance));
+		}
+
+    	return series;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Series> getSeries(Collection<String> procedures, Collection<String> observedProperties,
             Collection<String> features, Session session) {
-        return getSeriesCriteria(procedures, observedProperties, features, session).list();
-    }
+    	// make sure query is applicable to our database model
+    	// for now quit on null, unsure how to handle it (depends on call)
+    	if (procedures == null || observedProperties == null || features == null) {
+    		throw new RuntimeException("Parameters to getSeries cannot be null for now: " + procedures + observedProperties + features);
+    	}
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Series> getSeries(String observedProperty, Collection<String> features, Session session) {
-        return getSeriesCriteria(observedProperty, features, session).list();
-    }
+    	final List<ObservedPropertyInstance> allObservedPropertyInstances = new ArrayList<ObservedPropertyInstance>();
+   		final List<ObservedPropertyInstance> observedPropertyInstances = new ObservablePropertyDAO().getObservedPropertyInstancesForIdentifiers(observedProperties, session);
 
-    @Override
-    public Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session) {
-        return (Series) getSeriesCriteriaFor(procedure, observableProperty, featureOfInterest, session).uniqueResult();
-    }
+   		if (observedPropertyInstances != null) {
+   			allObservedPropertyInstances.addAll(observedPropertyInstances);
+    	}
 
-    @Override
-    public Series getOrInsertSeries(SeriesIdentifiers identifiers, final Session session) throws CodedException {
-        return getOrInsert(identifiers, session);
+   		final List<Sensor> sensors = new ProcedureDAO().getSensorsForIdentifiers(procedures, session);
+
+   		if (sensors != null) {
+   			for (final Sensor sensor: sensors) {
+   				allObservedPropertyInstances.addAll(sensor.getObservedPropertyInstances());
+  			}
+    	}
+
+   		final List<FeatureOfInterest> fois = new FeatureOfInterestDAO().getFeatureOfInterestObject(features, session);
+
+   		if (fois == null || fois.isEmpty()) {
+   			allObservedPropertyInstances.clear();
+   		}
+
+   		final List<Series> series = new ArrayList<Series>();
+
+   		for (final ObservedPropertyInstance observedPropertyInstance: allObservedPropertyInstances) {
+   			series.add(getSeriesFromInstance(observedPropertyInstance, session));
+   		}
+
+   		return series;
     }
 
     @Override
     protected Class <?>getSeriesClass() {
         return Series.class;
     }
-
-    @Override
-    protected void addSpecificRestrictions(Criteria c, GetObservationRequest request) {
-        // nothing to add
-    }
-
-
 }

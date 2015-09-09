@@ -32,13 +32,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.n52.sos.ogc.om.OmConstants;
+
+import com.google.common.collect.Lists;
 
 /**
  * Hibernate data access class for observation types
@@ -47,8 +45,7 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class ObservationTypeDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ObservationTypeDAO.class);
+    public static final String HZG_OBSERVATION_TYPE = OmConstants.OBS_TYPE_SWE_ARRAY_OBSERVATION;
 
     /**
      * Get observation type objects for observation types
@@ -59,13 +56,16 @@ public class ObservationTypeDAO {
      *            Hibernate session
      * @return Observation type objects
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationType> getObservationTypeObjects(List<String> observationTypes, Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationType.class).add(
-                        Restrictions.in(ObservationType.OBSERVATION_TYPE, observationTypes));
-        LOGGER.debug("QUERY getObservationTypeObjects(observationTypes): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        final List<ObservationType> obsTypes = Lists.newArrayList();
+
+        for (final String observationType: observationTypes) {
+            if (observationType.equals(HZG_OBSERVATION_TYPE)) {
+                obsTypes.add(getObservationTypeObject(HZG_OBSERVATION_TYPE, session));
+            }
+        }
+
+        return obsTypes;
     }
 
     /**
@@ -77,11 +77,15 @@ public class ObservationTypeDAO {
      * @return Observation type object
      */
     public ObservationType getObservationTypeObject(String observationType, Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationType.class).add(
-                        Restrictions.eq(ObservationType.OBSERVATION_TYPE, observationType));
-        LOGGER.debug("QUERY getObservationTypeObject(observationType): {}", HibernateHelper.getSqlString(criteria));
-        return (ObservationType) criteria.uniqueResult();
+        if (!observationType.equals(HZG_OBSERVATION_TYPE)) {
+            return null;
+        }
+
+        final ObservationType obsType = new ObservationType();
+
+        obsType.setObservationType(HZG_OBSERVATION_TYPE);
+
+        return obsType;
     }
 
     /**
@@ -94,14 +98,11 @@ public class ObservationTypeDAO {
      * @return Observation type object
      */
     public ObservationType getOrInsertObservationType(String observationType, Session session) {
-        ObservationType hObservationType = getObservationTypeObject(observationType, session);
-        if (hObservationType == null) {
-            hObservationType = new ObservationType();
-            hObservationType.setObservationType(observationType);
-            session.save(hObservationType);
-            session.flush();
+        if (observationType.equals(HZG_OBSERVATION_TYPE)) {
+            return getObservationTypeObject(observationType, session);
         }
-        return hObservationType;
+
+        throw new RuntimeException("Insertion of observation types is not yet supported.");
     }
 
     /**

@@ -180,7 +180,7 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
             Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
         final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValue.SERIES, "s");
 
-        checkAndAddSpatialFilteringProfileCriterion(c, request, session);
+        // TODO: add spatial filtering
 
         c.add(Restrictions.eq("s." + Series.ID, series));
 

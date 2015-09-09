@@ -36,12 +36,18 @@ import org.n52.sos.ds.hibernate.cache.AbstractThreadableDatasourceCacheUpdate;
 import org.n52.sos.ds.hibernate.cache.DatasourceCacheUpdateHelper;
 import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
+import org.n52.sos.ds.hibernate.dao.OfferingDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
+import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
+import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.ObservationConstellationInfo;
 import org.n52.sos.util.CollectionHelper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.n52.sos.ogc.ows.OwsExceptionReport;
 
 /**
  *
@@ -59,6 +65,7 @@ public class ObservablePropertiesCacheUpdate extends AbstractThreadableDatasourc
         List<ObservableProperty> ops = new ObservablePropertyDAO().getObservablePropertyObjects(getSession());
         // if ObservationConstellation is supported load them all at once,
         // otherwise query obs directly
+        if (true) {
             Map<String, Collection<ObservationConstellationInfo>> ociMap =
                     ObservationConstellationInfo.mapByObservableProperty(new ObservationConstellationDAO()
                             .getObservationConstellationInfo(getSession()));
@@ -79,6 +86,27 @@ public class ObservablePropertiesCacheUpdate extends AbstractThreadableDatasourc
                                     .getAllProcedureIdentifiersFromObservationConstellationInfos(ocis));
                 }
             }
+        } else {
+            for (ObservableProperty op : ops) {
+                final String obsPropIdentifier = op.getIdentifier();
+                try {
+                    getCache().setOfferingsForObservableProperty(
+                            obsPropIdentifier,
+                            new OfferingDAO().getOfferingIdentifiersForObservableProperty(obsPropIdentifier,
+                                    getSession()));
+                } catch (OwsExceptionReport e) {
+                    getErrors().add(e);
+                }
+                try {
+                    getCache().setProceduresForObservableProperty(
+                            obsPropIdentifier,
+                            new ProcedureDAO().getProcedureIdentifiersForObservableProperty(obsPropIdentifier,
+                                    getSession()));
+                } catch (OwsExceptionReport owse) {
+                    getErrors().add(owse);
+                }
+            }
+        }
         LOGGER.debug("Executing ObservablePropertiesCacheUpdate ({})", getStopwatchResult());
     }
 }

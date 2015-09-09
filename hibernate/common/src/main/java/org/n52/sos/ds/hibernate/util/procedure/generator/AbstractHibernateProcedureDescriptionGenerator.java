@@ -32,16 +32,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.n52.sos.cache.ContentCache;
 import org.n52.sos.ds.I18NDAO;
-import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
-import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.i18n.I18NDAORepository;
 import org.n52.sos.i18n.LocalizedString;
 import org.n52.sos.i18n.metadata.I18NProcedureMetadata;
@@ -181,38 +176,6 @@ public abstract class AbstractHibernateProcedureDescriptionGenerator {
         String obsProps = COMMA_JOINER.join(observableProperties);
         String type = procedure.isSpatial() ? "sensor system" : "procedure";
         return Lists.newArrayList(String.format(template, type, identifier, obsProps));
-    }
-
-    /**
-     * Get example observation for output list creation
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param observableProperty
-     *            ObservableProperty identifier
-     * @param session
-     *            the session
-     *
-     * @return Example observation
-     *
-     * @throws OwsExceptionReport
-     *             If an error occurs.
-     */
-    @VisibleForTesting
-    AbstractObservation getExampleObservation(String identifier, String observableProperty, Session session)
-            throws OwsExceptionReport {
-        AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-        final Criteria c = observationDAO.getObservationCriteriaFor(identifier, observableProperty, session);
-        c.setMaxResults(1);
-        LOGGER.debug("QUERY getExampleObservation(identifier, observableProperty): {}",
-                HibernateHelper.getSqlString(c));
-        final AbstractObservation example = (AbstractObservation) c.uniqueResult();
-        if (example == null) {
-            LOGGER.debug(
-                    "Could not receive example observation from database for procedure '{}' observing property '{}'.",
-                    identifier, observableProperty);
-        }
-        return example;
     }
 
     @VisibleForTesting

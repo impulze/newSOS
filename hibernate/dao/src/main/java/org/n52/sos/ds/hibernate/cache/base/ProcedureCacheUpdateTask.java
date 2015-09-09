@@ -84,7 +84,7 @@ class ProcedureCacheUpdateTask extends AbstractThreadableDatasourceCacheUpdate {
     private boolean isSetTimeExtremaEmpty(TimeExtrema te) {
         return te == null || (te != null && !te.isSetTimes());
     }
- 
+
     @Override
     public void execute() {
         try {

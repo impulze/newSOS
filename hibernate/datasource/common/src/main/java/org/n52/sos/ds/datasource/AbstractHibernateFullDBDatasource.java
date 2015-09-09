@@ -136,7 +136,6 @@ public abstract class AbstractHibernateFullDBDatasource extends AbstractHibernat
         p.put(HibernateConstants.CONNECTION_TEST_ON_BORROW, "true");
         p.put(PROVIDED_JDBC, settings.get(PROVIDED_JDBC_DRIVER_KEY).toString());
         p.put(DATABASE_CONCEPT_KEY, settings.get(DATABASE_CONCEPT_KEY));
-        addMappingFileDirectories(settings, p);
 
         return p;
     }

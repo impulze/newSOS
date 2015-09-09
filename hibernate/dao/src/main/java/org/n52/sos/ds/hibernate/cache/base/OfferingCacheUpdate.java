@@ -47,6 +47,7 @@ import org.n52.sos.ds.hibernate.dao.OfferingDAO;
 import org.n52.sos.ds.hibernate.dao.OfferingDAO.OfferingTimeExtrema;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
+import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
@@ -198,7 +199,23 @@ public class OfferingCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<O
     }
 
     protected boolean shouldOfferingBeProcessed(String offeringIdentifier) {
-        return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
+        try {        
+            if (true) {
+                return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
+            } else {
+                AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
+                Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(getSession());
+                criteria.createCriteria(AbstractObservation.OFFERINGS).add(
+                        Restrictions.eq(Offering.IDENTIFIER, offeringIdentifier));
+                criteria.setProjection(Projections.rowCount());
+                LOGGER.debug("QUERY shouldOfferingBeProcessed(offering): {}", HibernateHelper.getSqlString(criteria));
+                return (Long) criteria.uniqueResult() > 0;
+            }
+        } catch (OwsExceptionReport e) {
+            LOGGER.error("Error while getting observation DAO class from factory!", e);
+            getErrors().add(e);
+        }
+        return false;
     }
 
     protected Set<String> getObservationTypesFromObservationType(Set<ObservationType> observationTypes) {

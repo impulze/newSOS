@@ -33,6 +33,7 @@ import java.util.List;
 import org.n52.sos.ds.hibernate.cache.AbstractThreadableDatasourceCacheUpdate;
 import org.n52.sos.ds.hibernate.dao.ResultTemplateDAO;
 import org.n52.sos.ds.hibernate.entities.ResultTemplate;
+import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.util.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class ResultTemplateCacheUpdate extends AbstractThreadableDatasourceCache
     public void execute() {
         LOGGER.debug("Executing ResultTemplateCacheUpdate");
         startStopwatch();
+        if (true) {
             List<ResultTemplate> resultTemplates = new ResultTemplateDAO().getResultTemplateObjects(getSession());
             for (ResultTemplate resultTemplate : resultTemplates) {
                 String id = resultTemplate.getIdentifier();
@@ -69,6 +71,7 @@ public class ResultTemplateCacheUpdate extends AbstractThreadableDatasourceCache
                 getCache().addFeatureOfInterestForResultTemplate(id,
                         resultTemplate.getFeatureOfInterest().getIdentifier());
             }
+        }
         LOGGER.debug("Finished executing ResultTemplateCacheUpdate ({})", getStopwatchResult());
     }
 }

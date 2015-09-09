@@ -32,27 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
 import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.QueryHelper;
 import org.n52.sos.exception.ows.concrete.UnsupportedOperatorException;
 import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
 import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
 import org.n52.sos.ogc.gml.time.Time;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -62,9 +54,6 @@ import com.google.common.collect.Maps;
  * @since 4.0.0
  */
 public class ValidProcedureTimeDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidProcedureTimeDAO.class);
-
     /**
      * Insert valid procedure time for procedrue
      * 
@@ -79,13 +68,7 @@ public class ValidProcedureTimeDAO {
      */
     public void insertValidProcedureTime(Procedure procedure, ProcedureDescriptionFormat procedureDescriptionFormat,
             String xmlDescription, DateTime validStartTime, Session session) {
-        ValidProcedureTime vpd = new ValidProcedureTime();
-        vpd.setProcedure(procedure);
-        vpd.setProcedureDescriptionFormat(procedureDescriptionFormat);
-        vpd.setDescriptionXml(xmlDescription);
-        vpd.setStartTime(validStartTime.toDate());
-        session.save(vpd);
-        session.flush();
+        throw new RuntimeException("Insertion of valid procedure times is not supported yet.");
     }
 
     /**
@@ -97,7 +80,7 @@ public class ValidProcedureTimeDAO {
      *            Hibernate session
      */
     public void updateValidProcedureTime(ValidProcedureTime validProcedureTime, Session session) {
-        session.saveOrUpdate(validProcedureTime);
+        throw new RuntimeException("Updating valid procedure times is not supported yet.");
     }
 
     /**
@@ -164,69 +147,32 @@ public class ValidProcedureTimeDAO {
      * @throws UnsupportedOperatorException
      *             If temporal operator is not supported
      */
-    @SuppressWarnings("unchecked")
     public List<ValidProcedureTime> getValidProcedureTimes(Procedure procedure, String procedureDescriptionFormat,
             Time validTime, Session session) throws UnsupportedTimeException, UnsupportedValueReferenceException,
             UnsupportedOperatorException {
-        Criteria criteria = session.createCriteria(ValidProcedureTime.class);
-        criteria.add(Restrictions.eq(ValidProcedureTime.PROCEDURE, procedure));
-        criteria.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
-                Restrictions.eq(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT, procedureDescriptionFormat));
-
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
-        // if validTime == null or validTimeCriterion == null, query latest
-        // valid procedure description
-        if (validTime == null || validTimeCriterion == null) {
-            criteria.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-        } else {
-            criteria.add(validTimeCriterion);
-        }
-        LOGGER.debug("QUERY getValidProcedureTimes(procedure,procedureDescriptionFormat, validTime): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        throw new RuntimeException("Getting valid procedure times of non-transactional procedures is not supported yet.");
     }
 
-    @SuppressWarnings("unchecked")
     public List<ValidProcedureTime> getValidProcedureTimes(TProcedure procedure,
             Set<String> possibleProcedureDescriptionFormats, Time validTime, Session session)
             throws UnsupportedTimeException, UnsupportedValueReferenceException, UnsupportedOperatorException {
-        Criteria criteria = session.createCriteria(ValidProcedureTime.class);
-        criteria.add(Restrictions.eq(ValidProcedureTime.PROCEDURE, procedure));
-        criteria.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
-                Restrictions.in(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
-                        possibleProcedureDescriptionFormats));
+        // don't check time
+        final Set<ValidProcedureTime> validProcedureTimes = procedure.getValidProcedureTimes();
+        final List<ValidProcedureTime> validProcedureTimesList = Lists.newArrayListWithCapacity(validProcedureTimes.size());
 
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
-        // if validTime == null or validTimeCriterion == null, query latest
-        // valid procedure description
-        if (validTime == null || validTimeCriterion == null) {
-            criteria.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-        } else {
-            criteria.add(validTimeCriterion);
-        }
-        LOGGER.debug("QUERY getValidProcedureTimes(procedure, possibleProcedureDescriptionFormats, validTime): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        validProcedureTimesList.addAll(validProcedureTimes);
+
+        return validProcedureTimesList;
     }
 
     public Map<String,String> getTProcedureFormatMap(Session session) {
-        Criteria criteria = session.createCriteria(TProcedure.class);
-        criteria.createAlias(TProcedure.VALID_PROCEDURE_TIME, "vpt");
-        criteria.createAlias(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT, "pdf");
-        criteria.add(Restrictions.isNull("vpt." + ValidProcedureTime.END_TIME));
-        criteria.setProjection(Projections.projectionList()
-                .add(Projections.property(TProcedure.IDENTIFIER))
-                .add(Projections.property("pdf." + ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT)));
-        criteria.addOrder(Order.asc(TProcedure.IDENTIFIER));
-        LOGGER.debug("QUERY getTProcedureFormatMap(): {}", HibernateHelper.getSqlString(criteria));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = criteria.list();
-        Map<String,String> tProcedureFormatMap = Maps.newTreeMap();
-        for (Object[] result : results) {
-            String procedureIdentifier = (String) result[0];
-            String format = (String) result[1];
-            tProcedureFormatMap.put(procedureIdentifier, format);
+        final List<Procedure> procedures = new ProcedureDAO().getProcedureObjects(session);
+        final Map<String, String> map = Maps.newHashMapWithExpectedSize(procedures.size());
+
+        for (final Procedure procedure: procedures) {
+            map.put(procedure.getIdentifier(), procedure.getProcedureDescriptionFormat().getProcedureDescriptionFormat());
         }
-        return tProcedureFormatMap;
+
+        return map;
     }
 }

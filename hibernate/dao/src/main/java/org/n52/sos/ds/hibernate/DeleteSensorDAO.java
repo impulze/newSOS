@@ -38,15 +38,11 @@ import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
-import org.n52.sos.ds.hibernate.dao.ObservationDAO;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.ValidProcedureTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.EntitiyHelper;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
@@ -119,13 +115,17 @@ public class DeleteSensorDAO extends AbstractDeleteSensorDAO {
             session.saveOrUpdate(procedure);
             session.flush();
             // set deleted flag in ObservationConstellation table to true
+            if (true) {
                 new ObservationConstellationDAO().updateObservatioConstellationSetAsDeletedForProcedure(identifier,
                         deleteFlag, session);
+            }
             // set deleted flag in Series and Observation table for series concept to true
+            if (true) {
                 List<Series> series =
                         DaoFactory.getInstance().getSeriesDAO().updateSeriesSetAsDeletedForProcedureAndGetSeries(identifier, deleteFlag,
                                 session);
                 getSeriesObservationDAO().updateObservationSetAsDeletedForSeries(series, deleteFlag, session);
+            }
         } else {
             throw new NoApplicableCodeException().withMessage("The requested identifier is not contained in database");
         }

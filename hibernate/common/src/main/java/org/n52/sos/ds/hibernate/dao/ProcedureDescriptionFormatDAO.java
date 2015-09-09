@@ -29,19 +29,12 @@
 package org.n52.sos.ds.hibernate.dao;
 
 import java.util.List;
-import java.util.Set;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.n52.sos.ogc.sensorML.SensorML20Constants;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * Hibernate data access class for procedure description format
@@ -50,8 +43,7 @@ import com.google.common.collect.Sets;
  * @since 4.0.0
  */
 public class ProcedureDescriptionFormatDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDescriptionFormatDAO.class);
+    public static final String HZG_PROCEDURE_DESCRIPTION_FORMAT = SensorML20Constants.NS_SML_20; 
 
     /**
      * Get procedure description format object
@@ -64,13 +56,15 @@ public class ProcedureDescriptionFormatDAO {
      */
     public ProcedureDescriptionFormat getProcedureDescriptionFormatObject(String procedureDescriptionFormat,
             Session session) {
-        Criteria criteria =
-                session.createCriteria(ProcedureDescriptionFormat.class).add(
-                        Restrictions.eq(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
-                                procedureDescriptionFormat));
-        LOGGER.debug("QUERY getProcedureDescriptionFormatObject(procedureDescriptionFormat): {}",
-                HibernateHelper.getSqlString(criteria));
-        return (ProcedureDescriptionFormat) criteria.uniqueResult();
+        if (!procedureDescriptionFormat.equals(HZG_PROCEDURE_DESCRIPTION_FORMAT)) {
+            return null;
+        }
+
+        final ProcedureDescriptionFormat pdf = new ProcedureDescriptionFormat();
+
+        pdf.setProcedureDescriptionFormat(HZG_PROCEDURE_DESCRIPTION_FORMAT);
+
+        return pdf;
     }
 
     /**
@@ -84,22 +78,17 @@ public class ProcedureDescriptionFormatDAO {
      */
     public ProcedureDescriptionFormat getOrInsertProcedureDescriptionFormat(String procedureDescriptionFormat,
             Session session) {
-        ProcedureDescriptionFormat hProcedureDescriptionFormat =
-                getProcedureDescriptionFormatObject(procedureDescriptionFormat, session);
-        if (hProcedureDescriptionFormat == null) {
-            hProcedureDescriptionFormat = new ProcedureDescriptionFormat();
-            hProcedureDescriptionFormat.setProcedureDescriptionFormat(procedureDescriptionFormat);
-            session.save(hProcedureDescriptionFormat);
-            session.flush();
+        final ProcedureDescriptionFormat pdf = getProcedureDescriptionFormatObject(procedureDescriptionFormat, session);
+
+        if (pdf != null) {
+            return pdf;
         }
-        return hProcedureDescriptionFormat;
+
+        throw new RuntimeException("Insertion of procedure description formats is not supported yet.");
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getProcedureDescriptionFormat(Session session) {
-        Criteria c = session.createCriteria(ProcedureDescriptionFormat.class);
-        c.setProjection(Projections.distinct(Projections.property(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT)));
-        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        return c.list();
+        return Lists.newArrayList(HZG_PROCEDURE_DESCRIPTION_FORMAT);
     }
 }

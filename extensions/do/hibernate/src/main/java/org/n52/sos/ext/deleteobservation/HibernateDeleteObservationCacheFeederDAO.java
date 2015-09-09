@@ -65,18 +65,6 @@ public class HibernateDeleteObservationCacheFeederDAO extends DeleteObservationC
 
     private final ProcedureDAO procedureDAO = new ProcedureDAO();
 
-    @Override
-    protected boolean isLastForProcedure(String feature, String procedure) throws OwsExceptionReport {
-        Criteria criteria = DaoFactory.getInstance().getObservationDAO().getObservationInfoCriteriaForFeatureOfInterestAndProcedure(feature, procedure, getConnection());
-        return isEmpty(criteria);
-    }
-
-    @Override
-    protected boolean isLastForOffering(String feature, String offering) throws OwsExceptionReport {
-        Criteria criteria = DaoFactory.getInstance().getObservationDAO().getObservationInfoCriteriaForFeatureOfInterestAndOffering(feature, offering, getConnection());
-        return isEmpty(criteria);
-    }
-
     /**
      * Checks if the specified query has no results.
      *

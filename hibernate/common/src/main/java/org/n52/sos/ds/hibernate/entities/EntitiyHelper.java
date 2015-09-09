@@ -54,14 +54,6 @@ public class EntitiyHelper {
         return instance;
     }
 
-    public boolean isValueSupported() {
-        return getValueEntityClass() != null;
-    }
-
-    public boolean isValueTimeSupported() {
-        return getValueTimeEntityClass() != null;
-    }
-
     public Class<?> getSeriesEntityClass() {
             return EReportingSeries.class;
     }

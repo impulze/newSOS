@@ -123,8 +123,7 @@ public class TemporalRestrictions {
      * 
      * @see Observation#RESULT_TIME
      */
-    public static final TimePrimitiveFieldDescriptor RESULT_TIME_FIELDS = new TimePrimitiveFieldDescriptor(
-            Observation.RESULT_TIME);
+    public static final TimePrimitiveFieldDescriptor RESULT_TIME_FIELDS = new TimePrimitiveFieldDescriptor("date");
 
     /**
      * Fields describing the valid time of a <tt>Observation</tt>.

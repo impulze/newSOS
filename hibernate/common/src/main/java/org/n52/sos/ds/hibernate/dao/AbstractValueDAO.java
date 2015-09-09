@@ -54,32 +54,6 @@ import org.n52.sos.util.GeometryHandler;
  *
  */
 public abstract class AbstractValueDAO extends TimeCreator {
-
-    /**
-     * Check if a Spatial Filtering Profile filter is requested and add to
-     * criteria
-     * 
-     * @param c
-     *            Criteria to add crtierion
-     * @param request
-     *            GetObservation request
-     * @param session
-     *            Hiberante Session
-     * @throws OwsExceptionReport
-     *             If Spatial Filteirng Profile is not supported or an error
-     *             occurs.
-     */
-    protected void checkAndAddSpatialFilteringProfileCriterion(Criteria c, GetObservationRequest request,
-            Session session) throws OwsExceptionReport {
-        if (request.hasSpatialFilteringProfileSpatialFilter()) {
-            c.add(SpatialRestrictions.filter(
-                    AbstractObservation.SAMPLING_GEOMETRY,
-                    request.getSpatialFilter().getOperator(),
-                    GeometryHandler.getInstance().switchCoordinateAxisFromToDatasourceIfNeeded(
-                            request.getSpatialFilter().getGeometry())));
-        }
-    }
-
     /**
      * Add an indeterminate time restriction to a criteria. This allows for
      * multiple results if more than one observation has the extrema time (max
