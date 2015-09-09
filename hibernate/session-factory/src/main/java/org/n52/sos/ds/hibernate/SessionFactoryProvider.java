@@ -127,13 +127,6 @@ public class SessionFactoryProvider extends UnspecifiedSessionFactoryProvider {
                     }
                     configuration.addDirectory(hibernateDir);
                 }
-            } else {
-                // keep this as default/fallback
-                configuration.addDirectory(new File(getClass().getResource(HIBERNATE_MAPPING_CORE_PATH).toURI()));
-                configuration.addDirectory(new File(getClass().getResource(HIBERNATE_MAPPING_TRANSACTIONAL_PATH)
-                        .toURI()));
-                configuration.addDirectory(new File(getClass().getResource(
-                        HIBERNATE_MAPPING_SERIES_CONCEPT_OBSERVATION_PATH).toURI()));
             }
             return configuration;
         } catch (HibernateException he) {
@@ -141,11 +134,6 @@ public class SessionFactoryProvider extends UnspecifiedSessionFactoryProvider {
             LOGGER.error(exceptionText, he);
             cleanup();
             throw new ConfigurationException(exceptionText, he);
-        } catch (URISyntaxException urise) {
-            String exceptionText = "An error occurs during instantiation of the database connection pool!";
-            LOGGER.error(exceptionText, urise);
-            cleanup();
-            throw new ConfigurationException(exceptionText, urise);
         }
     }
     

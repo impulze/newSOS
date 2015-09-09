@@ -202,7 +202,7 @@ public class ObservationOmObservationCreator extends AbstractOmObservationCreato
             // setFetchSize/setMaxResult
             // + setFirstResult
         }
-        getSession().evict(hObservation);
+        //getSession().evict(hObservation);
         LOGGER.trace("Creating Observation done.");
         return sosObservation;
     }
@@ -247,8 +247,9 @@ public class ObservationOmObservationCreator extends AbstractOmObservationCreato
             return new UnknownValue(((BlobObservation) hObservation).getValue());
         } else if (hObservation instanceof SweDataArrayObservation) {
             SweDataArrayValue sweDataArrayValue = new SweDataArrayValue();
-            final XmlObject xml = XmlHelper.parseXmlString(((SweDataArrayObservation) hObservation).getValue());
-            sweDataArrayValue.setValue((SweDataArray) CodingHelper.decodeXmlElement(xml));
+            //final XmlObject xml = XmlHelper.parseXmlString(((SweDataArrayObservation) hObservation).getValue());
+            //sweDataArrayValue.setValue((SweDataArray) CodingHelper.decodeXmlElement(xml));
+            sweDataArrayValue.setValue(((SweDataArrayObservation)hObservation).getValue());
             return sweDataArrayValue;
         }
         return null;

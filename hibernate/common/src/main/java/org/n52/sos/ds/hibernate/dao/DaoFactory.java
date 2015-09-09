@@ -34,7 +34,14 @@ import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesValueDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesValueTimeDAO;
+import org.n52.sos.ds.hibernate.entities.Observation;
+import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
+import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
+import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
+import org.n52.sos.ds.hibernate.entities.series.values.SeriesValueTime;
+import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
+import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 
 

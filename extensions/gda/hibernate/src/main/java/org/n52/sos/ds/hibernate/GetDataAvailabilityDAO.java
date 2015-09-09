@@ -44,7 +44,6 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.ResultTransformer;
-import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.FeatureQueryHandlerQueryObject;
 import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
@@ -284,8 +283,7 @@ public class GetDataAvailabilityDAO extends AbstractGetDataAvailabilityDAO imple
         for (final Series series : DaoFactory
                 .getInstance()
                 .getSeriesDAO()
-                .getSeries(request.getProcedures(), request.getObservedProperties(), request.getFeaturesOfInterest(),
-                        session)) {
+                .getSeries(request.getProcedures(), request.getObservedProperties(), request.getFeaturesOfInterest(), session)) {
             TimePeriod timePeriod = null;
             if (!request.isSetOfferings()) {
                 // get time information from series object

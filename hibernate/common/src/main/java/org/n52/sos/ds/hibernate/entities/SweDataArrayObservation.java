@@ -30,7 +30,7 @@ package org.n52.sos.ds.hibernate.entities;
 
 import java.io.Serializable;
 
-import org.n52.sos.util.StringHelper;
+import org.n52.sos.ogc.swe.SweDataArray;
 
 /**
  * @since 4.0.0
@@ -40,25 +40,25 @@ public class SweDataArrayObservation extends Observation implements Serializable
 
     private static final long serialVersionUID = 627306968328720439L;
 
-    private String value;
+    private SweDataArray value;
 
     @Override
-    public String getValue() {
+    public SweDataArray getValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(SweDataArray value) {
         this.value = value;
     }
 
     @Override
     public boolean isSetValue() {
-        return StringHelper.isNotEmpty(value);
+        return !value.isEmpty();
     }
     
 	@Override
 	public String getValueAsString() {
-		return getValue();
+		return getValue().toString();
 	}
 }

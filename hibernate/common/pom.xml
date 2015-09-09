@@ -75,9 +75,9 @@
             <artifactId>mockito-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>de.hzg</groupId>
-            <artifactId>common</artifactId>
-            <version>0.2</version>
+        	<groupId>de.hzg</groupId>
+        	<artifactId>common</artifactId>
+        	<version>0.2</version>
         </dependency>
     </dependencies>
     <build>

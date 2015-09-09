@@ -54,6 +54,10 @@ public class EntitiyHelper {
         return instance;
     }
 
+    public boolean isSeriesSupported() {
+        return getSeriesEntityClass() != null;
+    }
+
     public boolean isSeriesObservationSupported() {
         return true;
     }
@@ -83,6 +87,10 @@ public class EntitiyHelper {
 
     public boolean isValueTimeSupported() {
         return getValueTimeEntityClass() != null;
+    }
+
+    public Class<?> getSeriesEntityClass() {
+        return Series.class;
     }
 
     public Class<?> getObservationEntityClass() {

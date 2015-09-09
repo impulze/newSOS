@@ -29,6 +29,7 @@
 package org.n52.sos.ds.hibernate.entities.interfaces;
 
 import org.n52.sos.ds.hibernate.entities.HibernateRelations.HasValue;
+import org.n52.sos.ogc.swe.SweDataArray;
 
 /**
  * Interface for Hibernate SweDataArray observations entities
@@ -36,6 +37,6 @@ import org.n52.sos.ds.hibernate.entities.HibernateRelations.HasValue;
  * @since 4.0.0
  * 
  */
-public interface SweDataArrayObservation extends HasValue<String> {
+public interface SweDataArrayObservation extends HasValue<SweDataArray> {
 
 }
