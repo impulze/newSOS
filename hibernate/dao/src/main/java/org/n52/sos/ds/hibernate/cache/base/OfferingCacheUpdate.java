@@ -34,9 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.internal.util.collections.CollectionHelper;
 import org.n52.sos.cache.WritableContentCache;
 import org.n52.sos.ds.hibernate.cache.AbstractQueueingDatasourceCacheUpdate;
@@ -45,14 +42,11 @@ import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
 import org.n52.sos.ds.hibernate.dao.OfferingDAO;
 import org.n52.sos.ds.hibernate.dao.OfferingDAO.OfferingTimeExtrema;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.TOffering;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.ObservationConstellationInfo;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.util.CacheHelper;
@@ -199,23 +193,7 @@ public class OfferingCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<O
     }
 
     protected boolean shouldOfferingBeProcessed(String offeringIdentifier) {
-        try {        
-            if (HibernateHelper.isEntitySupported(ObservationConstellation.class)) {
-                return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
-            } else {
-                AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-                Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(getSession());
-                criteria.createCriteria(AbstractObservation.OFFERINGS).add(
-                        Restrictions.eq(Offering.IDENTIFIER, offeringIdentifier));
-                criteria.setProjection(Projections.rowCount());
-                LOGGER.debug("QUERY shouldOfferingBeProcessed(offering): {}", HibernateHelper.getSqlString(criteria));
-                return (Long) criteria.uniqueResult() > 0;
-            }
-        } catch (OwsExceptionReport e) {
-            LOGGER.error("Error while getting observation DAO class from factory!", e);
-            getErrors().add(e);
-        }
-        return false;
+        return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
     }
 
     protected Set<String> getObservationTypesFromObservationType(Set<ObservationType> observationTypes) {

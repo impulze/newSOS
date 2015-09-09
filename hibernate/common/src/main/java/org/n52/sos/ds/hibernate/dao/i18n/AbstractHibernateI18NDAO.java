@@ -45,7 +45,6 @@ import org.n52.sos.ds.I18NDAO;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
 import org.n52.sos.ds.hibernate.entities.AbstractIdentifierNameDescriptionEntity;
 import org.n52.sos.ds.hibernate.entities.i18n.AbstractHibernateI18NMetadata;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.i18n.LocalizedString;
 import org.n52.sos.i18n.metadata.AbstractI18NMetadata;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
@@ -235,7 +234,8 @@ public abstract class AbstractHibernateI18NDAO<T extends AbstractIdentifierNameD
 
     @Override
     public boolean isSupported() {
-        return HibernateHelper.isEntitySupported(getHibernateEntityClass());
+        // all i18n DAOs are supported
+        return true;
     }
 
     protected Collection<S> createSosObject(List<H> hi18ns) {

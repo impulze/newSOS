@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
@@ -80,12 +79,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureOfInterestDAO.class);
 
-    private static final String SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OFFERING =
-            "getFeatureOfInterestIdentifiersForOffering";
-
-    private static final String SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OBSERVATION_CONSTELLATION =
-            "getFeatureOfInterestIdentifiersForObservationConstellation";
-
     /**
      * Get featureOfInterest object for identifier
      *
@@ -116,19 +109,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
     @SuppressWarnings("unchecked")
     public List<String> getFeatureOfInterestIdentifiersForObservationConstellation(
             final ObservationConstellation observationConstellation, final Session session) throws OwsExceptionReport {
-        if (HibernateHelper.isNamedQuerySupported(
-                SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OBSERVATION_CONSTELLATION, session)) {
-            Query namedQuery =
-                    session.getNamedQuery(SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OBSERVATION_CONSTELLATION);
-            namedQuery.setParameter(PROCEDURE, observationConstellation.getProcedure().getIdentifier());
-            namedQuery.setParameter(OBSERVABLE_PROPERTY, observationConstellation.getObservableProperty()
-                    .getIdentifier());
-            namedQuery.setParameter(OFFERING, observationConstellation.getOffering().getIdentifier());
-            LOGGER.debug(
-                    "QUERY getFeatureOfInterestIdentifiersForObservationConstellation(observationConstellation) with NamedQuery: {}",
-                    SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OBSERVATION_CONSTELLATION);
-            return namedQuery.list();
-        } else {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
             if (observationDAO instanceof SeriesObservationDAO) {
@@ -150,7 +130,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
                     "QUERY getFeatureOfInterestIdentifiersForObservationConstellation(observationConstellation): {}",
                     HibernateHelper.getSqlString(criteria));
             return criteria.list();
-        }
     }
 
     /**
@@ -166,13 +145,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
     @SuppressWarnings({ "unchecked" })
     public List<String> getFeatureOfInterestIdentifiersForOffering(final String offeringIdentifiers,
             final Session session) throws OwsExceptionReport {
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OFFERING, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OFFERING);
-            namedQuery.setParameter(OFFERING, offeringIdentifiers);
-            LOGGER.debug("QUERY getFeatureOfInterestIdentifiersForOffering(offeringIdentifiers) with NamedQuery: {}",
-                    SQL_QUERY_GET_FEATURE_OF_INTEREST_IDENTIFIER_FOR_OFFERING);
-            return namedQuery.list();
-        } else {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria c = observationDAO.getDefaultObservationInfoCriteria(session);
             if (observationDAO instanceof SeriesObservationDAO) {
@@ -188,7 +160,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
             LOGGER.debug("QUERY getFeatureOfInterestIdentifiersForOffering(offeringIdentifiers): {}",
                     HibernateHelper.getSqlString(c));
             return c.list();
-        }
     }
 
     /**
@@ -240,11 +211,8 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
         projectionList.add(Projections.property(FeatureOfInterest.IDENTIFIER));
 
         //get parents if transactional profile is active
-        boolean tFoiSupported = HibernateHelper.isEntitySupported(TFeatureOfInterest.class);
-        if (tFoiSupported) {
             criteria.createAlias(TFeatureOfInterest.PARENTS, "pfoi", JoinType.LEFT_OUTER_JOIN);
             projectionList.add(Projections.property("pfoi." + FeatureOfInterest.IDENTIFIER));
-        }
         criteria.setProjection(projectionList);
         //return as List<Object[]> even if there's only one column for consistency
         criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
@@ -256,9 +224,7 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
         for(Object[] result : results) {
             String featureIdentifier = (String) result[0];
             String parentFeatureIdentifier = null;
-            if (tFoiSupported) {
                 parentFeatureIdentifier = (String) result[1];
-            }
             if (parentFeatureIdentifier != null) {
                 CollectionHelper.addToCollectionMap(featureIdentifier, parentFeatureIdentifier, foiMap);
             } else {

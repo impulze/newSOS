@@ -48,7 +48,6 @@ import org.n52.sos.ds.hibernate.dao.ObservationDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.EntitiyHelper;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
@@ -131,11 +130,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
             if (HibernateStreamingConfiguration.getInstance().isForceDatasourceStreaming()
                     && CollectionHelper.isEmpty(sosRequest.getFirstLatestTemporalFilter())) {
                 // TODO
-                if (EntitiyHelper.getInstance().isSeriesSupported()) {
                     sosResponse.setObservationCollection(querySeriesObservationForStreaming(sosRequest, session));
-                } else {
-                    sosResponse.setObservationCollection(queryObservationForStreaming(sosRequest, session));
-                }
             } else {
                 AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
                 // check if series mapping is supported

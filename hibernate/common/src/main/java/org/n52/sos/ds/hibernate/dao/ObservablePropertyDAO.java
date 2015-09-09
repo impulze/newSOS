@@ -41,15 +41,10 @@ import org.hibernate.criterion.Subqueries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.om.OmObservableProperty;
@@ -97,33 +92,17 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     @SuppressWarnings("unchecked")
     public List<String> getObservablePropertyIdentifiersForOffering(final String offeringIdentifier,
             final Session session) throws OwsExceptionReport {
-        final boolean flag = HibernateHelper.isEntitySupported(ObservationConstellation.class);
         Criteria c = null;
 
-        if (flag) {
             c = getDefaultCriteria(session);
             c.add(Subqueries.propertyIn(
                     Procedure.ID,
                     getDetachedCriteriaObservablePropertiesForOfferingFromObservationConstellation(offeringIdentifier,
                             session)));
             c.setProjection(Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
-        } else {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            c = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.createCriteria(Series.OBSERVABLE_PROPERTY).setProjection(
-                        Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
-
-            } else {
-                c.createCriteria(AbstractObservation.OBSERVABLE_PROPERTY).setProjection(
-                        Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
-            }
-            new OfferingDAO().addOfferingRestricionForObservation(c, offeringIdentifier);
-        }
         LOGGER.debug(
                 "QUERY getProcedureIdentifiersForOffering(offeringIdentifier) using ObservationContellation entitiy ({}): {}",
-                flag, HibernateHelper.getSqlString(c));
+                true, HibernateHelper.getSqlString(c));
         return c.list();
     }
 
@@ -139,34 +118,16 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     @SuppressWarnings("unchecked")
     public List<String> getObservablePropertyIdentifiersForProcedure(final String procedureIdentifier,
             final Session session) {
-        final boolean flag = HibernateHelper.isEntitySupported(ObservationConstellation.class);
         Criteria c = null;
-        if (flag) {
             c = getDefaultCriteria(session);
             c.setProjection(Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
             c.add(Subqueries.propertyIn(
                     ObservableProperty.ID,
                     getDetachedCriteriaObservablePropertyForProcedureFromObservationConstellation(procedureIdentifier,
                             session)));
-        } else {
-            if (HibernateHelper.isEntitySupported(Series.class)) {
-                c = getDefaultCriteria(session);
-                c.setProjection(Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
-                c.add(Subqueries.propertyIn(ObservableProperty.ID,
-                        getDetachedCriteriaObservablePropertiesForProcedureFromSeries(procedureIdentifier, session)));
-            } else {
-                c =
-                        session.createCriteria(ObservationInfo.class).add(
-                                Restrictions.eq(AbstractObservation.DELETED, false));
-                c.createCriteria(ObservationInfo.OBSERVABLE_PROPERTY).setProjection(
-                        Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
-                c.createCriteria(ObservationInfo.PROCEDURE).add(
-                        Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-            }
-        }
         LOGGER.debug(
                 "QUERY getObservablePropertyIdentifiersForProcedure(observablePropertyIdentifier) using ObservationContellation entitiy ({}): {}",
-                flag, HibernateHelper.getSqlString(c));
+                true, HibernateHelper.getSqlString(c));
         return c.list();
     }
 
@@ -280,26 +241,6 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
                 Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
         detachedCriteria.setProjection(Projections.distinct(Projections
                 .property(ObservationConstellation.OBSERVABLE_PROPERTY)));
-        return detachedCriteria;
-    }
-
-    /**
-     * Get Hibernate Detached Criteria to get ObservableProperty entities from
-     * Series for procedure identifier
-     *
-     * @param procedureIdentifier
-     *            Procedure identifier parameter
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Detached Criteria
-     */
-    private DetachedCriteria getDetachedCriteriaObservablePropertiesForProcedureFromSeries(String procedureIdentifier,
-            Session session) {
-        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(Series.class);
-        detachedCriteria.add(Restrictions.eq(Series.DELETED, false));
-        detachedCriteria.createCriteria(Series.PROCEDURE).add(
-                Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-        detachedCriteria.setProjection(Projections.distinct(Projections.property(Series.OBSERVABLE_PROPERTY)));
         return detachedCriteria;
     }
 

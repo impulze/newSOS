@@ -46,7 +46,6 @@ import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ResultTemplateDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.EntitiyHelper;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.Observation;
@@ -119,11 +118,7 @@ public class GetResultDAO extends AbstractGetResultDAO {
                 final SosResultStructure sosResultStructure =
                         new SosResultStructure(resultTemplates.get(0).getResultStructure());
                 final List<AbstractObservation> observations;
-                if (EntitiyHelper.getInstance().isSeriesObservationSupported()) {
                     observations = querySeriesObservation(request, featureIdentifier, session);
-                } else {
-                    observations = queryObservation(request, featureIdentifier, session);
-                }
 
                 response.setResultValues(ResultHandlingHelper.createResultValuesFromObservations(observations,
                         sosResultEncoding, sosResultStructure));
