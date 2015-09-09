@@ -42,16 +42,8 @@ import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.EntitiyHelper;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.interfaces.BlobObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.BooleanObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.CategoryObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.CountObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.GeometryObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.NumericObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.TextObservation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
@@ -170,18 +162,11 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
         try {
             final List<SmlIo<?>> outputs = Lists.newArrayListWithExpectedSize(observableProperties.size());
             int i = 1;
-            final boolean supportsObservationConstellation =
-                    HibernateHelper.isEntitySupported(ObservationConstellation.class);
                 for (String observableProperty : observableProperties) {
                     final SmlIo<?> output;
-                    if (supportsObservationConstellation) {
                         output =
                                 createOutputFromObservationConstellation(procedure.getIdentifier(), observableProperty,
                                         session);
-                    } else {
-                        output =
-                                createOutputFromExampleObservation(procedure.getIdentifier(), observableProperty, session);
-                    }
                     if (output != null) {
                         output.setIoName("output#" + i++);
                         outputs.add(output);
@@ -268,7 +253,7 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
             LOGGER.debug("QUERY queryUnit(observationConstellation) with NamedQuery: {}",
                     SQL_QUERY_GET_UNIT_FOR_OBSERVABLE_PROPERTY);
             return (String) namedQuery.uniqueResult();
-        } else if (EntitiyHelper.getInstance().isSeriesSupported()) {
+        }
             List<Series> series = DaoFactory.getInstance().getSeriesDAO().getSeries(Lists.newArrayList(oc.getProcedure().getIdentifier()), Lists.newArrayList(oc.getObservableProperty().getIdentifier()), Lists.<String>newArrayList(), session);
             if (series.iterator().hasNext()) {
                 Series next = series.iterator().next();
@@ -276,7 +261,7 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
                     return next.getUnit().getUnit();
                 }
             }
-        }
+
         AbstractObservation exampleObservation =
                 getExampleObservation(oc.getProcedure().getIdentifier(), oc.getObservableProperty().getIdentifier(),
                         session);
@@ -304,42 +289,6 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
      */
     private void logTypeNotSupported(String observationType) {
         LOGGER.debug("ObservationType '{}' is not supported by the current implementation", observationType);
-    }
-
-    private SmlIo<?> createOutputFromExampleObservation(String procedure, String observableProperty, Session session)
-            throws OwsExceptionReport {
-        final AbstractObservation exampleObservation = getExampleObservation(procedure, observableProperty, session);
-        if (exampleObservation == null) {
-            return null;
-        }
-        if (exampleObservation instanceof BlobObservation) {
-            // TODO implement BlobObservations
-            logTypeNotSupported(BlobObservation.class);
-        } else if (exampleObservation instanceof BooleanObservation) {
-            return new SmlIo<Boolean>(new SweBoolean().setDefinition(observableProperty));
-        } else if (exampleObservation instanceof CategoryObservation) {
-            final SweCategory category = new SweCategory();
-            category.setDefinition(observableProperty);
-            if (exampleObservation.isSetUnit()) {
-                category.setUom(exampleObservation.getUnit().getUnit());
-            }
-            return new SmlIo<String>(category);
-        } else if (exampleObservation instanceof CountObservation) {
-            return new SmlIo<Integer>(new SweCount().setDefinition(observableProperty));
-        } else if (exampleObservation instanceof GeometryObservation) {
-            // TODO implement GeometryObservations
-            logTypeNotSupported(GeometryObservation.class);
-        } else if (exampleObservation instanceof NumericObservation) {
-            final SweQuantity quantity = new SweQuantity();
-            quantity.setDefinition(observableProperty);
-            if (exampleObservation.isSetUnit()) {
-                quantity.setUom(exampleObservation.getUnit().getUnit());
-            }
-            return new SmlIo<Double>(quantity);
-        } else if (exampleObservation instanceof TextObservation) {
-            return new SmlIo<String>(new SweText().setDefinition(observableProperty));
-        }
-        return null;
     }
 
     /**

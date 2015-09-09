@@ -119,21 +119,13 @@ public class DeleteSensorDAO extends AbstractDeleteSensorDAO {
             session.saveOrUpdate(procedure);
             session.flush();
             // set deleted flag in ObservationConstellation table to true
-            if (HibernateHelper.isEntitySupported(ObservationConstellation.class)) {
                 new ObservationConstellationDAO().updateObservatioConstellationSetAsDeletedForProcedure(identifier,
                         deleteFlag, session);
-            }
             // set deleted flag in Series and Observation table for series concept to true
-            if (EntitiyHelper.getInstance().isSeriesSupported()) {
                 List<Series> series =
                         DaoFactory.getInstance().getSeriesDAO().updateSeriesSetAsDeletedForProcedureAndGetSeries(identifier, deleteFlag,
                                 session);
                 getSeriesObservationDAO().updateObservationSetAsDeletedForSeries(series, deleteFlag, session);
-            } 
-            // set deleted flag in Observation table for old concept to true
-            else {
-                new ObservationDAO().updateObservationSetAsDeletedForProcedure(identifier, deleteFlag, session);
-            }
         } else {
             throw new NoApplicableCodeException().withMessage("The requested identifier is not contained in database");
         }

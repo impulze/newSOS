@@ -46,16 +46,10 @@ import org.n52.sos.ds.hibernate.util.HibernateHelper;
 public abstract class ExtendedHibernateTestCase extends HibernateTestCase {
 
     protected static Class<?> getObservationClass(Session session) {
-        if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
-            return SeriesObservation.class;
-        }
-        return Observation.class;
+        return SeriesObservation.class;
     }
 
     protected static Class<?> getObservationInfoClass(Session session) {
-        if (HibernateHelper.isEntitySupported(SeriesObservationInfo.class)) {
-            return SeriesObservationInfo.class;
-        }
-        return ObservationInfo.class;
+        return SeriesObservationInfo.class;
     }
 }

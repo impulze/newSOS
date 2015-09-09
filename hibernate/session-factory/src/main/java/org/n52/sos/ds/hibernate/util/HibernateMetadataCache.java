@@ -28,59 +28,19 @@
  */
 package org.n52.sos.ds.hibernate.util;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.hibernate.Session;
-import org.hibernate.metadata.ClassMetadata;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 public class HibernateMetadataCache {
     private static HibernateMetadataCache instance;
     private static final Object lock = new Object();
-    private final Set<String> supportedEntities;
-    private Map<String, ClassMetadata> classMetadata;
-    
 
-    private HibernateMetadataCache(Session session) {
-        this.classMetadata = initClassMetadata(session);
-        this.supportedEntities = initSupportedEntities(classMetadata);
-    }
-
-    private Map<String, ClassMetadata> initClassMetadata(Session session) {
-        return ImmutableMap.copyOf(session.getSessionFactory().getAllClassMetadata());
-    }
-
-    private Set<String> initSupportedEntities(Map<String, ClassMetadata> classMetadata) {
-        return ImmutableSet.copyOf(classMetadata.keySet());
-    }
-    
-    public boolean isColumnSupported(Class<?> entityClass, String column) {
-        if (isEntitySupported(entityClass)) {
-            ClassMetadata classMetadata = this.classMetadata.get(entityClass.getName());
-            for (String propertyName : classMetadata.getPropertyNames()) {
-                if (propertyName.equals(column)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean isEntitySupported(Class<?> entityClass) {
-        return entityClass != null && isEntitySupported(entityClass.getName());
-    }
-
-    public boolean isEntitySupported(String entityClass) {
-        return this.supportedEntities.contains(entityClass);
+    private HibernateMetadataCache() {
     }
 
     public static void init(Session session) {
         synchronized (lock) {
             if (instance == null) {
-                instance = new HibernateMetadataCache(session);
+                instance = new HibernateMetadataCache();
             }
         }
     }

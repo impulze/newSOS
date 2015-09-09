@@ -108,32 +108,6 @@ public final class HibernateHelper {
     }
 
     /**
-     * Checks if the specified entity is supported.
-     *
-     * @param clazz
-     *            the class
-     *
-     * @return if the entity supported
-
-     */
-    public static boolean isEntitySupported(Class<?> clazz) {
-        return HibernateMetadataCache.getInstance().isEntitySupported(clazz);
-    }
-
-    /**
-     * Checks if the specified column is supported by this entity.
-     * 
-     * @param clazz
-     *            the class
-     * @param column
-     *            the column
-     * @return if the column supported
-     */
-    public static boolean isColumnSupported(Class<?> clazz, String column) {
-        return HibernateMetadataCache.getInstance().isColumnSupported(clazz, column);
-    }
-
-    /**
      * Checks if the specified named query is supported.
      * 
      * @param namedQuery

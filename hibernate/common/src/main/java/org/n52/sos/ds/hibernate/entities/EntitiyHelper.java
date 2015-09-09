@@ -34,13 +34,6 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservationTime;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.ereporting.values.EReportingValue;
 import org.n52.sos.ds.hibernate.entities.ereporting.values.EReportingValueTime;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
-import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
-import org.n52.sos.ds.hibernate.entities.series.values.SeriesValueTime;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 
 public class EntitiyHelper {
 
@@ -61,39 +54,6 @@ public class EntitiyHelper {
         return instance;
     }
 
-    public boolean isSeriesSupported() {
-        return getSeriesEntityClass() != null;
-    }
-
-    public boolean isSeriesObservationSupported() {
-        return HibernateHelper.isEntitySupported(EReportingObservation.class)
-                || HibernateHelper.isEntitySupported(SeriesObservation.class);
-    }
-
-    public boolean isObservationInfoSupported() {
-        return getObservationInfoEntityClass() != null;
-    }
-
-    public boolean isSeriesObservationInfoSupported() {
-        if (isObservationInfoSupported()) {
-            return HibernateHelper.isEntitySupported(EReportingObservationInfo.class)
-                    || HibernateHelper.isEntitySupported(SeriesObservationInfo.class);
-        }
-        return false;
-    }
-
-    public boolean isSeriesObservationTimeSupported() {
-        if (isObservationTimeSupported()) {
-            return HibernateHelper.isEntitySupported(EReportingObservationTime.class)
-                    || HibernateHelper.isEntitySupported(SeriesObservationTime.class);
-        }
-        return false;
-    }
-
-    public boolean isObservationTimeSupported() {
-        return getObservationTimeEntityClass() != null;
-    }
-
     public boolean isValueSupported() {
         return getValueEntityClass() != null;
     }
@@ -103,61 +63,27 @@ public class EntitiyHelper {
     }
 
     public Class<?> getSeriesEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingSeries.class)) {
             return EReportingSeries.class;
-        } else if (HibernateHelper.isEntitySupported(Series.class)) {
-            return Series.class;
-        }
-        return null;
     }
 
     public Class<?> getObservationEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingObservation.class)) {
             return EReportingObservation.class;
-        } else if (HibernateHelper.isEntitySupported(SeriesObservation.class)) {
-            return SeriesObservation.class;
-        } else if (HibernateHelper.isEntitySupported(Observation.class)) {
-            return Observation.class;
-        }
-        return null;
     }
 
     public Class<?> getObservationInfoEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingObservationInfo.class)) {
             return EReportingObservationInfo.class;
-        } else if (HibernateHelper.isEntitySupported(SeriesObservationInfo.class)) {
-            return SeriesObservationInfo.class;
-        } else if (HibernateHelper.isEntitySupported(ObservationInfo.class)) {
-            return ObservationInfo.class;
-        }
-        return null;
     }
 
     public Class<?> getObservationTimeEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingObservationTime.class)) {
             return EReportingObservationTime.class;
-        } else if (HibernateHelper.isEntitySupported(SeriesObservationTime.class)) {
-            return SeriesObservationTime.class;
-        }
-        return null;
     }
 
     public Class<?> getValueEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingValue.class)) {
             return EReportingValue.class;
-        } else if (HibernateHelper.isEntitySupported(SeriesValue.class)) {
-            return SeriesValue.class;
-        }
-        return null;
     }
 
     public Class<?> getValueTimeEntityClass() {
-        if (HibernateHelper.isEntitySupported(EReportingValueTime.class)) {
             return EReportingValueTime.class;
-        } else if (HibernateHelper.isEntitySupported(SeriesValueTime.class)) {
-            return SeriesValueTime.class;
-        }
-        return null;
     }
 
 }

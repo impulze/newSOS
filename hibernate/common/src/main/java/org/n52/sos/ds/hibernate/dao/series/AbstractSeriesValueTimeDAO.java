@@ -214,12 +214,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
         projectionList.add(Projections.min(AbstractObservationTime.PHENOMENON_TIME_START));
         projectionList.add(Projections.max(AbstractObservationTime.PHENOMENON_TIME_END));
         projectionList.add(Projections.max(AbstractObservationTime.RESULT_TIME));
-        if (HibernateHelper.isColumnSupported(getSeriesValueTimeClass(), AbstractObservationTime.VALID_TIME_START)
-                && HibernateHelper
-                        .isColumnSupported(getSeriesValueTimeClass(), AbstractObservationTime.VALID_TIME_END)) {
+        // TODO(HZG): check if VALID_TIME_START and VALID_TIME_END are needed and act accordingly 
             projectionList.add(Projections.min(AbstractObservationTime.VALID_TIME_START));
             projectionList.add(Projections.max(AbstractObservationTime.VALID_TIME_END));
-        }
         c.setProjection(projectionList);
     }
 

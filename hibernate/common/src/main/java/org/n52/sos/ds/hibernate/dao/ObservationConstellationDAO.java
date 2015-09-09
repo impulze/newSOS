@@ -194,7 +194,6 @@ public class ObservationConstellationDAO {
      */
     public List<ObservationConstellationInfo> getObservationConstellationInfo(Session session) {
         List<ObservationConstellationInfo> ocis = Lists.newArrayList();        
-        if (HibernateHelper.isEntitySupported(ObservationConstellation.class)) {
             Criteria criteria = session.createCriteria(ObservationConstellation.class, "oc")
                     .createAlias(ObservationConstellation.OFFERING, "o")
                     .createAlias(ObservationConstellation.PROCEDURE, "p")
@@ -220,7 +219,6 @@ public class ObservationConstellationDAO {
                 oci.setHiddenChild((Boolean) result[4]);
                 ocis.add(oci);
             }
-        }
         return ocis;
     }    
     
@@ -400,7 +398,6 @@ public class ObservationConstellationDAO {
      */
     @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellationsForOffering(Offering offering, Session session) {
-        if (HibernateHelper.isEntitySupported(ObservationConstellation.class)) {
             Criteria criteria =
                     session.createCriteria(ObservationConstellation.class)
                             .add(Restrictions.eq(ObservationConstellation.DELETED, false))
@@ -408,8 +405,6 @@ public class ObservationConstellationDAO {
             LOGGER.debug("QUERY getObservationConstellationsForOffering(offering): {}",
                     HibernateHelper.getSqlString(criteria));
             return criteria.list();
-        }
-        return Lists.newLinkedList();
     }
 
     /**
