@@ -62,11 +62,7 @@ class ProcedureCacheUpdateTask extends AbstractThreadableDatasourceCacheUpdate {
 
     protected void getProcedureInformationFromDbAndAddItToCacheMaps() throws OwsExceptionReport {
         //temporal extent
-        ProcedureDAO procedureDAO = new ProcedureDAO();
         TimeExtrema pte = null;
-        if (procedureDAO.isProcedureTimeExtremaNamedQuerySupported(getSession())) {
-            pte = procedureDAO.getProcedureTimeExtremaFromNamedQuery(getSession(), procedureId);
-        } else {
             AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
             if (isSetTimeExtremaEmpty(pte) && seriesDAO != null) {
                 pte = seriesDAO.getProcedureTimeExtrema(getSession(), procedureId);
@@ -74,7 +70,6 @@ class ProcedureCacheUpdateTask extends AbstractThreadableDatasourceCacheUpdate {
             if (isSetTimeExtremaEmpty(pte)) {
                 pte = new ProcedureDAO().getProcedureTimeExtrema(getSession(), procedureId);
             }
-        }
         if (pte != null && pte.isSetTimes()) {
             getCache().setMinPhenomenonTimeForProcedure(procedureId, pte.getMinTime());
             getCache().setMaxPhenomenonTimeForProcedure(procedureId, pte.getMaxTime());
