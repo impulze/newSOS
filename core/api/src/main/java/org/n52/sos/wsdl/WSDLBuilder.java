@@ -41,7 +41,6 @@ import org.n52.sos.service.Configurator;
 import org.n52.sos.service.ServiceConfiguration;
 import org.n52.sos.util.StringHelper;
 import org.n52.sos.util.XmlHelper;
-import org.n52.sos.wsdl.WSDLConstants.Operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,18 +55,6 @@ public class WSDLBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WSDLBuilder.class);
 
-    private static final String SOAP_LITERAL_USE = "literal";
-
-    private static final String REQUEST_SUFFIX = "RequestMessage";
-
-    private static final String RESPONSE_SUFFIX = "ResponseMessage";
-
-    private static final String SOS_SOAP_12_PORT = "SosSoap12Port";
-
-    private static final String SOS_KVP_PORT = "SosKvpPort";
-
-    private static final String SOS_POX_PORT = "SosPoxPort";
-    
     private static final String SOAP_ENPOINT_URL_PLACEHOLDER = "SOAP_ENDPOINT_URL";
 
     // private final WSDLFactory factory;
@@ -800,15 +787,6 @@ public class WSDLBuilder {
                 new WSDLBuilder().setSoapEndpoint(URI.create("http://localhost:8080/52n-sos-webapp/sos/soap"))
                         .setKvpEndpoint(URI.create("http://localhost:8080/52n-sos-webapp/sos/kvp"))
                         .setPoxEndpoint(URI.create("http://localhost:8080/52n-sos-webapp/sos/pox"));
-        for (WSDLOperation o : new WSDLOperation[] { Operations.DELETE_SENSOR, Operations.DESCRIBE_SENSOR,
-                Operations.GET_CAPABILITIES, Operations.GET_FEATURE_OF_INTEREST, Operations.GET_OBSERVATION,
-                Operations.GET_OBSERVATION_BY_ID, Operations.GET_RESULT, Operations.GET_RESULT_TEMPLATE,
-                Operations.INSERT_OBSERVATION, Operations.INSERT_RESULT, Operations.INSERT_RESULT_TEMPLATE,
-                Operations.INSERT_SENSOR, Operations.UPDATE_SENSOR_DESCRIPTION }) {
-            // b.addPoxOperation(o);
-            // b.addKvpOperation(o);
-            // b.addSoapOperation(o);
-        }
         System.out.println(b.build());
     }
 

@@ -166,7 +166,6 @@ public class OgcDecoderv100 implements Decoder<Object, XmlObject> {
                     Object timeObject = CodingHelper.decodeXmlElement(XmlObject.Factory.parse(nodes.item(i)));
 
                     if (timeObject instanceof PropertyNameType) {
-                        PropertyNameType propType = (PropertyNameType) timeObject;
 
                         // TODO here apply logic for ogc property
                         // om:samplingTime etc
@@ -235,7 +234,6 @@ public class OgcDecoderv100 implements Decoder<Object, XmlObject> {
                         CodingHelper.decodeXmlElement(XmlObject.Factory.parse(geometryCursor.getDomNode()));
 
                 if (sosGeometry instanceof PropertyNameType) {
-                    PropertyNameType propType = (PropertyNameType) sosGeometry;
 
                     // TODO here apply logic for ogc property
                     // urn:ogc:data:location etc

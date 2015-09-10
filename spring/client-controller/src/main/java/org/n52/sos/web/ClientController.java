@@ -80,7 +80,7 @@ public class ClientController extends AbstractController {
             final OperationKey ok = new OperationKey(service, version, operation);
             for (Entry<String, Binding> b : BindingRepository.getInstance().getBindings().entrySet()) {
                 try {
-                    final String pattern = b.getKey();
+                    b.getKey();
                     final Binding binding = b.getValue();
                     if (binding.checkOperationHttpDeleteSupported(ok)) {
                         for (MediaType contentType : binding.getSupportedEncodings()) {

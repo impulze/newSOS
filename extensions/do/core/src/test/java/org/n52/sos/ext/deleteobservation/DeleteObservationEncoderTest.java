@@ -69,8 +69,6 @@ public class DeleteObservationEncoderTest {
 
     private static DeleteObservationEncoder instance;
 
-    private static DeleteObservationResponse incorrectCoreResponse;
-
     private static DeleteObservationResponse incorrectCoreResponseMissingAttributes;
 
     /*

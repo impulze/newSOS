@@ -94,13 +94,12 @@ public class AdminCacheController extends AbstractController {
     @RequestMapping(value = ControllerConstants.Paths.ADMIN_CACHE_SUMMARY, method = RequestMethod.GET, produces = "application/json; charset=UTF-8")
     public String getCacheSummary() {
 
-        Function<String, JsonNode> textToJson
-                = new Function<String, JsonNode>() {
-                    @Override
-                    public JsonNode apply(String t) {
-                        return JSONUtils.nodeFactory().textNode(t);
-                    }
-                };
+        new Function<String, JsonNode>() {
+		    @Override
+		    public JsonNode apply(String t) {
+		        return JSONUtils.nodeFactory().textNode(t);
+		    }
+		};
         return JSONUtils.print(JSONUtils.toJSON(CacheSummaryHandler.getCacheValues()));
     }
 

@@ -727,9 +727,7 @@ public final class XmlHelper {
 
                     final String[] toks = xsiType.split(":");
                     String localName;
-                    String prefix;
                     if (toks.length > 1) {
-                        prefix = toks[0];
                         localName = toks[1];
                     } else {
                         localName = toks[0];

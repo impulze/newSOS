@@ -446,7 +446,7 @@ public class SosDecoderv20 extends AbstractSwesDecoderv20 implements Decoder<Abs
             throws OwsExceptionReport {
         final GetResultResponse sosGetResultResponse = new GetResultResponse();
         final GetResultResponseType getResultResponse = getResultResponseDoc.getGetResultResponse();
-        final String resultValues = parseResultValues(getResultResponse.getResultValues());
+        parseResultValues(getResultResponse.getResultValues());
         // sosGetResultResponse.setResultValues(resultValues);
         return sosGetResultResponse;
     }

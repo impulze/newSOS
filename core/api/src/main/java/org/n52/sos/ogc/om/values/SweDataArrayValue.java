@@ -115,7 +115,6 @@ public class SweDataArrayValue implements MultiValue<SweDataArray> {
     public Time getPhenomenonTime() {
         final TimePeriod timePeriod = new TimePeriod();
         Set<Integer> dateTokenIndizes = Sets.newHashSet();
-        int dateTokenIndex = -1;
         if (getValue() != null && getValue().getElementType() != null && getValue().getEncoding() != null) {
             // get index of time token from elementtype
             if (getValue().getElementType() instanceof SweDataRecord) {

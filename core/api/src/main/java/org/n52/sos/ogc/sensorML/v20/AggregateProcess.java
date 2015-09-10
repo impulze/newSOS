@@ -50,8 +50,6 @@ public class AggregateProcess extends DescribedObject implements HasComponents<A
 
     private final List<SmlComponent> components = new ArrayList<SmlComponent>(0);
 
-    private Object connections;
-
     public AggregateProcess() {
         setGmlId(ID_PREFIX + JavaHelper.generateID(ID_PREFIX));
     }

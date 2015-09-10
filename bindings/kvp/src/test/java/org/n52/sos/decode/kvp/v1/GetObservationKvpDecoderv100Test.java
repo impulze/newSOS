@@ -48,7 +48,6 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos1Constants;
 import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.util.Constants;
 import org.n52.sos.util.http.MediaType;
 
 /**
@@ -71,9 +70,6 @@ public class GetObservationKvpDecoderv100Test extends DeleteSensorKvpDecoderv20 
     private static final String EVENT_TIME = "om:phenomenonTime," + START_TIME + "/" + END_TIME;
 
     private static final String SPATIAL_FILTER_VALUE_REFERENCE = "om:featureOfInterest/*/sams:shape";
-
-    private static final String SPATIAL_FILTER = SPATIAL_FILTER_VALUE_REFERENCE
-            + ",0.0,0.0,60.0,60.0,urn:ogc:def:crs:EPSG::" + Constants.EPSG_WGS84;
 
     private static final String ADDITIONAL_PARAMETER = "additionalParameter";
 

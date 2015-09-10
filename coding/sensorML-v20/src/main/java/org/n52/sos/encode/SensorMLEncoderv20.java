@@ -101,7 +101,6 @@ import org.n52.sos.ogc.sensorML.AbstractProcess;
 import org.n52.sos.ogc.sensorML.AbstractSensorML;
 import org.n52.sos.ogc.sensorML.HasComponents;
 import org.n52.sos.ogc.sensorML.HasProcessMethod;
-import org.n52.sos.ogc.sensorML.ProcessMethod;
 import org.n52.sos.ogc.sensorML.SensorML20Constants;
 import org.n52.sos.ogc.sensorML.SensorMLConstants;
 import org.n52.sos.ogc.sensorML.SmlContact;
@@ -115,7 +114,6 @@ import org.n52.sos.ogc.sensorML.elements.SmlClassifier;
 import org.n52.sos.ogc.sensorML.elements.SmlComponent;
 import org.n52.sos.ogc.sensorML.elements.SmlDocumentation;
 import org.n52.sos.ogc.sensorML.elements.SmlDocumentationList;
-import org.n52.sos.ogc.sensorML.elements.SmlDocumentationListMember;
 import org.n52.sos.ogc.sensorML.elements.SmlIdentifier;
 import org.n52.sos.ogc.sensorML.elements.SmlIo;
 import org.n52.sos.ogc.sensorML.elements.SmlLocation;
@@ -978,14 +976,8 @@ public class SensorMLEncoderv20 extends AbstractSensorMLEncoder {
     }
 
     private ProcessMethodType createProcessMethod(HasProcessMethod processMethod) {
-        // TODO how to?
-        ProcessMethod method = processMethod.getMethod();
-        ProcessMethodType pmt = ProcessMethodType.Factory.newInstance(getOptions());
-        // if (false) {
-        // pmt.setDescription("");
-        // pmt.setIdentifier("");
-        // pmt.setLabel("");
-        // }
+        processMethod.getMethod();
+        ProcessMethodType.Factory.newInstance(getOptions());
 
         // if (method.isSetHref()) {
         // xbMethod.setHref(method.getHref());
@@ -1155,12 +1147,6 @@ public class SensorMLEncoderv20 extends AbstractSensorMLEncoder {
         final DocumentListType documentList = DocumentListType.Factory.newInstance();
         if (sosDocumentationList.isSetDescription()) {
             documentList.setDescription(sosDocumentationList.getDescription());
-        }
-        if (sosDocumentationList.isSetMembers()) {
-            for (final SmlDocumentationListMember sosMmember : sosDocumentationList.getMember()) {
-                // TODO encode
-                // documentList.addNewDocument().setCIOnlineResource(ciOnlineResource);
-            }
         }
         return documentList;
     }

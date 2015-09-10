@@ -32,9 +32,7 @@ import java.util.List;
 
 import org.hibernate.Session;
 
-import org.n52.sos.ds.I18NDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractIdentifierNameDescriptionEntity;
-import org.n52.sos.ds.hibernate.entities.Codespace;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.i18n.I18NDAORepository;
 import org.n52.sos.i18n.metadata.I18NFeatureMetadata;
@@ -122,11 +120,9 @@ public class AbstractIdentifierNameDescriptionDAO extends TimeCreator {
 
     public void insertNames(FeatureOfInterest feature, List<CodeType> name, Session session) {
         CodespaceDAO codespaceDAO = new CodespaceDAO();
-        I18NDAO<I18NFeatureMetadata> dao
-                = I18NDAORepository.getInstance().getDAO(I18NFeatureMetadata.class);
+        I18NDAORepository.getInstance().getDAO(I18NFeatureMetadata.class);
         for (CodeType codeType : name) {
-            Codespace codespace = codespaceDAO.getOrInsertCodespace(codeType.getCodeSpace(), session);
-//            i18ndao.insertI18N(feature, new I18NInsertionObject(codespace, codeType.getValue()), session);
+            codespaceDAO.getOrInsertCodespace(codeType.getCodeSpace(), session);
         }
     }
 

@@ -47,7 +47,6 @@ import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.om.OmConstants;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.ogc.swe.SweConstants;
 import org.n52.sos.util.DateTimeHelper;
 import org.n52.sos.w3c.W3CConstants;
@@ -70,8 +69,6 @@ public class GetDataAvailabilityStreamWriter extends XmlEventWriter<List<DataAva
 
     private final Map<TimePeriod, String> times;
 
-    private final String version;
-
     private int dataAvailabilityCount = 1;
 
     private int timePeriodCount = 1;
@@ -81,7 +78,6 @@ public class GetDataAvailabilityStreamWriter extends XmlEventWriter<List<DataAva
     public GetDataAvailabilityStreamWriter(String version, List<DataAvailability> gdas) {
         this.gdas = gdas == null ? Collections.<DataAvailability> emptyList() : gdas;
         this.times = new HashMap<TimePeriod, String>(this.gdas.size());
-        this.version = version == null ? Sos2Constants.SERVICEVERSION : version;
     }
 
     @Override

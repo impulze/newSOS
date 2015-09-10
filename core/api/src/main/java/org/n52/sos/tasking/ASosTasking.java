@@ -40,8 +40,6 @@ public abstract class ASosTasking extends TimerTask {
 
     private long executionIntervall = DEFAULT_EXECUTION_INTERVALL;
 
-    private String name;
-
     public ASosTasking() throws TaskingException {
 
     }

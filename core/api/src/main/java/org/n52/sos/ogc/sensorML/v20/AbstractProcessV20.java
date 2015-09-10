@@ -28,7 +28,6 @@
  */
 package org.n52.sos.ogc.sensorML.v20;
 
-import org.n52.sos.ogc.gml.ReferenceType;
 import org.n52.sos.ogc.sensorML.AbstractProcess;
 import org.n52.sos.ogc.sensorML.SensorMLConstants;
 
@@ -43,15 +42,7 @@ public class AbstractProcessV20 extends AbstractProcess {
 
     private static final long serialVersionUID = 1L;
 
-    private ReferenceType typeOf;
-
-    private AbstractSettings configuration;
-
     private SmlFeatureOfInterest featureOfInterest;
-
-    private AbstractModes modes;
-
-    private String definition;
 
     public AbstractProcessV20 setSmlFeatureOfInterest(SmlFeatureOfInterest featureOfInterest) {
         this.featureOfInterest = featureOfInterest;
