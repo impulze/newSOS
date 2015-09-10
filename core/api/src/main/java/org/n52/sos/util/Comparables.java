@@ -106,7 +106,8 @@ public class Comparables {
         private VersionComparator() {
         }
 
-        @Override
+        @SuppressWarnings("resource")
+		@Override
         public int compare(String a, String b) {
             Scanner as = new Scanner(a).useDelimiter(DELIMITER);
             Scanner bs = new Scanner(b).useDelimiter(DELIMITER);

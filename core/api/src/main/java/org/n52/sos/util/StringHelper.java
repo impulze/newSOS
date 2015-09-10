@@ -209,7 +209,8 @@ public final class StringHelper {
         return Strings.isNullOrEmpty(string);
     }
 
-    public static String convertStreamToString(InputStream is, String charset) throws OwsExceptionReport {
+    @SuppressWarnings("resource")
+	public static String convertStreamToString(InputStream is, String charset) throws OwsExceptionReport {
         try {
             Scanner scanner;
             if (isNotEmpty(charset)) {

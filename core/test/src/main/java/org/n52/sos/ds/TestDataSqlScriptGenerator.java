@@ -211,6 +211,7 @@ public class TestDataSqlScriptGenerator {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	private static String createHeaderStatements() throws FileNotFoundException
 	{
 		String headerStatement = new Scanner( TestDataSqlScriptGenerator.class.getResourceAsStream(HEADER_FILE_NAME) ).useDelimiter("\\A").next();
@@ -218,6 +219,7 @@ public class TestDataSqlScriptGenerator {
 		return headerStatement;
 	}
 	
+	@SuppressWarnings("resource")
 	private static String createFooterStatements() throws FileNotFoundException
 	{
 		String headerStatement = new Scanner( TestDataSqlScriptGenerator.class.getResourceAsStream(FOOTER_FILE_NAME) ).useDelimiter("\\A").next();
