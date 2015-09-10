@@ -44,7 +44,7 @@ public abstract class CompositeAction<A extends Action> extends RunnableAction {
 
     private List<A> actions;
 
-    public CompositeAction(A... actions) {
+    public CompositeAction(@SuppressWarnings("unchecked") A... actions) {
         this.actions = Arrays.asList(actions);
     }
 

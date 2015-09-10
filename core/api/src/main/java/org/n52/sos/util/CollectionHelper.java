@@ -62,7 +62,7 @@ public final class CollectionHelper {
      * @deprecated use {@link Sets#newHashSet(Object...) }
      */
     @Deprecated
-    public static <T> Set<T> set(final T... elements) {
+    public static <T> Set<T> set(@SuppressWarnings("unchecked") final T... elements) {
         return Sets.newHashSet(elements);
     }
 
@@ -80,7 +80,7 @@ public final class CollectionHelper {
      *            <i>unmodifiable</i> map
      * @return an <i>unmodifiable</i> map with all given entries
      */
-    public static <K, V> Map<K, V> map(final Entry<K, V>... entries) {
+    public static <K, V> Map<K, V> map(@SuppressWarnings("unchecked") final Entry<K, V>... entries) {
         final HashMap<K, V> map = new HashMap<K, V>(entries.length);
         for (final Entry<K, V> entry : entries) {
             map.put(entry.getKey(), entry.getValue());
@@ -118,18 +118,18 @@ public final class CollectionHelper {
      * @deprecated use {@link Lists#newArrayList() }.
      */
     @Deprecated
-    public static <T> Collection<T> collection(final T... elements) {
+    public static <T> Collection<T> collection(@SuppressWarnings("unchecked") final T... elements) {
         return Lists.newArrayList(elements);
     }
 
     /**
      * @return an <b>UNMODIFIABLE</b> List&lt;T&gt;
      */
-    public static <T> List<T> list(final T... elements) {
+    public static <T> List<T> list(@SuppressWarnings("unchecked") final T... elements) {
         return Collections.unmodifiableList(Arrays.asList(elements));
     }
 
-    public static <T> Set<T> union(final Set<T>... elements) {
+    public static <T> Set<T> union(@SuppressWarnings("unchecked") final Set<T>... elements) {
         return ((elements.length == 0) ? Collections.<T> emptySet() : new HashSet<T>(elements.length
                 * elements[0].size()) {
             private static final long serialVersionUID = -3161916411604210423L;
@@ -197,7 +197,7 @@ public final class CollectionHelper {
     }
 
     @Deprecated
-    public static <T> List<T> asList(final T t, final T... ts) {
+    public static <T> List<T> asList(final T t, @SuppressWarnings("unchecked") final T... ts) {
         final ArrayList<T> list = new ArrayList<T>(ts.length + 1);
         list.add(t);
         Collections.addAll(list, ts);
@@ -205,7 +205,7 @@ public final class CollectionHelper {
     }
 
     @Deprecated
-    public static <T> Set<T> asSet(final T t, final T... ts) {
+    public static <T> Set<T> asSet(final T t, @SuppressWarnings("unchecked") final T... ts) {
         final Set<T> set = new HashSet<T>(ts.length + 1);
         set.add(t);
         Collections.addAll(set, ts);

@@ -53,7 +53,7 @@ public abstract class CompositeParallelAction<A extends ThreadableAction> extend
 
     private String threadGroupName;
 
-    public CompositeParallelAction(int threads, String threadGroupName, A... actions) {
+    public CompositeParallelAction(int threads, String threadGroupName, @SuppressWarnings("unchecked") A... actions) {
         super(actions);
         this.threadGroupName = threadGroupName;
         this.threadFactory = new GroupedAndNamedThreadFactory(threadGroupName);

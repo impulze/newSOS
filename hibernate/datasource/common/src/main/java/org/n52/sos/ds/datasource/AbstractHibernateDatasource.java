@@ -789,7 +789,7 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
      *            The other array
      * @return Concatenated array
      */
-    private <T> T[] concat(T[] first, T[]... rest) {
+    private <T> T[] concat(T[] first, @SuppressWarnings("unchecked") T[]... rest) {
         int length = first.length;
         for (int i = 0; i < rest.length; ++i) {
             length += rest[i].length;

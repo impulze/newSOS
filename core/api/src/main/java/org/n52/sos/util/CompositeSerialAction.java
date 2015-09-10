@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public abstract class CompositeSerialAction<A extends Action> extends CompositeAction<A> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompositeSerialAction.class);
 
-    public CompositeSerialAction(A... actions) {
+    public CompositeSerialAction(@SuppressWarnings("unchecked") A... actions) {
         super(actions);
     }
 
