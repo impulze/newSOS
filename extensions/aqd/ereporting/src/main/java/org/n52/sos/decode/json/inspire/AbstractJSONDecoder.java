@@ -134,19 +134,19 @@ public abstract class AbstractJSONDecoder<T> extends JSONDecoder<T> {
                 });
     }
 
-    protected <T> Nillable<T> decodeJsonToNillable(JsonNode node, final Class<T> type)
+    protected <S> Nillable<S> decodeJsonToNillable(JsonNode node, final Class<S> type)
             throws OwsExceptionReport {
-        ThrowableFunction<JsonNode, T> fun
-                = new ThrowableFunction<JsonNode, T>() {
+        ThrowableFunction<JsonNode, S> fun
+                = new ThrowableFunction<JsonNode, S>() {
 
                     @Override
-                    protected T applyThrowable(JsonNode input)
+                    protected S applyThrowable(JsonNode input)
                             throws OwsExceptionReport {
                         return decodeJsonToObject(input, type);
                     }
                 };
 
-        Nillable<T> result = parseNillable(node).transform(fun);
+        Nillable<S> result = parseNillable(node).transform(fun);
 
         if (fun.hasErrors()) {
             fun.propagateIfPossible(OwsExceptionReport.class);
@@ -154,19 +154,19 @@ public abstract class AbstractJSONDecoder<T> extends JSONDecoder<T> {
         return result;
     }
 
-    protected <T> Referenceable<T> decodeJsonToReferencable(JsonNode node, final Class<T> type)
+    protected <S> Referenceable<S> decodeJsonToReferencable(JsonNode node, final Class<S> type)
             throws OwsExceptionReport {
-        ThrowableFunction<JsonNode, T> fun
-                = new ThrowableFunction<JsonNode, T>() {
+        ThrowableFunction<JsonNode, S> fun
+                = new ThrowableFunction<JsonNode, S>() {
 
                     @Override
-                    protected T applyThrowable(JsonNode input)
+                    protected S applyThrowable(JsonNode input)
                             throws OwsExceptionReport {
                         return decodeJsonToObject(input, type);
                     }
                 };
 
-        Referenceable<T> result = parseReferenceable(node).transform(fun);
+        Referenceable<S> result = parseReferenceable(node).transform(fun);
 
         if (fun.hasErrors()) {
             fun.propagateIfPossible(OwsExceptionReport.class);

@@ -104,7 +104,7 @@ public abstract class XmlReader<T> {
         return finish();
     }
 
-    protected <T> T delegate(XmlReader<? extends T> reader)
+    protected <S> S delegate(XmlReader<? extends S> reader)
             throws XMLStreamException, OwsExceptionReport {
         return reader.read(this);
     }

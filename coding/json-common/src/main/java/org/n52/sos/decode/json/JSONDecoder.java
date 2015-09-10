@@ -76,26 +76,26 @@ public abstract class JSONDecoder<T> implements Decoder<T, JsonNode> {
         this.decoderKeys = keys;
     }
 
-    private <T> Decoder<T, JsonNode> getDecoder(Class<T> type) throws NoDecoderForKeyException {
+    private <S> Decoder<S, JsonNode> getDecoder(Class<S> type) throws NoDecoderForKeyException {
         JsonDecoderKey key = new JsonDecoderKey(type);
-        Decoder<T, JsonNode> decoder = CodingRepository.getInstance().getDecoder(key);
+        Decoder<S, JsonNode> decoder = CodingRepository.getInstance().getDecoder(key);
         if (decoder == null) {
             throw new NoDecoderForKeyException(key);
         }
         return decoder;
     }
 
-    protected <T> T decodeJsonToObject(JsonNode json, Class<T> type) throws OwsExceptionReport {
+    protected <S> S decodeJsonToObject(JsonNode json, Class<S> type) throws OwsExceptionReport {
         if (json == null || json.isNull() || json.isMissingNode()) {
             return null;
         }
         return getDecoder(type).decode(json);
     }
 
-    protected <T> List<T> decodeJsonToObjectList(JsonNode node, Class<T> type) throws OwsExceptionReport {
-        Decoder<T, JsonNode> decoder = getDecoder(type);
+    protected <S> List<S> decodeJsonToObjectList(JsonNode node, Class<S> type) throws OwsExceptionReport {
+        Decoder<S, JsonNode> decoder = getDecoder(type);
         if (node.isArray()) {
-            List<T> filters = Lists.newArrayListWithExpectedSize(node.size());
+            List<S> filters = Lists.newArrayListWithExpectedSize(node.size());
             for (JsonNode n : node) {
                 if (n.isObject()) {
                     filters.add(decoder.decode(n));
