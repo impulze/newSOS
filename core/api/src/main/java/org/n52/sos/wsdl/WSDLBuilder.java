@@ -411,17 +411,7 @@ public class WSDLBuilder {
         return this.soapEndpoint;
     }
 
-    private URI getKvpEndpoint() {
-        return this.kvpEndpoint;
-    }
-
-    private URI getPoxEndpoint() {
-        return this.poxEndpoint;
-    }
-
-    private String getName(WSDLOperation o) {
-        return o.getName() + ((o.getVersion() != null) ? o.getVersion().replace(".", "") : "");
-    }
+    
 
     // public WSDLBuilder addPoxOperation(WSDLOperation o) {
     // List<Fault> faults = new ArrayList<Fault>(o.getFaults().size());

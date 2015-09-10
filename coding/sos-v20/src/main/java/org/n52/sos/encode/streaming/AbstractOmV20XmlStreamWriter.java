@@ -31,8 +31,6 @@ package org.n52.sos.encode.streaming;
 import java.io.OutputStream;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Set;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
@@ -45,10 +43,8 @@ import org.joda.time.DateTime;
 import org.n52.sos.coding.CodingRepository;
 import org.n52.sos.encode.AbstractOmEncoderv20;
 import org.n52.sos.encode.Encoder;
-import org.n52.sos.encode.EncoderKey;
 import org.n52.sos.encode.EncodingValues;
 import org.n52.sos.encode.ObservationEncoder;
-import org.n52.sos.encode.XmlEncoderKey;
 import org.n52.sos.encode.XmlStreamWriter;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.exception.ows.concrete.DateTimeFormatException;
@@ -639,23 +635,5 @@ public abstract class AbstractOmV20XmlStreamWriter extends XmlStreamWriter<OmObs
      */
     private OmObservation getOmObservation() {
         return observation;
-    }
-
-    /**
-     * Method to check whether the procedure should be encoded
-     * 
-     * @return True or false
-     */
-    private boolean checkEncodProcedureForEncoderKeys(Encoder<?, ?> encoder) {
-        Set<EncoderKey> encoderKeyType = encoder.getEncoderKeyType();
-        for (EncoderKey encoderKey : encoderKeyType) {
-            if (encoderKey instanceof XmlEncoderKey) {
-                if (Configurator.getInstance().getProfileHandler().getActiveProfile()
-                        .isEncodeProcedureInObservation(((XmlEncoderKey) encoderKey).getNamespace())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

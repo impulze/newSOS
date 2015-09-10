@@ -37,7 +37,6 @@ import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.gml.CodeWithAuthority;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sensorML.SensorML20Constants;
-import org.n52.sos.ogc.sensorML.v20.AggregateProcess;
 import org.n52.sos.ogc.sensorML.v20.DescribedObject;
 import org.n52.sos.ogc.sensorML.v20.PhysicalComponent;
 import org.n52.sos.ogc.sensorML.v20.PhysicalSystem;
@@ -118,13 +117,6 @@ public class HibernateProcedureDescriptionGeneratorFactorySml20 implements Hiber
             return simpleProcess;
         }
     
-        private SosProcedureDescription createAggregateProcess(Procedure procedure, Session session) throws OwsExceptionReport {
-            AggregateProcess aggregateProcess = new AggregateProcess();
-            setIdentifier(aggregateProcess, procedure);
-            setCommonValues(procedure, aggregateProcess, session);
-            return aggregateProcess;
-        }
-
         private void setIdentifier(DescribedObject describedObject, Procedure procedure) {
             CodeWithAuthority cwa = new CodeWithAuthority(procedure.getIdentifier());
             if (procedure.isSetCodespace()) {

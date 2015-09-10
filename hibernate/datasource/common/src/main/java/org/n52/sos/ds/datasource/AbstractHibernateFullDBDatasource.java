@@ -38,8 +38,6 @@ import org.n52.sos.config.SettingDefinition;
 import org.n52.sos.config.settings.StringSettingDefinition;
 import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.util.JavaHelper;
-import org.n52.sos.util.StringHelper;
-
 import com.google.common.collect.Sets;
 
 
@@ -140,18 +138,6 @@ public abstract class AbstractHibernateFullDBDatasource extends AbstractHibernat
         addMappingFileDirectories(settings, p);
 
         return p;
-    }
-
-    private void checkAndPut(Properties p, String key, Object value) {
-        if (value != null) {
-            if (value instanceof String) {
-                if (StringHelper.isNotEmpty(((String) value))) {
-                    p.put(key, value);
-                }
-            } else {
-                p.put(key, value);
-            }
-        }
     }
 
     protected Map<String, Object> parseDatasourceProperties(final Properties current) {

@@ -28,8 +28,6 @@
  */
 package org.n52.sos.web;
 
-import java.io.File;
-import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -45,11 +43,7 @@ import org.n52.sos.config.SettingValue;
 import org.n52.sos.config.SettingsManager;
 import org.n52.sos.exception.ConfigurationException;
 import org.n52.sos.exception.JSONException;
-import org.n52.sos.i18n.MultilingualString;
-import org.n52.sos.i18n.json.I18NJsonEncoder;
-import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.service.DatabaseSettingsHandler;
-import org.n52.sos.util.DateTimeHelper;
 import org.n52.sos.util.JSONUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -122,28 +116,5 @@ public class AbstractController {
         ObjectNode node = JSONUtils.nodeFactory().objectNode();
         node.putAll(map);
         return node;
-    }
-
-    private Object encodeValue(SettingValue<?> v) {
-        if (v == null || v.getValue() == null) {
-            return null;
-        }
-        switch (v.getType()) {
-        case INTEGER:
-        case NUMERIC:
-        case STRING:
-        case BOOLEAN:
-            return v.getValue();
-        case FILE:
-            return ((File) v.getValue()).getPath();
-        case URI:
-            return ((URI) v.getValue()).toString();
-        case TIMEINSTANT:
-             return DateTimeHelper.format((Time)v.getValue());
-        case MULTILINGUAL_STRING:
-            return JSONUtils.print(new I18NJsonEncoder().encode((MultilingualString)v.getValue()));
-        default:
-            throw new IllegalArgumentException(String.format("Type %s is not supported!", v.getType()));
-        }
     }
 }

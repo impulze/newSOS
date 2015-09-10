@@ -37,7 +37,6 @@ import org.isotc211.x2005.gco.CharacterStringPropertyType;
 import org.isotc211.x2005.gmd.CIAddressType;
 import org.isotc211.x2005.gmd.CIContactPropertyType;
 import org.isotc211.x2005.gmd.CIContactType;
-import org.isotc211.x2005.gmd.CIOnlineResourceType;
 import org.isotc211.x2005.gmd.CIResponsiblePartyDocument;
 import org.isotc211.x2005.gmd.CIResponsiblePartyPropertyType;
 import org.isotc211.x2005.gmd.CIResponsiblePartyType;
@@ -164,10 +163,6 @@ public class Iso19139GmdDecoder implements Decoder<Object, Object> {
         if (ciat.isSetPostalCode()) {
             responsibleParty.setPostalCode(ciat.getPostalCode().getCharacterString());
         }
-    }
-
-    private void decodeOnlineResource(CIOnlineResourceType ciort, SmlResponsibleParty responsibleParty) {
-        // TODO Auto-generated method stub
     }
 
     private void decodePhone(CITelephoneType citt, SmlResponsibleParty responsibleParty) {

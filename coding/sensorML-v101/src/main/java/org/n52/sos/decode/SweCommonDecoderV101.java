@@ -84,7 +84,6 @@ import org.n52.sos.ogc.sensorML.elements.SmlPosition;
 import org.n52.sos.ogc.swe.RangeValue;
 import org.n52.sos.ogc.swe.SweAbstractDataComponent;
 import org.n52.sos.ogc.swe.SweConstants;
-import org.n52.sos.ogc.swe.SweConstants.SweCoordinateName;
 import org.n52.sos.ogc.swe.SweCoordinate;
 import org.n52.sos.ogc.swe.SweDataArray;
 import org.n52.sos.ogc.swe.SweDataRecord;
@@ -598,20 +597,6 @@ public class SweCommonDecoderV101 implements Decoder<Object, Object> {
             }
         }
         return sosCoordinates;
-    }
-
-    @Deprecated
-    private SweCoordinateName checkCoordinateName(final String name) throws OwsExceptionReport {
-        if (name.equals(SweCoordinateName.easting.name())) {
-            return SweCoordinateName.easting;
-        } else if (name.equals(SweCoordinateName.northing.name())) {
-            return SweCoordinateName.northing;
-        } else if (name.equals(SweCoordinateName.altitude.name())) {
-            return SweCoordinateName.altitude;
-        } else {
-            throw new InvalidParameterValueException().at("Position").withMessage(
-                    "The coordinate name is neighter 'easting' nor 'northing' nor 'altitude'!");
-        }
     }
 
     private List<SweField> parseAnyScalarPropertyArray(final AnyScalarPropertyType[] fieldArray)

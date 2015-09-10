@@ -44,7 +44,6 @@ import net.opengis.fes.x20.ConformanceType;
 import net.opengis.fes.x20.DuringDocument;
 import net.opengis.fes.x20.FilterCapabilitiesDocument.FilterCapabilities;
 import net.opengis.fes.x20.GeometryOperandsType;
-import net.opengis.fes.x20.IdCapabilitiesType;
 import net.opengis.fes.x20.ScalarCapabilitiesType;
 import net.opengis.fes.x20.SpatialCapabilitiesType;
 import net.opengis.fes.x20.SpatialOperatorType;
@@ -433,18 +432,6 @@ public class FesEncoderv20 extends AbstractXmlEncoder<Object> {
                 scalarOps.addNewComparisonOperator().setName(getEnum4ComparisonOperator(operator));
             }
         }
-    }
-
-    /**
-     * Set the IdFilterCapabilities.
-     * 
-     * !!! Modify method addicted to your implementation !!!
-     * 
-     * @param idCapabilitiesType
-     *            FES IdCapabilities.
-     */
-    private void setIdFilterCapabilities(final IdCapabilitiesType idCapabilitiesType) {
-        idCapabilitiesType.addNewResourceIdentifier();
     }
 
     private String getEnum4SpatialOperator(final SpatialOperator spatialOperator)

@@ -61,7 +61,6 @@ import org.n52.sos.ogc.swe.simpleType.SweQuantity;
 import org.n52.sos.ogc.swe.simpleType.SweTime;
 import org.n52.sos.util.Constants;
 import org.n52.sos.util.DateTimeHelper;
-import org.n52.sos.util.JavaHelper;
 import org.n52.sos.util.SweHelper;
 
 import com.google.common.collect.Lists;
@@ -224,14 +223,6 @@ public class EReportingHelper {
             list.add(Integer.toString(value));
         } else {
             list.add(Constants.EMPTY_STRING);
-        }
-    }
-
-    private static void addValue(List<String> value, OmObservation omObservation) {
-        if (omObservation.getValue() instanceof SingleObservationValue<?>) {
-            value.add(JavaHelper.asString(omObservation.getValue().getValue().getValue()));
-        } else {
-            value.add(Constants.EMPTY_STRING);
         }
     }
 

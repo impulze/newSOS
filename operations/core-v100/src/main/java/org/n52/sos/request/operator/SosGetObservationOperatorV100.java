@@ -34,11 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.xmlbeans.XmlObject;
 import org.n52.sos.coding.CodingRepository;
 import org.n52.sos.ds.AbstractGetObservationDAO;
-import org.n52.sos.encode.Encoder;
-import org.n52.sos.encode.ObservationEncoder;
 import org.n52.sos.exception.ows.InvalidParameterValueException;
 import org.n52.sos.exception.ows.concrete.InvalidObservedPropertyParameterException;
 import org.n52.sos.exception.ows.concrete.InvalidOfferingParameterException;
@@ -48,7 +45,6 @@ import org.n52.sos.exception.ows.concrete.MissingOfferingParameterException;
 import org.n52.sos.exception.ows.concrete.MissingResponseFormatParameterException;
 import org.n52.sos.exception.sos.ResponseExceedsSizeLimitException;
 import org.n52.sos.ogc.om.OmConstants;
-import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.ows.CompositeOwsException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos1Constants;
@@ -57,7 +53,6 @@ import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.response.GetObservationResponse;
 import org.n52.sos.service.Configurator;
-import org.n52.sos.util.CodingHelper;
 import org.n52.sos.util.OMHelper;
 import org.n52.sos.util.SosHelper;
 
@@ -246,15 +241,6 @@ public class SosGetObservationOperatorV100 extends
             exceptions.throwIfNotEmpty();
         }
         return validOfferings;
-    }
-
-    // TODO check for SOS 1.0.0
-    private boolean checkForObservationAndMeasurementV20Type(String responseFormat) throws OwsExceptionReport {
-        Encoder<XmlObject, OmObservation> encoder = CodingHelper.getEncoder(responseFormat, new OmObservation());
-        if (encoder instanceof ObservationEncoder) {
-            return ((ObservationEncoder<XmlObject, OmObservation>) encoder).isObservationAndMeasurmentV20Type();
-        }
-        return false;
     }
 
     // TODO check for SOS 1.0.0 one / mandatory

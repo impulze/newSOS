@@ -34,7 +34,6 @@ import static org.n52.sos.util.CollectionHelper.union;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -445,11 +444,6 @@ public class OmEncoderv100 extends AbstractXmlEncoder<Object> implements Observa
                 xbObs.addNewResultTime().addNewTimeObject()
                         .substitute(GmlHelper.getGml311QnameForITime(iTime), xmlObject.schemaType());
         substitution.set(xmlObject);
-    }
-
-    private XmlObject createCompositePhenomenon(String compPhenId, Collection<String> phenComponents) {
-        // Currently not used for SOS 2.0 and OM 2.0 encoding.
-        return null;
     }
 
     private void addResultToObservation(XmlObject xbResult, OmObservation sosObservation,

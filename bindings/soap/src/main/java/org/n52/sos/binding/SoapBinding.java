@@ -174,12 +174,6 @@ public class SoapBinding extends SimpleBinding {
         chain.setBodyResponse(getServiceOperator(req).receiveRequest(req));
     }
 
-    @Deprecated
-    private void encodeBodyResponse(SoapChain chain) throws OwsExceptionReport {
-        XmlObject encodedResponse = (XmlObject) encodeResponse(chain.getBodyResponse(), MediaTypes.APPLICATION_XML);
-        chain.getSoapResponse().setSoapBodyContent(encodedResponse);
-    }
-
     private Object encodeSoapResponse(SoapChain chain) throws OwsExceptionReport {
         final EncoderKey key =
                 CodingHelper.getEncoderKey(chain.getSoapResponse().getSoapNamespace(), chain.getSoapResponse());
@@ -282,29 +276,5 @@ public class SoapBinding extends SimpleBinding {
             return responseHeader;
         }
         return null;
-    }
-
-    /**
-     * Deprecated because of functionality has moved to
-     * {@link #writeResponse(SoapChain)} for streaming support
-     * 
-     * @param chain
-     * @throws IOException
-     * @throws OwsExceptionReport
-     */
-    @Deprecated
-    private void writeSoapResponse(SoapChain chain) throws IOException, OwsExceptionReport {
-        Object encodedSoapResponse = encodeSoapResponse(chain);
-        if (chain.getSoapResponse().hasException() && chain.getSoapResponse().getException().hasStatus()) {
-            chain.getHttpResponse().setStatus(chain.getSoapResponse().getException().getStatus().getCode());
-        }
-        MediaType mt = MediaTypes.APPLICATION_SOAP_XML;
-        if (chain.getBodyRequest() instanceof GetCapabilitiesRequest) {
-            GetCapabilitiesRequest r = (GetCapabilitiesRequest) chain.getBodyRequest();
-            if (r.isSetAcceptFormats()) {
-                mt = MediaType.parse(r.getAcceptFormats().get(0));
-            }
-        }
-        HTTPUtils.writeObject(chain.getHttpRequest(), chain.getHttpResponse(), mt, encodedSoapResponse);
     }
 }

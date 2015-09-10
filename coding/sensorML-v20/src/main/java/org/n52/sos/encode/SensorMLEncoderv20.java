@@ -116,7 +116,6 @@ import org.n52.sos.ogc.sensorML.elements.SmlDocumentation;
 import org.n52.sos.ogc.sensorML.elements.SmlDocumentationList;
 import org.n52.sos.ogc.sensorML.elements.SmlIdentifier;
 import org.n52.sos.ogc.sensorML.elements.SmlIo;
-import org.n52.sos.ogc.sensorML.elements.SmlLocation;
 import org.n52.sos.ogc.sensorML.elements.SmlPosition;
 import org.n52.sos.ogc.sensorML.v20.AbstractPhysicalProcess;
 import org.n52.sos.ogc.sensorML.v20.AbstractProcessV20;
@@ -1173,20 +1172,6 @@ public class SensorMLEncoderv20 extends AbstractSensorMLEncoder {
                 pupt.addNewDataArray1().set(CodingHelper.encodeObjectToXml(SweConstants.NS_SWE_20, abstractDataComponent));
             }
         }
-    }
-
-    /**
-     * Creates the location section of the SensorML description.
-     * 
-     * @param location
-     *            SOS location representation.
-     * @return XML SmlLocation2 element
-     * @throws OwsExceptionReport
-     *             if an error occurs
-     */
-    private void createLocation(DescribedObjectType dot, SmlLocation location) throws OwsExceptionReport {
-        dot.addNewLocation().addNewAbstractGeometry()
-                .set(CodingHelper.encodeObjectToXml(GmlConstants.NS_GML, location.getPoint()));
     }
 
     /**

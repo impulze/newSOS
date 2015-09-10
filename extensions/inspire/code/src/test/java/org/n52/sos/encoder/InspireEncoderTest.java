@@ -28,44 +28,7 @@
  */
 package org.n52.sos.encoder;
 
-import java.io.IOException;
-import java.util.Set;
-import javax.xml.XMLConstants;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
-import org.joda.time.DateTime;
-import org.n52.sos.inspire.InspireConformity;
-import org.n52.sos.inspire.InspireConformity.InspireDegreeOfConformity;
-import org.n52.sos.inspire.InspireConformityCitation;
-import org.n52.sos.inspire.InspireDateOfCreation;
-import org.n52.sos.inspire.InspireDateOfLastRevision;
-import org.n52.sos.inspire.InspireDateOfPublication;
-import org.n52.sos.inspire.InspireKeyword;
-import org.n52.sos.inspire.InspireLanguageISO6392B;
-import org.n52.sos.inspire.InspireMandatoryKeyword;
-import org.n52.sos.inspire.InspireMandatoryKeywordValue;
-import org.n52.sos.inspire.InspireMetadataPointOfContact;
-import org.n52.sos.inspire.InspireOriginatingControlledVocabulary;
-import org.n52.sos.inspire.InspireResourceLocator;
-import org.n52.sos.inspire.InspireSupportedCRS;
-import org.n52.sos.inspire.InspireSupportedLanguages;
-import org.n52.sos.inspire.InspireTemporalReference;
-import org.n52.sos.inspire.InspireUniqueResourceIdentifier;
-import org.n52.sos.inspire.capabilities.FullInspireExtendedCapabilities;
-import org.n52.sos.inspire.capabilities.InspireCapabilities.InspireServiceSpatialDataResourceType;
-import org.n52.sos.inspire.capabilities.MinimalInspireExtendedCapabilities;
-import org.n52.sos.ogc.gml.time.TimeInstant;
-import org.n52.sos.ogc.gml.time.TimePeriod;
-import org.n52.sos.service.ServiceConfiguration;
-import org.n52.sos.util.http.MediaTypes;
-import org.xml.sax.SAXException;
-
-import com.google.common.collect.Sets;
 
 public class InspireEncoderTest {
 
@@ -143,78 +106,4 @@ public class InspireEncoderTest {
 ////        Assert.assertThat(Pattern.matches(pattern, "2013-09-26T12:49:41.740+02:00"), Matchers.is(true));
 //    }
 
-    private MinimalInspireExtendedCapabilities getMinimalInspireExtendedCapabilities() {
-        // --------------------
-        InspireResourceLocator resourceLocator = new InspireResourceLocator(ServiceConfiguration.getInstance().getServiceURL());
-        resourceLocator.addMediaType(MediaTypes.APPLICATION_SOAP_XML);
-        // --------------------
-        InspireSupportedLanguages inspireSupportedLanguages =
-                new InspireSupportedLanguages(InspireLanguageISO6392B.ENG);
-        // --------------------
-        InspireLanguageISO6392B responseLanguage = InspireLanguageISO6392B.ENG;
-        // --------------------
-        Set<InspireUniqueResourceIdentifier> spatialDataSetIdentifier = Sets.newHashSet();
-        InspireUniqueResourceIdentifier iuri = new InspireUniqueResourceIdentifier("test");
-        iuri.setNamespace("http://test.org");
-        spatialDataSetIdentifier.add(iuri);
-        // --------------------
-        return new MinimalInspireExtendedCapabilities(resourceLocator, inspireSupportedLanguages, responseLanguage,
-                spatialDataSetIdentifier,new InspireSupportedCRS("4326"));
-    }
-    
-    private void validate(XmlObject xmlObject) throws SAXException, IOException {
-        SchemaFactory sf = SchemaFactory.newInstance(
-        XMLConstants.XML_NS_URI );
-        Schema schema = sf.newSchema(InspireEncoderTest.class.getResource("/inspire_dls/1.0/inspire_dls.xsd"));
-        Validator validator = schema.newValidator();
-        validator.validate(new DOMSource(xmlObject.getDomNode()));
-    }
-
-    private FullInspireExtendedCapabilities getFullInspireExtendedCapabilities() {
-
-        InspireResourceLocator resourceLocator = new InspireResourceLocator(ServiceConfiguration.getInstance().getServiceURL());
-        resourceLocator.addMediaType(MediaTypes.APPLICATION_SOAP_XML);
-        // -------------------
-        InspireTemporalReference temporalReference = new InspireTemporalReference();
-        temporalReference.setDateOfCreation(new InspireDateOfCreation(new DateTime()));
-        temporalReference.setDateOfLastRevision(new InspireDateOfLastRevision(new DateTime()));
-        temporalReference.addDateOfPublication(new InspireDateOfPublication(new DateTime()));
-        temporalReference.addTemporalExtent(new TimeInstant(new DateTime()));
-        temporalReference.addTemporalExtent(new TimePeriod(new DateTime(), new DateTime().plus(3456)));
-        // -------------------
-        InspireConformityCitation inspireConformityCitation =
-                new InspireConformityCitation("Test", new InspireDateOfCreation(new DateTime()));
-        InspireConformity conformity =
-                new InspireConformity(inspireConformityCitation, InspireDegreeOfConformity.notEvaluated);
-        // -------------------
-        InspireMetadataPointOfContact inspireMetadataPointOfContact =
-                new InspireMetadataPointOfContact("test", "test@test.te");
-        // -------------------
-        InspireOriginatingControlledVocabulary inspireOriginatingControlledVocabulary =
-                new InspireOriginatingControlledVocabulary("Test", new InspireDateOfCreation(new DateTime()));
-        InspireMandatoryKeyword inspireMandatoryKeyword =
-                new InspireMandatoryKeyword(InspireMandatoryKeywordValue.humanServiceEditor,
-                        inspireOriginatingControlledVocabulary);
-        // --------------------
-        InspireSupportedLanguages inspireSupportedLanguages =
-                new InspireSupportedLanguages(InspireLanguageISO6392B.ENG);
-        // --------------------
-        InspireLanguageISO6392B responseLanguage = InspireLanguageISO6392B.ENG;
-        // --------------------
-        InspireUniqueResourceIdentifier iuri = new InspireUniqueResourceIdentifier("test");
-        iuri.setNamespace("http://test.org");
-        // --------------------
-        FullInspireExtendedCapabilities inspireExtendedCapabilities =
-                new FullInspireExtendedCapabilities(resourceLocator, inspireSupportedLanguages, responseLanguage, iuri, new InspireSupportedCRS("4326"));
-        inspireExtendedCapabilities.setResourceType(InspireServiceSpatialDataResourceType.service);
-        inspireExtendedCapabilities.addKeyword(new InspireKeyword("test"));
-        inspireExtendedCapabilities.addMandatoryKeyword(inspireMandatoryKeyword);
-        // -------------------
-        inspireExtendedCapabilities.setMetadataDate(new TimeInstant(new DateTime()));
-        // -------------------
-        inspireExtendedCapabilities.addMetadataPointOfContact(inspireMetadataPointOfContact);
-        inspireExtendedCapabilities.addConformity(conformity);
-        inspireExtendedCapabilities.addTemporalReference(temporalReference);
-        return inspireExtendedCapabilities;
-    }
 }

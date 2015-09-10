@@ -29,7 +29,6 @@
 package org.n52.sos.encode;
 
 import java.io.PrintStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -433,36 +432,6 @@ public class OwsEncoderv110 extends AbstractXmlEncoder<Object> {
         return exceptionDoc;
     }
 
-    private void addExceptionMessages(StringBuilder exceptionText, Throwable exception) {
-        exceptionText.append("[EXCEPTION]: \n");
-        final String localizedMessage = exception.getLocalizedMessage();
-        final String message = exception.getMessage();
-        if (localizedMessage != null && message != null) {
-            if (!message.equals(localizedMessage)) {
-                JavaHelper.appendTextToStringBuilderWithLineBreak(exceptionText, message);
-            }
-            JavaHelper.appendTextToStringBuilderWithLineBreak(exceptionText, localizedMessage);
-        } else {
-            JavaHelper.appendTextToStringBuilderWithLineBreak(exceptionText, localizedMessage);
-            JavaHelper.appendTextToStringBuilderWithLineBreak(exceptionText, message);
-        }
-
-        //recurse cause if necessary
-        if (exception.getCause() != null) {
-            exceptionText.append("[CAUSED BY]\n");
-            addExceptionMessages(exceptionText, exception.getCause());
-        }
-        
-        //recurse SQLException if necessary
-        if (exception instanceof SQLException) {
-            SQLException sqlException = (SQLException) exception;
-            if (sqlException.getNextException() != null) {
-                exceptionText.append("[NEXT SQL EXCEPTION]\n");
-                addExceptionMessages(exceptionText, sqlException.getNextException());
-            }
-        }
-    }
-    
     private ExceptionReportDocument encodeOwsExceptionReport(final OwsExceptionReport owsExceptionReport) {
         final ExceptionReportDocument erd =
                 ExceptionReportDocument.Factory.newInstance(XmlOptionsHelper.getInstance().getXmlOptions());

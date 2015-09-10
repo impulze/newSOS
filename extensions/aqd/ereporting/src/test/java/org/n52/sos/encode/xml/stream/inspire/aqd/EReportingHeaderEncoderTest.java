@@ -28,25 +28,13 @@
  */
 package org.n52.sos.encode.xml.stream.inspire.aqd;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
-
-import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
 import org.joda.time.DateTime;
-import org.junit.Assert;
 import org.junit.Test;
-import org.n52.sos.aqd.AqdConstants;
 import org.n52.sos.inspire.aqd.Address;
 import org.n52.sos.inspire.aqd.Contact;
 import org.n52.sos.inspire.aqd.EReportingChange;
@@ -192,24 +180,6 @@ public class EReportingHeaderEncoderTest {
 		System.out.println(baos.toString("UTF-8"));
 //		xmlValidation(baos);
 
-	}
-
-	private void xmlValidation(ByteArrayOutputStream baos)
-			throws XMLStreamException, OwsExceptionReport, IOException,
-			SAXException, MalformedURLException {
-		ByteArrayInputStream in = new ByteArrayInputStream(baos.toByteArray());
-		URL schemaFile = new URL(AqdConstants.NS_AQD_SCHEMA);
-		Source xmlFile = new StreamSource(in);
-		SchemaFactory schemaFactory = SchemaFactory
-				.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = schemaFactory.newSchema(schemaFile);
-		Validator validator = schema.newValidator();
-
-		try {
-			validator.validate(xmlFile);
-		} catch (SAXException e) {
-			Assert.fail(e.getLocalizedMessage());
-		}
 	}
 
 }

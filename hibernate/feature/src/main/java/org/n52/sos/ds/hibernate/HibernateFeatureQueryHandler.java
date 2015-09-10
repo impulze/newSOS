@@ -336,10 +336,6 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
         return GeometryHandler.getInstance();
     }
 
-    private boolean isFeatureReferenced(final SamplingFeature samplingFeature) {
-        return StringHelper.isNotEmpty(samplingFeature.getUrl());
-    }
-
     /**
      * Creates a map with FOI identifier and SOS feature
      * <p/>

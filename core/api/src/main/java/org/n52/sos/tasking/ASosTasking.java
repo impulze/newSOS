@@ -44,21 +44,6 @@ public abstract class ASosTasking extends TimerTask {
 
     }
 
-    private void loadConfiguration(String fileName) throws TaskingException {
-        // try {
-        // XmlObject configurationFile = XmlHelper.loadXmlDocumentFromFile(new
-        // File(fileName));
-        setExecutionIntervall(5);
-        // } catch (OwsExceptionReport owse) {
-        // throw new
-        // TaskingException("Error while loading tasking configuration", owse);
-        // }
-    }
-
-    private void setExecutionIntervall(long executionIntervall) {
-        this.executionIntervall = executionIntervall;
-    }
-
     public long getExecutionIntervall() {
         return executionIntervall;
     }

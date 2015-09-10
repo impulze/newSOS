@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.opengis.ogc.SpatialOpsType;
 import net.opengis.sos.x10.DescribeSensorDocument;
 import net.opengis.sos.x10.DescribeSensorDocument.DescribeSensor;
 import net.opengis.sos.x10.GetCapabilitiesDocument;
@@ -353,37 +352,6 @@ public class SosDecoderv100 implements Decoder<AbstractServiceCommunicationObjec
         }
         getObsByIdRequest.setObservationIdentifier(Arrays.asList(getObsById.getObservationId()));
         return getObsByIdRequest;
-    }
-
-    /**
-     * Parses the spatial filter of a GetObservation request.
-     * 
-     * @param spatialOpsType
-     *            XmlBean representing the spatial filter parameter of the
-     *            request
-     * @return Returns SpatialFilter created from the passed foi request
-     *         parameter
-     * 
-     * 
-     * @throws OwsExceptionReport
-     *             * if creation of the SpatialFilter failed
-     */
-    @Deprecated
-    private SpatialFilter parseSpatialFilter4GetObservation(SpatialOpsType spatialOpsType)
-            throws OwsExceptionReport {
-//        if (spatialOpsType != null) {
-//            if (spatialOpsType.getObjectIDArray() != null && spatialOpsType.getObjectIDArray().length > 0) {
-//                throw new NoApplicableCodeException().withMessage("ObjectID filtering in featureOfInterest is "
-//                        + "not supported. Only spatial filters are allowed.");
-//            }        
-//            if (spatialOpsType.getSpatialOps() != null) {
-//                Object filter = CodingHelper.decodeXmlElement(spatialOpsType.getSpatialOps());
-//                if (filter instanceof SpatialFilter) {
-//                    return (SpatialFilter) filter;
-//                }
-//            }
-//        }
-        return null;
     }
 
     /**

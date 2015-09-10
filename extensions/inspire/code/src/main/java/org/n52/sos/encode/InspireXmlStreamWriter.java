@@ -1041,18 +1041,4 @@ public class InspireXmlStreamWriter extends XmlStreamWriter<InspireObject> imple
         endInline(QN_OTHER_CRS);
     }
 
-    /**
-     * Write CRS string to stream
-     * 
-     * @param CRS
-     *            CRS string to write to stream
-     * @throws XMLStreamException
-     *             If an error occurs when writing the object to stream
-     */
-    private void writeCRS(String crs) throws XMLStreamException {
-        start(QN_CRS);
-        chars(crs);
-        endInline(QN_CRS);
-    }
-
 }

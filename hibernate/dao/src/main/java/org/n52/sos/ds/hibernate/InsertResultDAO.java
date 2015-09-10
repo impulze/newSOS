@@ -38,7 +38,6 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.joda.time.DateTime;
 import org.n52.sos.coding.CodingRepository;
 import org.n52.sos.ds.AbstractInsertResultDAO;
 import org.n52.sos.ds.FeatureQueryHandler;
@@ -60,12 +59,8 @@ import org.n52.sos.ds.hibernate.util.ResultHandlingHelper;
 import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
 import org.n52.sos.exception.ows.InvalidParameterValueException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.exception.ows.concrete.DateTimeParseException;
 import org.n52.sos.ogc.gml.AbstractFeature;
 import org.n52.sos.ogc.gml.CodeWithAuthority;
-import org.n52.sos.ogc.gml.time.Time;
-import org.n52.sos.ogc.gml.time.TimeInstant;
-import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.om.AbstractPhenomenon;
 import org.n52.sos.ogc.om.MultiObservationValues;
 import org.n52.sos.ogc.om.OmConstants;
@@ -97,7 +92,6 @@ import org.n52.sos.ogc.swe.simpleType.SweQuantity;
 import org.n52.sos.request.InsertResultRequest;
 import org.n52.sos.response.InsertResultResponse;
 import org.n52.sos.service.Configurator;
-import org.n52.sos.util.DateTimeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -408,34 +402,6 @@ public class InsertResultDAO extends AbstractInsertResultDAO implements Capabili
         final MultiObservationValues<SweDataArray> sosValues = new MultiObservationValues<SweDataArray>();
         sosValues.setValue(dataArrayValue);
         return sosValues;
-    }
-
-    // TODO move to helper class
-    /**
-     * Get internal time object from time String
-     * 
-     * @param timeString
-     *            Time String to parse
-     * @return Internal time object
-     * @throws OwsExceptionReport
-     *             If an error occurs
-     */
-    private Time getPhenomenonTime(final String timeString) throws OwsExceptionReport {
-        try {
-            Time phenomenonTime;
-            if (timeString.contains("/")) {
-                final String[] times = timeString.split("/");
-                final DateTime start = DateTimeHelper.parseIsoString2DateTime(times[0].trim());
-                final DateTime end = DateTimeHelper.parseIsoString2DateTime(times[1].trim());
-                phenomenonTime = new TimePeriod(start, end);
-            } else {
-                final DateTime dateTime = DateTimeHelper.parseIsoString2DateTime(timeString.trim());
-                phenomenonTime = new TimeInstant(dateTime);
-            }
-            return phenomenonTime;
-        } catch (final DateTimeParseException dte) {
-            throw dte.at("phenomenonTime");
-        }
     }
 
     /**

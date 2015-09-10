@@ -288,12 +288,4 @@ public class SosInsertSensorOperatorV20 extends
         }
         
     }
-
-    private void getChildProcedures() {
-        // TODO implement
-        // add parent offerings
-        // insert if not exist and proc is encoded, else Exception
-        // insert as hidden child
-        // set relation in sensor_system
-    }
 }
