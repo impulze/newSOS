@@ -37,6 +37,7 @@ import org.n52.sos.convert.ConverterException;
 import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
+import org.n52.sos.ds.hibernate.dao.series.SeriesDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
@@ -133,7 +134,7 @@ public class DeleteObservationDAO extends DeleteObservationAbstractDAO {
 		if (observation instanceof SeriesObservation) {
 			Series series = ((SeriesObservation)observation).getSeries();
 			if (series.getFirstTimeStamp().equals(observation.getPhenomenonTimeStart()) || series.getLastTimeStamp().equals(observation.getPhenomenonTimeEnd())) {
-		    	throw new RuntimeException("Updating series not supported yet.");
+				new SeriesDAO().updateSeriesAfterObservationDeletion(series, (SeriesObservation)observation, session);
 			}
 		}
 	}

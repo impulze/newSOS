@@ -76,6 +76,7 @@ import com.google.common.collect.Lists;
  *        (creates, file, or database) - use setting switches for code flow
  */
 public class HibernateProcedureConverter implements HibernateSqlQueryConstants {
+
     /**
      * Create procedure description from file, single XML text or generate
      *

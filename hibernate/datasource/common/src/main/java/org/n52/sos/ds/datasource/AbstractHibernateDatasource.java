@@ -29,7 +29,11 @@
 package org.n52.sos.ds.datasource;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -55,6 +59,7 @@ import org.n52.sos.config.settings.IntegerSettingDefinition;
 import org.n52.sos.config.settings.StringSettingDefinition;
 import org.n52.sos.ds.DatasourceCallback;
 import org.n52.sos.ds.HibernateDatasourceConstants;
+import org.n52.sos.ds.hibernate.SessionFactoryProvider;
 import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.exception.ConfigurationException;
 import org.n52.sos.util.SQLConstants;
@@ -352,6 +357,20 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
     public CustomConfiguration getConfig(Map<String, Object> settings) {
         CustomConfiguration config = new CustomConfiguration();
         config.configure("/sos-hibernate.cfg.xml");
+        config.addDirectory(resource(HIBERNATE_MAPPING_CORE_PATH));
+        config.addDirectory(resource(getDatabaseConceptMappingDirectory(settings)));
+        if (isTransactionalDatasource()) {
+            Boolean transactional = (Boolean) settings.get(this.transactionalDefiniton.getKey());
+            if (transactional != null && transactional.booleanValue()) {
+                config.addDirectory(resource(HIBERNATE_MAPPING_TRANSACTIONAL_PATH));
+            }
+        }
+        if (isMultiLanguageDatasource()) {
+            Boolean multiLanguage = (Boolean) settings.get(this.multilingualismDefinition.getKey());
+            if (multiLanguage != null && multiLanguage.booleanValue()) {
+                config.addDirectory(resource(HIBERNATE_MAPPING_I18N_PATH));
+            }
+        }
         if (isSetSchema(settings)) {
             Properties properties = new Properties();
             properties.put(HibernateConstants.DEFAULT_SCHEMA, settings.get(HibernateConstants.DEFAULT_SCHEMA));
@@ -359,6 +378,20 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
         }
         config.buildMappings();
         return config;
+    }
+
+    protected String getDatabaseConceptMappingDirectory(Map<String, Object> settings) {
+        String concept = (String)settings.get(this.databaseConceptDefinition.getKey());
+        switch (DatabaseConcept.valueOf(concept)) {
+        case SERIES_CONCEPT:
+            return HIBERNATE_MAPPING_SERIES_CONCEPT_OBSERVATION_PATH;
+        case EREPORTING_CONCEPT:
+            return HIBERNATE_MAPPING_EREPORTING_CONCEPT_OBSERVATION_PATH;
+        case OLD_CONCEPT:
+            return HIBERNATE_MAPPING_OLD_CONCEPT_OBSERVATION_PATH;
+        default:
+            return HIBERNATE_MAPPING_SERIES_CONCEPT_OBSERVATION_PATH;
+        }
     }
 
 //    /**
@@ -484,7 +517,7 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
                     return true;
                 }
             }
-            return true;
+            return false;
         } catch (SQLException ex) {
             throw new ConfigurationException(ex);
         } finally {
@@ -578,8 +611,26 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
 
     @Override
     public void checkPostCreation(Properties properties) {
+        if (checkIfExtensionDirectoryExists()) {
+            StringBuilder builder =
+                    new StringBuilder(properties.getProperty(SessionFactoryProvider.HIBERNATE_DIRECTORY));
+            builder.append(SessionFactoryProvider.PATH_SEPERATOR).append(HIBERNATE_MAPPING_EXTENSION_READONLY);
+            properties.put(SessionFactoryProvider.HIBERNATE_DIRECTORY, builder.toString());
+        }
     }
 
+    private boolean checkIfExtensionDirectoryExists() {
+        URL dirUrl = Thread.currentThread().getContextClassLoader().getResource(HIBERNATE_MAPPING_EXTENSION_READONLY);
+        if (dirUrl != null) {
+            try {
+                return new File(URLDecoder.decode(dirUrl.getPath(), Charset.defaultCharset().toString())).exists();
+            } catch (UnsupportedEncodingException e) {
+                throw new ConfigurationException("Unable to encode directory URL " + dirUrl + "!");
+            }
+        }
+        return false;
+    }
+    
     protected Set<SettingDefinition<?,?>> filter(Set<SettingDefinition<?,?>> definitions, Set<String> keysToExclude) {
         Iterator<SettingDefinition<?, ?>> iterator = definitions.iterator();
         while(iterator.hasNext()) {
@@ -666,6 +717,34 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
         }
     }
 
+    /**
+     * Add mapping files directories to properties
+     *
+     * @param settings
+     *            Datasource settings
+     * @param p
+     *            Datasource properties
+     */
+    protected void addMappingFileDirectories(Map<String, Object> settings, Properties p) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(HIBERNATE_MAPPING_CORE_PATH);
+        builder.append(SessionFactoryProvider.PATH_SEPERATOR).append(
+                getDatabaseConceptMappingDirectory(settings));
+        if (isTransactionalDatasource()) {
+            Boolean t = (Boolean) settings.get(transactionalDefiniton.getKey());
+            if (t != null && t) {
+                builder.append(SessionFactoryProvider.PATH_SEPERATOR).append(HIBERNATE_MAPPING_TRANSACTIONAL_PATH);
+            }
+        }
+        if (isMultiLanguageDatasource()) {
+            Boolean t = (Boolean) settings.get(multilingualismDefinition.getKey());
+            if (t != null && t) {
+                builder.append(SessionFactoryProvider.PATH_SEPERATOR).append(HIBERNATE_MAPPING_I18N_PATH);
+            }
+        }
+        p.put(SessionFactoryProvider.HIBERNATE_DIRECTORY, builder.toString());
+    }
+
     protected ChoiceSettingDefinition getDatabaseConceptDefinition() {
         return databaseConceptDefinition;
     }
@@ -679,7 +758,8 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
      *         path
      */
     protected boolean isTransactional(Properties properties) {
-        return true;
+        String p = properties.getProperty(SessionFactoryProvider.HIBERNATE_DIRECTORY);
+        return p == null || p.contains(HIBERNATE_MAPPING_TRANSACTIONAL_PATH);
     }
 
     /**
@@ -692,7 +772,8 @@ public abstract class AbstractHibernateDatasource extends AbstractHibernateCoreD
     }
 
     protected boolean isMultiLanguage(Properties properties) {
-        return true;
+        String p = properties.getProperty(SessionFactoryProvider.HIBERNATE_DIRECTORY);
+        return p == null || p.contains(HIBERNATE_MAPPING_I18N_PATH);
     }
 
     protected BooleanSettingDefinition getMulitLanguageDefiniton() {

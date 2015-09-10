@@ -31,15 +31,20 @@ package org.n52.sos.ds.hibernate.dao;
 import java.sql.Timestamp;
 
 import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projection;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
+import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.filter.TemporalFilter;
+import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
+import org.n52.sos.util.GeometryHandler;
 
 /**
  * Abstract DAO class for querying {@link AbstractValue}
@@ -49,6 +54,32 @@ import org.n52.sos.request.GetObservationRequest;
  *
  */
 public abstract class AbstractValueDAO extends TimeCreator {
+
+    /**
+     * Check if a Spatial Filtering Profile filter is requested and add to
+     * criteria
+     * 
+     * @param c
+     *            Criteria to add crtierion
+     * @param request
+     *            GetObservation request
+     * @param session
+     *            Hiberante Session
+     * @throws OwsExceptionReport
+     *             If Spatial Filteirng Profile is not supported or an error
+     *             occurs.
+     */
+    protected void checkAndAddSpatialFilteringProfileCriterion(Criteria c, GetObservationRequest request,
+            Session session) throws OwsExceptionReport {
+        if (request.hasSpatialFilteringProfileSpatialFilter()) {
+            c.add(SpatialRestrictions.filter(
+                    AbstractObservation.SAMPLING_GEOMETRY,
+                    request.getSpatialFilter().getOperator(),
+                    GeometryHandler.getInstance().switchCoordinateAxisFromToDatasourceIfNeeded(
+                            request.getSpatialFilter().getGeometry())));
+        }
+    }
+
     /**
      * Add an indeterminate time restriction to a criteria. This allows for
      * multiple results if more than one observation has the extrema time (max

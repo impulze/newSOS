@@ -26,37 +26,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details.
  */
-package org.n52.sos.ds.hibernate.entities.ereporting;
+package org.n52.sos.ds.hibernate.dao;
 
-import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
-import org.n52.sos.util.StringHelper;
-
-public class EReportingSweDataArrayObservation extends EReportingObservation implements SweDataArrayObservation {
-
-    private static final long serialVersionUID = 2795656873464831213L;
-
-    private String value;
-
-    @Override
-    public String getValue() {
-        return this.value;
-    }
-
-    @Override
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public boolean isSetValue() {
-        return StringHelper.isNotEmpty(value);
-    }
-
-	@Override
-	public String getValueAsString() {
-		return getValue();
-	}
-    
-    
+public class AbstractObservationInfoDAO {
 
 }

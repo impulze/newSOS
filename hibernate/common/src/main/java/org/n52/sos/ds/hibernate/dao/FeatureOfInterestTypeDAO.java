@@ -33,11 +33,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
-import org.n52.sos.ogc.om.features.SfConstants;
-
-import com.google.common.collect.Lists;
+import org.n52.sos.ds.hibernate.util.HibernateHelper;
+import org.n52.sos.ogc.OGCConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate data access class for featureofInterest types
@@ -46,7 +51,8 @@ import com.google.common.collect.Lists;
  * @since 4.0.0
  */
 public class FeatureOfInterestTypeDAO {
-    public static final String HZG_FEATURE_OF_INTEREST_TYPE = SfConstants.SAMPLING_FEAT_TYPE_SF_SAMPLING_POINT;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureOfInterestTypeDAO.class);
 
     /**
      * Get all featureOfInterest types
@@ -55,8 +61,17 @@ public class FeatureOfInterestTypeDAO {
      *            Hibernate session
      * @return All featureOfInterest types
      */
+    @SuppressWarnings("unchecked")
     public List<String> getFeatureOfInterestTypes(final Session session) {
-        return Lists.newArrayList(HZG_FEATURE_OF_INTEREST_TYPE);
+        Criteria criteria =
+                session.createCriteria(FeatureOfInterestType.class)
+                        .add(Restrictions.ne(FeatureOfInterestType.FEATURE_OF_INTEREST_TYPE, OGCConstants.UNKNOWN))
+                        .setProjection(
+                                Projections.distinct(Projections
+                                        .property(FeatureOfInterestType.FEATURE_OF_INTEREST_TYPE)));
+
+        LOGGER.debug("QUERY getFeatureOfInterestTypes(): {}", HibernateHelper.getSqlString(criteria));
+        return criteria.list();
     }
 
     /**
@@ -70,15 +85,12 @@ public class FeatureOfInterestTypeDAO {
      */
     public FeatureOfInterestType getFeatureOfInterestTypeObject(final String featureOfInterestType,
             final Session session) {
-        if (!featureOfInterestType.equals(HZG_FEATURE_OF_INTEREST_TYPE)) {
-            return null;
-        }
-
-        final FeatureOfInterestType foiType = new FeatureOfInterestType();
-
-        foiType.setFeatureOfInterestType(HZG_FEATURE_OF_INTEREST_TYPE);
-
-        return foiType;
+        Criteria criteria =
+                session.createCriteria(FeatureOfInterestType.class).add(
+                        Restrictions.eq(FeatureOfInterestType.FEATURE_OF_INTEREST_TYPE, featureOfInterestType));
+        LOGGER.debug("QUERY getFeatureOfInterestTypeObject(featureOfInterestType): {}",
+                HibernateHelper.getSqlString(criteria));
+        return (FeatureOfInterestType) criteria.uniqueResult();
     }
 
     /**
@@ -90,17 +102,15 @@ public class FeatureOfInterestTypeDAO {
      *            Hibernate session
      * @return FeatureOfInterest type objects
      */
+    @SuppressWarnings("unchecked")
     public List<FeatureOfInterestType> getFeatureOfInterestTypeObjects(final List<String> featureOfInterestType,
             final Session session) {
-        final List<FeatureOfInterestType> foiTypes = Lists.newArrayList();
-
-        for (final String featureOfInterestTypeElement: featureOfInterestType) {
-            if (featureOfInterestTypeElement.equals(HZG_FEATURE_OF_INTEREST_TYPE)) {
-                foiTypes.add(getFeatureOfInterestTypeObject(HZG_FEATURE_OF_INTEREST_TYPE, session));
-            }
-        }
-
-        return foiTypes;
+        Criteria criteria =
+                session.createCriteria(FeatureOfInterestType.class).add(
+                        Restrictions.in(FeatureOfInterestType.FEATURE_OF_INTEREST_TYPE, featureOfInterestType));
+        LOGGER.debug("QUERY getFeatureOfInterestTypeObjects(featureOfInterestTypes): {}",
+                HibernateHelper.getSqlString(criteria));
+        return criteria.list();
     }
 
     /**
@@ -112,17 +122,17 @@ public class FeatureOfInterestTypeDAO {
      *            Hibernate session
      * @return FeatureOfInterest type objects
      */
+    @SuppressWarnings("unchecked")
     public List<String> getFeatureOfInterestTypesForFeatureOfInterest(
             final Collection<String> featureOfInterestIdentifiers, final Session session) {
-        final List<String> foiTypeStrings = Lists.newArrayList();
-
-        for (final String featureOfInterestIdentifier: featureOfInterestIdentifiers) {
-            if (featureOfInterestIdentifier.equals(HZG_FEATURE_OF_INTEREST_TYPE)) {
-                foiTypeStrings.add(HZG_FEATURE_OF_INTEREST_TYPE);
-            }
-        }
-
-        return foiTypeStrings;
+        Criteria criteria =
+                session.createCriteria(FeatureOfInterest.class).add(
+                        Restrictions.in(FeatureOfInterest.IDENTIFIER, featureOfInterestIdentifiers));
+        criteria.createCriteria(FeatureOfInterest.FEATURE_OF_INTEREST_TYPE).setProjection(
+                Projections.distinct(Projections.property(FeatureOfInterestType.FEATURE_OF_INTEREST_TYPE)));
+        LOGGER.debug("QUERY getFeatureOfInterestTypesForFeatureOfInterest(featureOfInterestIdentifiers): {}",
+                HibernateHelper.getSqlString(criteria));
+        return criteria.list();
     }
 
     /**
@@ -136,13 +146,14 @@ public class FeatureOfInterestTypeDAO {
      * @return FeatureOfInterest type object
      */
     public FeatureOfInterestType getOrInsertFeatureOfInterestType(final String featureType, final Session session) {
-        final FeatureOfInterestType foiType = getFeatureOfInterestTypeObject(featureType, session);
-
-        if (foiType == null) {
-            throw new RuntimeException("Insertion of feature of interest types is not supported yet.");
+        FeatureOfInterestType featureOfInterestType = getFeatureOfInterestTypeObject(featureType, session);
+        if (featureOfInterestType == null) {
+            featureOfInterestType = new FeatureOfInterestType();
+            featureOfInterestType.setFeatureOfInterestType(featureType);
+            session.save(featureOfInterestType);
+            session.flush();
         }
-
-        return foiType;
+        return featureOfInterestType;
     }
 
     /**

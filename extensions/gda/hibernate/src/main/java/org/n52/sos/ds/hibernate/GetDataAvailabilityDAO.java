@@ -154,7 +154,8 @@ public class GetDataAvailabilityDAO extends AbstractGetDataAvailabilityDAO imple
         for (final Series series : DaoFactory
                 .getInstance()
                 .getSeriesDAO()
-                .getSeries(request.getProcedures(), request.getObservedProperties(), request.getFeaturesOfInterest(), session)) {
+                .getSeries(request.getProcedures(), request.getObservedProperties(), request.getFeaturesOfInterest(),
+                        session)) {
             TimePeriod timePeriod = null;
             if (!request.isSetOfferings()) {
                 // get time information from series object

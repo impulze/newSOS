@@ -170,7 +170,7 @@ public class ValueTimeDAO extends AbstractValueDAO {
                         .createAlias(ObservationValueTime.FEATURE_OF_INTEREST, "f")
                         .createAlias(ObservationValueTime.OBSERVABLE_PROPERTY, "o");
 
-        // TODO: add spatial filtering
+        checkAndAddSpatialFilteringProfileCriterion(c, request, session);
 
         c.add(Restrictions.eq("p." + Procedure.ID, observableProperty));
         c.add(Restrictions.eq("o." + ObservableProperty.ID, observableProperty));

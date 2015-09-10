@@ -36,19 +36,15 @@ import java.util.Set;
 import org.hibernate.internal.util.collections.CollectionHelper;
 import org.n52.sos.ds.hibernate.cache.AbstractQueueingDatasourceCacheUpdate;
 import org.n52.sos.ds.hibernate.cache.DatasourceCacheUpdateHelper;
-import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
-import org.n52.sos.ds.hibernate.dao.OfferingDAO;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.ProcedureDescriptionFormatDAO;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.util.ObservationConstellationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * @author Christian Autermann <c.autermann@52north.org>
@@ -62,10 +58,6 @@ public class ProcedureCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<
     private static final String THREAD_GROUP_NAME = "procedure-cache-update";
 
     private final ProcedureDAO procedureDAO = new ProcedureDAO();
-
-    private final OfferingDAO offeringDAO = new OfferingDAO();
-
-    private final ObservablePropertyDAO observablePropertyDAO = new ObservablePropertyDAO();
 
     private Map<String, Collection<String>> procedureMap;
 
@@ -114,8 +106,6 @@ public class ProcedureCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<
         LOGGER.debug("Executing ProcedureCacheUpdate (Single Threaded Tasks)");
         startStopwatch();
         getProcedureDescriptionFormat();
-        
-        boolean obsConstSupported = true;
 
         Map<String, Collection<String>> procedureMap = procedureDAO.getProcedureIdentifiers(getSession());
         List<Procedure> procedures = procedureDAO.getProcedureObjects(getSession());
@@ -131,7 +121,6 @@ public class ProcedureCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<
             	getCache().addProcedureIdentifierHumanReadableName(procedureIdentifier, procedure.getName());
             }
 
-            if (obsConstSupported) {
                 Collection<ObservationConstellationInfo> ocis = getProcedureObservationConstellationInfo().get(procedureIdentifier);
                 if (CollectionHelper.isNotEmpty(ocis)) {
                     getCache().setOfferingsForProcedure(procedureIdentifier, DatasourceCacheUpdateHelper
@@ -139,17 +128,6 @@ public class ProcedureCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<
                     getCache().setObservablePropertiesForProcedure(procedureIdentifier, DatasourceCacheUpdateHelper
                             .getAllObservablePropertyIdentifiersFromObservationConstellationInfos(ocis));
                 }
-            } else {
-                try {
-                    getCache().setOfferingsForProcedure(procedureIdentifier, Sets.newHashSet(
-                            offeringDAO.getOfferingIdentifiersForProcedure(procedureIdentifier, getSession())));
-                } catch (OwsExceptionReport ce) {
-                    LOGGER.error("Error while querying offering identifiers for procedure!", ce);
-                    getErrors().add(ce);
-                }
-                getCache().setObservablePropertiesForProcedure(procedureIdentifier, Sets.newHashSet(
-                        observablePropertyDAO.getObservablePropertyIdentifiersForProcedure(procedureIdentifier, getSession())));
-            }
 
             if (!CollectionHelper.isEmpty(parentProcedures)) {
                 getCache().addParentProcedures(procedureIdentifier, parentProcedures);

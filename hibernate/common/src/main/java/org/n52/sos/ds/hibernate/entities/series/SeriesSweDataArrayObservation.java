@@ -31,7 +31,7 @@ package org.n52.sos.ds.hibernate.entities.series;
 import java.io.Serializable;
 
 import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
-import org.n52.sos.ogc.swe.SweDataArray;
+import org.n52.sos.util.StringHelper;
 
 /**
  * Hibernate series SweDataArray observation entity
@@ -44,25 +44,25 @@ public class SeriesSweDataArrayObservation extends SeriesObservation implements 
 
     private static final long serialVersionUID = 627306968328720439L;
 
-    private SweDataArray value;
+    private String value;
 
     @Override
-    public SweDataArray getValue() {
+    public String getValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(SweDataArray value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
     @Override
     public boolean isSetValue() {
-    	return !value.isEmpty();
+        return StringHelper.isNotEmpty(value);
     }
     
 	@Override
 	public String getValueAsString() {
-		return getValue().toString();
+		return getValue();
 	}
 }

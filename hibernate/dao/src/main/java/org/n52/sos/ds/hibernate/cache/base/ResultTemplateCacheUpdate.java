@@ -59,7 +59,6 @@ public class ResultTemplateCacheUpdate extends AbstractThreadableDatasourceCache
     public void execute() {
         LOGGER.debug("Executing ResultTemplateCacheUpdate");
         startStopwatch();
-        if (true) {
             List<ResultTemplate> resultTemplates = new ResultTemplateDAO().getResultTemplateObjects(getSession());
             for (ResultTemplate resultTemplate : resultTemplates) {
                 String id = resultTemplate.getIdentifier();
@@ -70,7 +69,6 @@ public class ResultTemplateCacheUpdate extends AbstractThreadableDatasourceCache
                 getCache().addFeatureOfInterestForResultTemplate(id,
                         resultTemplate.getFeatureOfInterest().getIdentifier());
             }
-        }
         LOGGER.debug("Finished executing ResultTemplateCacheUpdate ({})", getStopwatchResult());
     }
 }

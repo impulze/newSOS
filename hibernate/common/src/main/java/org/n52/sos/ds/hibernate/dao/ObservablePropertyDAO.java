@@ -30,23 +30,25 @@ package org.n52.sos.ds.hibernate.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
+import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
+import org.n52.sos.ds.hibernate.entities.Offering;
+import org.n52.sos.ds.hibernate.entities.Procedure;
+import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.om.OmObservableProperty;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.service.SosContextListener;
-
-import com.google.common.collect.Lists;
-
-import de.hzg.common.SOSConfiguration;
-import de.hzg.measurement.ObservedPropertyInstance;
-import de.hzg.measurement.Sensor;
 
 /**
  * Hibernate data access class for observable properties
@@ -55,45 +57,8 @@ import de.hzg.measurement.Sensor;
  * @since 4.0.0
  */
 public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO {
-    private static ObservableProperty createObservableProperty(String name, Session session) {
-    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
-        final ObservableProperty obsProp = new ObservableProperty();
 
-        obsProp.setIdentifier(sosConfiguration.getObservablePropertyIdentifierPrefix() + name);
-
-        return obsProp;
-    }
-
-    public static ObservableProperty createObservableProperty(ObservedPropertyInstance observedPropertyInstance, Session session) {
-        return createObservableProperty(observedPropertyInstance.getName(), session);
-    }
-
-    public List<ObservedPropertyInstance> getObservedPropertyInstancesForIdentifiers(Collection<String> identifiers, Session session) {
-    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
-        final List<String> names = Lists.newArrayListWithCapacity(identifiers.size());
-
-        for (final String identifier: identifiers) {
-            if (identifier.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
-                names.add(identifier.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length()));
-            }
-        }
-
-        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class)
-                .add(Restrictions.in("name", names));
-        @SuppressWarnings("unchecked")
-		final List<ObservedPropertyInstance> observedPropertyInstances = criteria.list();
-
-        return observedPropertyInstances;
-    }
-
-    public List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
-        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
-
-        @SuppressWarnings("unchecked")
-		final List<ObservedPropertyInstance> observedPropertyInstances = criteria.list();
-
-        return observedPropertyInstances;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObservablePropertyDAO.class);
 
     /**
      * Get observable property objects for observable property identifiers
@@ -104,8 +69,13 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      *            Hibernate session
      * @return Observable property objects
      */
+    @SuppressWarnings("unchecked")
     public List<ObservableProperty> getObservableProperties(final List<String> identifiers, final Session session) {
-        return getObservablePropertiesForIdentifiers(identifiers, session);
+        Criteria criteria =
+                session.createCriteria(ObservableProperty.class).add(
+                        Restrictions.in(ObservableProperty.IDENTIFIER, identifiers));
+        LOGGER.debug("QUERY getObservableProperties(identifiers): {}", HibernateHelper.getSqlString(criteria));
+        return criteria.list();
     }
 
     /**
@@ -122,21 +92,18 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     @SuppressWarnings("unchecked")
     public List<String> getObservablePropertyIdentifiersForOffering(final String offeringIdentifier,
             final Session session) throws OwsExceptionReport {
-    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+        Criteria c = null;
 
-        if (!offeringIdentifier.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
-            return Collections.emptyList();
-        }
-
-        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
-        final List<ObservedPropertyInstance> observedPropertyInstances = criteria.list();
-        final List<String> observedPropertyInstanceStrings = Lists.newArrayList();
-
-        for (final ObservedPropertyInstance observedPropertyInstance: observedPropertyInstances) {
-            observedPropertyInstanceStrings.add(sosConfiguration.getObservablePropertyIdentifierPrefix() + observedPropertyInstance.getName());
-        }
-
-        return observedPropertyInstanceStrings;
+            c = getDefaultCriteria(session);
+            c.add(Subqueries.propertyIn(
+                    Procedure.ID,
+                    getDetachedCriteriaObservablePropertiesForOfferingFromObservationConstellation(offeringIdentifier,
+                            session)));
+            c.setProjection(Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
+        LOGGER.debug(
+                "QUERY getProcedureIdentifiersForOffering(offeringIdentifier) using ObservationContellation entitiy ({}): {}",
+                true, HibernateHelper.getSqlString(c));
+        return c.list();
     }
 
     /**
@@ -148,22 +115,24 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      *            Hibernate session
      * @return Observable property identifiers
      */
+    @SuppressWarnings("unchecked")
     public List<String> getObservablePropertyIdentifiersForProcedure(final String procedureIdentifier,
             final Session session) {
-    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
-    	final List<Sensor> sensors = new ProcedureDAO().getSensorsForIdentifiers(Collections.singletonList(procedureIdentifier), session);
+        Criteria c = null;
+            c = getDefaultCriteria(session);
+            c.setProjection(Projections.distinct(Projections.property(ObservableProperty.IDENTIFIER)));
+            c.add(Subqueries.propertyIn(
+                    ObservableProperty.ID,
+                    getDetachedCriteriaObservablePropertyForProcedureFromObservationConstellation(procedureIdentifier,
+                            session)));
+        LOGGER.debug(
+                "QUERY getObservablePropertyIdentifiersForProcedure(observablePropertyIdentifier) using ObservationContellation entitiy ({}): {}",
+                true, HibernateHelper.getSqlString(c));
+        return c.list();
+    }
 
-        if (sensors == null) {
-        	return Collections.emptyList();
-        }
-
-        final List<String> observablePropertyIdentifiers = new ArrayList<String>();
-
-        for (final ObservedPropertyInstance observedPropertyInstance: sensors.get(0).getObservedPropertyInstances()) {
-        	observablePropertyIdentifiers.add(sosConfiguration.getObservablePropertyIdentifierPrefix() + observedPropertyInstance.getName());
-        }
-
-        return observablePropertyIdentifiers;
+    private Criteria getDefaultCriteria(Session session) {
+        return session.createCriteria(ObservableProperty.class).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
     }
 
     /**
@@ -176,13 +145,11 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      * @return Observable property object
      */
     public ObservableProperty getObservablePropertyForIdentifier(final String identifier, final Session session) {
-    	final List<ObservableProperty> observableProperties = getObservablePropertiesForIdentifiers(Collections.singletonList(identifier), session);
-
-    	if (observableProperties == null) {
-    		return null;
-    	}
-
-    	return observableProperties.get(0);
+        Criteria criteria = session.createCriteria(ObservableProperty.class)
+                .add(Restrictions.eq(ObservableProperty.IDENTIFIER, identifier));
+        LOGGER.debug("QUERY getObservablePropertyForIdentifier(identifier): {}",
+                HibernateHelper.getSqlString(criteria));
+        return (ObservableProperty) criteria.uniqueResult();
     }
 
     /**
@@ -194,16 +161,15 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      *            Hibernate session
      * @return Observable property objects
      */
+    @SuppressWarnings("unchecked")
     public List<ObservableProperty> getObservablePropertiesForIdentifiers(final Collection<String> identifiers,
             final Session session) {
-        final List<ObservedPropertyInstance> observedPropertyInstances = getObservedPropertyInstancesForIdentifiers(identifiers, session);
-        final List<ObservableProperty> observableProperties= Lists.newArrayList();
-
-        for (final ObservedPropertyInstance observedPropertyInstance: observedPropertyInstances) {
-            observableProperties.add(createObservableProperty(observedPropertyInstance, session));
-        }
-
-        return observableProperties;
+        Criteria criteria =
+                session.createCriteria(ObservableProperty.class).add(
+                        Restrictions.in(ObservableProperty.IDENTIFIER, identifiers));
+        LOGGER.debug("QUERY getObservablePropertiesForIdentifiers(identifiers): {}",
+                HibernateHelper.getSqlString(criteria));
+        return (List<ObservableProperty>) criteria.list();
     }
 
     /**
@@ -215,15 +181,9 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      */
     @SuppressWarnings("unchecked")
     public List<ObservableProperty> getObservablePropertyObjects(final Session session) {
-        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
-        final List<ObservedPropertyInstance> observedPropertyInstances = criteria.list();
-        final List<ObservableProperty> observableProperties = Lists.newArrayList();
-
-        for (final ObservedPropertyInstance observedPropertyInstance: observedPropertyInstances) {
-            observableProperties.add(createObservableProperty(observedPropertyInstance, session));
-        }
-
-        return observableProperties;
+        Criteria criteria = session.createCriteria(ObservableProperty.class);
+        LOGGER.debug("QUERY getObservablePropertyObjects(): {}", HibernateHelper.getSqlString(criteria));
+        return criteria.list();
     }
 
     /**
@@ -239,13 +199,10 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     public List<ObservableProperty> getOrInsertObservableProperty(final List<OmObservableProperty> observableProperty,
             final Session session) {
         final List<String> identifiers = new ArrayList<String>(observableProperty.size());
-
         for (final OmObservableProperty sosObservableProperty : observableProperty) {
             identifiers.add(sosObservableProperty.getIdentifierCodeWithAuthority().getValue());
         }
-
         final List<ObservableProperty> obsProps = getObservableProperties(identifiers, session);
-
         for (final OmObservableProperty sosObsProp : observableProperty) {
             boolean exists = false;
             for (final ObservableProperty obsProp : obsProps) {
@@ -255,10 +212,57 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
                 }
             }
             if (!exists) {
-                throw new RuntimeException("Insertion of observable properties is not supported yet.");
+                final ObservableProperty obsProp = new ObservableProperty();
+                addIdentifierNameDescription(sosObsProp, obsProp, session);
+                session.save(obsProp);
+                session.flush();
+                session.refresh(obsProp);
+                obsProps.add(obsProp);
             }
         }
-
         return obsProps;
     }
+
+    /**
+     * Get Hibernate Detached Criteria to get ObservableProperty entities from
+     * ObservationConstellation for procedure identifier
+     *
+     * @param procedureIdentifier
+     *            Procedure identifier parameter
+     * @param session
+     *            Hibernate session
+     * @return Hibernate Detached Criteria
+     */
+    private DetachedCriteria getDetachedCriteriaObservablePropertyForProcedureFromObservationConstellation(
+            String procedureIdentifier, Session session) {
+        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(ObservationConstellation.class);
+        detachedCriteria.add(Restrictions.eq(ObservationConstellation.DELETED, false));
+        detachedCriteria.createCriteria(ObservationConstellation.PROCEDURE).add(
+                Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
+        detachedCriteria.setProjection(Projections.distinct(Projections
+                .property(ObservationConstellation.OBSERVABLE_PROPERTY)));
+        return detachedCriteria;
+    }
+
+    /**
+     * Get Hibernate Detached Criteria to get ObservableProperty entities from
+     * ObservationConstellation for offering identifier
+     *
+     * @param offeringIdentifier
+     *            Offering identifier parameter
+     * @param session
+     *            Hibernate session
+     * @return Hibernate Detached Criteria
+     */
+    private DetachedCriteria getDetachedCriteriaObservablePropertiesForOfferingFromObservationConstellation(
+            String offeringIdentifier, Session session) {
+        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(ObservationConstellation.class);
+        detachedCriteria.add(Restrictions.eq(ObservationConstellation.DELETED, false));
+        detachedCriteria.createCriteria(ObservationConstellation.OFFERING).add(
+                Restrictions.eq(Offering.IDENTIFIER, offeringIdentifier));
+        detachedCriteria.setProjection(Projections.distinct(Projections
+                .property(ObservationConstellation.OBSERVABLE_PROPERTY)));
+        return detachedCriteria;
+    }
+
 }
