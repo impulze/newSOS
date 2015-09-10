@@ -193,7 +193,7 @@ public class OfferingCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<O
     }
 
     protected boolean shouldOfferingBeProcessed(String offeringIdentifier) {
-        return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
+                return getOfferingObservationConstellationInfo().containsKey(offeringIdentifier);
     }
 
     protected Set<String> getObservationTypesFromObservationType(Set<ObservationType> observationTypes) {

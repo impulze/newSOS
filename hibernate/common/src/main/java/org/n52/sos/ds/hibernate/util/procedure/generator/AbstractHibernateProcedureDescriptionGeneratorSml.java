@@ -37,7 +37,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.series.Series;
@@ -82,14 +81,6 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractHibernateProcedureDescriptionGeneratorSml.class);
-
-    public static final String SQL_QUERY_GET_UNIT_FOR_OBSERVABLE_PROPERTY = "getUnitForObservableProperty";
-
-    public static final String SQL_QUERY_GET_UNIT_FOR_OBSERVABLE_PROPERTY_PROCEDURE =
-            "getUnitForObservablePropertyProcedure";
-
-    public static final String SQL_QUERY_GET_UNIT_FOR_OBSERVABLE_PROPERTY_PROCEDURE_OFFERING =
-            "getUnitForObservablePropertyProcedureOffering";
 
     protected static final String POSITION_NAME = "sensorPosition";
 
@@ -228,12 +219,6 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
                 }
             }
 
-        AbstractObservation exampleObservation =
-                getExampleObservation(oc.getProcedure().getIdentifier(), oc.getObservableProperty().getIdentifier(),
-                        session);
-        if (exampleObservation != null && exampleObservation.isSetUnit()) {
-            return exampleObservation.getUnit().getUnit();
-        }
         return null;
     }
 

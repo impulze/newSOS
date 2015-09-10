@@ -52,6 +52,7 @@ public class RelatedFeaturesCacheUpdate extends AbstractThreadableDatasourceCach
         LOGGER.debug("Executing RelatedFeaturesCacheUpdate");
         startStopwatch();
         // TODO Carsten: use RelatedFeatures and query...
+        if (true) {
             List<RelatedFeature> relatedFeatures = new RelatedFeatureDAO().getRelatedFeatureObjects(getSession());
             for (RelatedFeature relatedFeature : relatedFeatures) {
                 Set<String> roles = new HashSet<String>(relatedFeature.getRelatedFeatureRoles().size());
@@ -60,6 +61,7 @@ public class RelatedFeaturesCacheUpdate extends AbstractThreadableDatasourceCach
                 }
                 getCache().setRolesForRelatedFeature(relatedFeature.getFeatureOfInterest().getIdentifier(), roles);
             }
+        }
         LOGGER.debug("Finished executing RelatedFeaturesCacheUpdate ({})", getStopwatchResult());        
     }
 }

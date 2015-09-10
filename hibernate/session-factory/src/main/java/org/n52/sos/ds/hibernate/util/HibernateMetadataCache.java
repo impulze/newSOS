@@ -34,13 +34,13 @@ public class HibernateMetadataCache {
     private static HibernateMetadataCache instance;
     private static final Object lock = new Object();
 
-    private HibernateMetadataCache() {
+    private HibernateMetadataCache(Session session) {
     }
 
     public static void init(Session session) {
         synchronized (lock) {
             if (instance == null) {
-                instance = new HibernateMetadataCache();
+                instance = new HibernateMetadataCache(session);
             }
         }
     }

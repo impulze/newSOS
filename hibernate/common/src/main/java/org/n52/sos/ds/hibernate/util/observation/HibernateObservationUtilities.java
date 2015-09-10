@@ -136,12 +136,8 @@ public class HibernateObservationUtilities {
 
     public static Collection<? extends OmObservation> createSosObservationFromSeries(Series series, AbstractObservationRequest request,
             Locale language, Session session) throws OwsExceptionReport, ConverterException {
-        if (series instanceof EReportingSeries) {
             return createSosObservationFromEReportingSeries((EReportingSeries) series, request, ServiceConfiguration
                     .getInstance().getDefaultLanguage(), session);
-        } else {
-            return new SeriesOmObservationCreator(series, request, language, session).create();
-        }
     }
 
     public static Collection<? extends OmObservation> createSosObservationFromEReportingSeries(EReportingSeries series,

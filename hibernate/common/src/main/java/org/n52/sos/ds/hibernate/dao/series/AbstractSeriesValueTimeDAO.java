@@ -214,9 +214,11 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
         projectionList.add(Projections.min(AbstractObservationTime.PHENOMENON_TIME_START));
         projectionList.add(Projections.max(AbstractObservationTime.PHENOMENON_TIME_END));
         projectionList.add(Projections.max(AbstractObservationTime.RESULT_TIME));
-        // TODO(HZG): check if VALID_TIME_START and VALID_TIME_END are needed and act accordingly 
+	// TODOHZG: pretend it is
+        if (true) {
             projectionList.add(Projections.min(AbstractObservationTime.VALID_TIME_START));
             projectionList.add(Projections.max(AbstractObservationTime.VALID_TIME_END));
+        }
         c.setProjection(projectionList);
     }
 
@@ -256,7 +258,7 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
             Criterion temporalFilterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session)
             throws OwsExceptionReport {
         final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValueTime.SERIES, "s");
-        checkAndAddSpatialFilteringProfileCriterion(c, request, session);
+        // TODO: add spatial filtering
 
         c.add(Restrictions.eq("s." + Series.ID, series));
 

@@ -30,44 +30,29 @@ package org.n52.sos.ds.hibernate.dao;
 
 import static org.n52.sos.util.http.HTTPStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.sql.JoinType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.TFeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.NoopTransformerAdapter;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.gml.AbstractFeature;
 import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.service.Configurator;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.http.HTTPStatus;
 
-import com.google.common.collect.Maps;
+import de.hzg.common.SOSConfiguration;
 
 /**
  * Hibernate data access class for featureOfInterest
@@ -76,9 +61,6 @@ import com.google.common.collect.Maps;
  * @since 4.0.0
  */
 public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO implements HibernateSqlQueryConstants {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureOfInterestDAO.class);
-
     /**
      * Get featureOfInterest object for identifier
      *
@@ -89,11 +71,20 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return FeatureOfInterest entity
      */
     public FeatureOfInterest getFeatureOfInterest(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(FeatureOfInterest.class).add(
-                        Restrictions.eq(FeatureOfInterest.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getFeatureOfInterest(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (FeatureOfInterest) criteria.uniqueResult();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+    	if (!identifier.equals(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName())) {
+    		return null;
+    	}
+
+    	final FeatureOfInterest foi = new FeatureOfInterest();
+
+    	foi.setFeatureOfInterestType(new FeatureOfInterestTypeDAO().getFeatureOfInterestTypeObject(FeatureOfInterestTypeDAO.HZG_FEATURE_OF_INTEREST_TYPE, session));
+    	foi.setIdentifier(identifier);
+    	foi.setLongitude(20.5);
+    	foi.setLatitude(10.5);
+
+    	return foi;
     }
 
     /**
@@ -106,30 +97,11 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return FeatureOfInterest identifiers for observation constellation
      * @throws CodedException
      */
-    @SuppressWarnings("unchecked")
     public List<String> getFeatureOfInterestIdentifiersForObservationConstellation(
             final ObservationConstellation observationConstellation, final Session session) throws OwsExceptionReport {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.add(Restrictions.eq(Series.PROCEDURE, observationConstellation.getProcedure())).add(
-                        Restrictions.eq(Series.OBSERVABLE_PROPERTY, observationConstellation.getObservableProperty()));
-                seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            } else {
-                criteria.add(Restrictions.eq(ObservationConstellation.PROCEDURE, observationConstellation.getProcedure()))
-                        .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY,
-                                observationConstellation.getObservableProperty()));
-                criteria.createCriteria(ObservationInfo.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            }
-            criteria.createCriteria(AbstractObservation.OFFERINGS).add(
-                    Restrictions.eq(Offering.ID, observationConstellation.getOffering().getOfferingId()));
-            LOGGER.debug(
-                    "QUERY getFeatureOfInterestIdentifiersForObservationConstellation(observationConstellation): {}",
-                    HibernateHelper.getSqlString(criteria));
-            return criteria.list();
+    	//TODO: check if obs const is valid for data?
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	return Collections.singletonList(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName());
     }
 
     /**
@@ -142,24 +114,15 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return FeatureOfInterest identifiers for offering
      * @throws CodedException
      */
-    @SuppressWarnings({ "unchecked" })
     public List<String> getFeatureOfInterestIdentifiersForOffering(final String offeringIdentifiers,
             final Session session) throws OwsExceptionReport {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria c = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
 
-            } else {
-                c.createCriteria(AbstractObservation.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            }
-            new OfferingDAO().addOfferingRestricionForObservation(c, offeringIdentifiers);
-            LOGGER.debug("QUERY getFeatureOfInterestIdentifiersForOffering(offeringIdentifiers): {}",
-                    HibernateHelper.getSqlString(c));
-            return c.list();
+    	if (offeringIdentifiers.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
+    		return Collections.singletonList(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName()); 
+    	}
+
+    	return Collections.emptyList();
     }
 
     /**
@@ -171,17 +134,18 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      *            Hibernate session
      * @return FeatureOfInterest objects
      */
-    @SuppressWarnings("unchecked")
     public List<FeatureOfInterest> getFeatureOfInterestObject(final Collection<String> identifiers,
             final Session session) {
-        if (identifiers != null && !identifiers.isEmpty()) {
-            Criteria criteria =
-                    session.createCriteria(FeatureOfInterest.class).add(
-                            Restrictions.in(FeatureOfInterest.IDENTIFIER, identifiers));
-            LOGGER.debug("QUERY getFeatureOfInterestObject(identifiers): {}", HibernateHelper.getSqlString(criteria));
-            return criteria.list();
-        }
-        return Collections.emptyList();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+    	for (final String identifier: identifiers) {
+    		if (identifier.equals(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName())) {
+    			final FeatureOfInterest foi = getFeatureOfInterest(identifier, session);
+    			return Collections.singletonList(foi);
+    		}
+    	}
+
+    	return Collections.emptyList();
     }
 
     /**
@@ -191,11 +155,11 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      *            Hibernate session
      * @return FeatureOfInterest objects
      */
-    @SuppressWarnings("unchecked")
     public List<FeatureOfInterest> getFeatureOfInterestObjects(final Session session) {
-        Criteria criteria = session.createCriteria(FeatureOfInterest.class);
-        LOGGER.debug("QUERY getFeatureOfInterestObjects(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final FeatureOfInterest foi = getFeatureOfInterest(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName(), session);
+
+    	return Collections.singletonList(foi);
     }
 
     /**
@@ -206,32 +170,14 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return Map keyed by FOI identifiers, with value collections of parent FOI identifiers if supported
      */
     public Map<String,Collection<String>> getFeatureOfInterestIdentifiersWithParents(final Session session) {
-        Criteria criteria = session.createCriteria(FeatureOfInterest.class);
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.property(FeatureOfInterest.IDENTIFIER));
+    	final List<String> identifiers = this.getFeatureOfInterestIdentifiers(session);
+    	final Collection<String> collection = Collections.<String>emptyList();
 
-        //get parents if transactional profile is active
-            criteria.createAlias(TFeatureOfInterest.PARENTS, "pfoi", JoinType.LEFT_OUTER_JOIN);
-            projectionList.add(Projections.property("pfoi." + FeatureOfInterest.IDENTIFIER));
-        criteria.setProjection(projectionList);
-        //return as List<Object[]> even if there's only one column for consistency
-        criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
+    	if (identifiers.size() == 1) {
+    		return Collections.singletonMap(identifiers.get(0), collection);
+    	}
 
-        LOGGER.debug("QUERY getFeatureOfInterestIdentifiersWithParents(): {}", HibernateHelper.getSqlString(criteria));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = criteria.list();
-        Map<String,Collection<String>> foiMap = Maps.newHashMap();
-        for(Object[] result : results) {
-            String featureIdentifier = (String) result[0];
-            String parentFeatureIdentifier = null;
-                parentFeatureIdentifier = (String) result[1];
-            if (parentFeatureIdentifier != null) {
-                CollectionHelper.addToCollectionMap(featureIdentifier, parentFeatureIdentifier, foiMap);
-            } else {
-                foiMap.put(featureIdentifier, null);
-            }
-        }
-        return foiMap;
+    	return Collections.emptyMap();
     }
 
     /**
@@ -241,13 +187,15 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      *            Hibernate session
      * @return FeatureOfInterest identifiers
      */
-    @SuppressWarnings("unchecked")
     public List<String> getFeatureOfInterestIdentifiers(Session session) {
-        Criteria criteria =
-                session.createCriteria(FeatureOfInterest.class).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-        LOGGER.debug("QUERY getFeatureOfInterestIdentifiers(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	final List<FeatureOfInterest> fois = getFeatureOfInterestObjects(session);
+    	final List<String> identifiers = new ArrayList<String>(fois.size());
+
+    	for (final FeatureOfInterest foi: fois) {
+    		identifiers.add(foi.getIdentifier());
+    	}
+
+    	return identifiers;
     }
 
     /**
@@ -263,22 +211,12 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      */
     public FeatureOfInterest getOrInsertFeatureOfInterest(final String identifier, final String url,
             final Session session) {
-        FeatureOfInterest feature = getFeatureOfInterest(identifier, session);
+        final FeatureOfInterest feature = getFeatureOfInterest(identifier, session);
+
         if (feature == null) {
-            feature = new TFeatureOfInterest();
-            feature.setIdentifier(identifier);
-            if (url != null && !url.isEmpty()) {
-                feature.setUrl(url);
-            }
-            final FeatureOfInterestType featureOfInterestType =
-                    new FeatureOfInterestTypeDAO().getOrInsertFeatureOfInterestType(OGCConstants.UNKNOWN, session);
-            feature.setFeatureOfInterestType(featureOfInterestType);
-            session.save(feature);
-        } else if (feature.getUrl() != null && !feature.getUrl().isEmpty() && url != null && !url.isEmpty()) {
-            feature.setUrl(url);
-            session.saveOrUpdate(feature);
+        	throw new RuntimeException("Adding features of interest not supported yet.");
         }
-        //don't flush here because we may be batching
+
         return feature;
     }
 
@@ -294,9 +232,7 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      */
     public void insertFeatureOfInterestRelationShip(final TFeatureOfInterest parentFeature,
             final FeatureOfInterest childFeature, final Session session) {
-        parentFeature.getChilds().add(childFeature);
-        session.saveOrUpdate(parentFeature);
-        //don't flush here because we may be batching
+    	throw new RuntimeException("Insertion of feature of interest relationships not supported yet.");
     }
 
     /**

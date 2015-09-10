@@ -56,11 +56,11 @@ public class SpatialRestrictions {
      * @throws OwsExceptionReport
      *             If the spatial filter is not supported
      */
-    public static Criterion filter(String propertyName, SpatialOperator operator, Geometry geometry)
+    public static Boolean filter(Geometry geometry, SpatialOperator operator, Geometry bbox)
             throws OwsExceptionReport {
         switch (operator) {
         case BBOX:
-            return within(propertyName, geometry);
+            return within(geometry, bbox);
             // TODO why are these commented?
         case Contains:
             // return contains(propertyName, geometry);
@@ -90,8 +90,8 @@ public class SpatialRestrictions {
         return org.hibernate.spatial.criterion.SpatialRestrictions.eq(propertyName, value);
     }
 
-    public static Criterion within(String propertyName, Geometry value) {
-        return org.hibernate.spatial.criterion.SpatialRestrictions.within(propertyName, value);
+    public static Boolean within(Geometry geometry, Geometry bbox) {
+    	return geometry.within(bbox);
     }
 
     public static Criterion contains(String propertyName, Geometry value) {

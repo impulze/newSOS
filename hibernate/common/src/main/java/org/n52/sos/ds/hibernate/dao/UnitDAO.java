@@ -32,9 +32,9 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.Unit;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import de.hzg.measurement.ObservedPropertyDescription;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for unit
@@ -43,8 +43,17 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class UnitDAO {
+	public Unit getUnitFromObservedPropertyInstance(ObservedPropertyInstance observedPropertyInstance) {
+		if (observedPropertyInstance.getIsRaw()) {
+			return null;
+		}
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnitDAO.class);
+    	final Unit unit = new Unit();
+
+    	unit.setUnit(observedPropertyInstance.getObservedPropertyDescription().getUnit());
+
+    	return unit;	
+	}
 
     /**
      * Get unit object for unit
@@ -55,10 +64,25 @@ public class UnitDAO {
      *            Hibernate session
      * @return Unit object
      */
-    public Unit getUnit(String unit, Session session) {
-        Criteria criteria = session.createCriteria(Unit.class).add(Restrictions.eq(Unit.UNIT, unit));
-        LOGGER.debug("QUERY getUnit(): {}", HibernateHelper.getSqlString(criteria));
-        return (Unit) criteria.uniqueResult();
+    public Unit getUnit(String unitString, Session session) {
+    	/* get all units
+    	final Criteria criteria = session.createCriteria(ObservedPropertyDescription.class)
+    		.setProjection(Projections.projectionList()
+    			.add(Projections.distinct(Projections.property("unit"))));
+    	*/
+    	final Criteria criteria = session.createCriteria(ObservedPropertyDescription.class)
+    		.add(Restrictions.eq("unit", unitString));
+    	final ObservedPropertyDescription observedPropertyDescription = (ObservedPropertyDescription)criteria.uniqueResult();
+
+    	if (observedPropertyDescription == null) {
+    		return null;
+    	}
+
+    	final Unit unit = new Unit();
+
+    	unit.setUnit(observedPropertyDescription.getUnit());
+
+    	return unit;
     }
 
     /**
@@ -71,14 +95,12 @@ public class UnitDAO {
      * @return Unit object
      */
     public Unit getOrInsertUnit(String unit, Session session) {
-        Unit result = getUnit(unit, session);
+        final Unit result = getUnit(unit, session);
+
         if (result == null) {
-            result = new Unit();
-            result.setUnit(unit);
-            session.save(result);
-            session.flush();
-            session.refresh(result);
+        	throw new RuntimeException("Insertion of units not supported yet.");
         }
+
         return result;
     }
 }

@@ -15,5 +15,12 @@
         <property name="hibernate.format_sql">true</property>
         -->
 
+        <mapping resource="de/hzg/values/CalculatedData.hbm.xml" />
+        <mapping resource="de/hzg/values/RawData.hbm.xml" />
+        <mapping resource="de/hzg/measurement/CalibrationSet.hbm.xml" />
+        <mapping resource="de/hzg/measurement/ObservedPropertyDescription.hbm.xml" />
+        <mapping resource="de/hzg/measurement/ObservedPropertyInstance.hbm.xml" />
+        <mapping resource="de/hzg/measurement/Sensor.hbm.xml" />
+
     </session-factory>
 </hibernate-configuration>

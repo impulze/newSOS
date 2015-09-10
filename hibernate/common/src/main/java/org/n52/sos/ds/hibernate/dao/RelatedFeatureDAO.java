@@ -28,24 +28,14 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.RelatedFeatureRole;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ogc.gml.AbstractFeature;
-import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.service.Configurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate data access class for related features
@@ -54,9 +44,6 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class RelatedFeatureDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RelatedFeatureDAO.class);
-
     /**
      * Get related feature objects for offering identifier
      * 
@@ -66,12 +53,8 @@ public class RelatedFeatureDAO {
      *            Hibernate session
      * @return Related feature objects
      */
-    @SuppressWarnings("unchecked")
     public List<RelatedFeature> getRelatedFeatureForOffering(final String offering, final Session session) {
-        final Criteria criteria = session.createCriteria(RelatedFeature.class);
-        criteria.createCriteria(RelatedFeature.OFFERINGS).add(Restrictions.eq(Offering.IDENTIFIER, offering));
-        LOGGER.debug("QUERY getRelatedFeatureForOffering(offering): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        return Collections.emptyList();
     }
 
     /**
@@ -81,11 +64,8 @@ public class RelatedFeatureDAO {
      *            Hibernate session
      * @return Related feature objects
      */
-    @SuppressWarnings("unchecked")
     public List<RelatedFeature> getRelatedFeatureObjects(final Session session) {
-        final Criteria criteria = session.createCriteria(RelatedFeature.class);
-        LOGGER.debug("QUERY getRelatedFeatureObjects(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        return Collections.emptyList();
     }
 
     /**
@@ -97,13 +77,9 @@ public class RelatedFeatureDAO {
      *            Hibernate session
      * @return Related feature objects
      */
-    @SuppressWarnings("unchecked")
     public List<RelatedFeature> getRelatedFeatures(final String targetIdentifier, final Session session) {
-        final Criteria criteria = session.createCriteria(RelatedFeature.class);
-        criteria.createCriteria(RelatedFeature.FEATURE_OF_INTEREST).add(
-                Restrictions.eq(FeatureOfInterest.IDENTIFIER, targetIdentifier));
-        LOGGER.debug("QUERY getRelatedFeatures(targetIdentifier): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        // TODOHZG: do we have those?
+        return Collections.emptyList();
     }
 
     /**
@@ -123,26 +99,10 @@ public class RelatedFeatureDAO {
             final Session session) throws OwsExceptionReport {
         // TODO: create featureOfInterest and link to relatedFeature
         List<RelatedFeature> relFeats = getRelatedFeatures(feature.getIdentifierCodeWithAuthority().getValue(), session);
-        if (relFeats == null) {
-            relFeats = new LinkedList<RelatedFeature>();
+        if (relFeats != null) {
+            return relFeats;
         }
-        if (relFeats.isEmpty()) {
-            final RelatedFeature relFeat = new RelatedFeature();
-            String identifier = feature.getIdentifierCodeWithAuthority().getValue();
-            String url = null;
-            if (feature instanceof SamplingFeature) {
-                identifier =
-                        Configurator.getInstance().getFeatureQueryHandler()
-                                .insertFeature((SamplingFeature) feature, session);
-                url = ((SamplingFeature) feature).getUrl();
-            }
-            relFeat.setFeatureOfInterest(new FeatureOfInterestDAO().getOrInsertFeatureOfInterest(identifier, url,
-                    session));
-            relFeat.setRelatedFeatureRoles(new HashSet<RelatedFeatureRole>(roles));
-            session.save(relFeat);
-            session.flush();
-            relFeats.add(relFeat);
-        }
-        return relFeats;
+
+        throw new RuntimeException("Insertion of related features is not supported yet.");
     }
 }

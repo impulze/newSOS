@@ -28,15 +28,10 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import org.n52.sos.aqd.AqdSamplingPoint;
+import org.n52.sos.aqd.AqdConstants;
 import org.n52.sos.ds.hibernate.dao.AbstractIdentifierNameDescriptionDAO;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * DAO class for entity {@link EReportingSamplingPoint}
@@ -46,21 +41,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class EReportingSamplingPointDAO extends AbstractIdentifierNameDescriptionDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EReportingSamplingPointDAO.class);
-
-    /**
-     * Get default Hibernate Criteria for querying sampling point
-     * 
-     * @param session
-     *            Hibernate Session
-     * @return Default criteria
-     */
-    public Criteria getDefaultCriteria(Session session) {
-        return session.createCriteria(EReportingSamplingPoint.class).setResultTransformer(
-                Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
     /**
      * Get the {@link EReportingSamplingPoint} for the id
      * 
@@ -71,10 +51,7 @@ public class EReportingSamplingPointDAO extends AbstractIdentifierNameDescriptio
      * @return The resulting {@link EReportingSamplingPoint}
      */
     public EReportingSamplingPoint getEReportingSamplingPoint(long samplingPointId, Session session) {
-        Criteria c = getDefaultCriteria(session);
-        c.add(Restrictions.eq(EReportingSamplingPoint.ID, samplingPointId));
-        LOGGER.debug("QUERY getEReportingSamplingPoint(samplingPointId): {}", HibernateHelper.getSqlString(c));
-        return (EReportingSamplingPoint) c.uniqueResult();
+    	throw new RuntimeException("Obtaining AQD sampling points by samplingPointId not supported.");
     }
 
     /**
@@ -87,36 +64,15 @@ public class EReportingSamplingPointDAO extends AbstractIdentifierNameDescriptio
      * @return The resulting {@link EReportingSamplingPoint}
      */
     public EReportingSamplingPoint getEReportingSamplingPoint(String identifier, Session session) {
-        Criteria c = getDefaultCriteria(session);
-        c.add(Restrictions.eq(EReportingSamplingPoint.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getEReportingSamplingPoint(identifier): {}", HibernateHelper.getSqlString(c));
-        return (EReportingSamplingPoint) c.uniqueResult();
-    }
+    	if (!identifier.equals("urn:aqd_sampling_points:sampling_point_1")) {
+    		throw new RuntimeException("Only AQD sampling point 'urn:aqd_sampling_points:sampling_point_1 supported.");
+    	}
 
-    /**
-     * Get or insert {@link AqdSamplingPoint}
-     * 
-     * @param samplingPoint
-     *            {@link AqdSamplingPoint} to insert
-     * @param session
-     *            Hibernate session
-     * @return The resulting {@link EReportingSamplingPoint}
-     */
-    public EReportingSamplingPoint getOrInsert(AqdSamplingPoint samplingPoint, Session session) {
-        Criteria c = getDefaultCriteria(session);
-        c.add(Restrictions.eq(EReportingSamplingPoint.IDENTIFIER, samplingPoint.getIdentifier()));
-        LOGGER.debug("QUERY getOrIntert(samplingPoint): {}", HibernateHelper.getSqlString(c));
-        EReportingSamplingPoint eReportingSamplingPoint = (EReportingSamplingPoint) c.uniqueResult();
-        if (eReportingSamplingPoint == null) {
-            eReportingSamplingPoint = new EReportingSamplingPoint();
-            addIdentifierNameDescription(samplingPoint, eReportingSamplingPoint, session);
-            eReportingSamplingPoint.setAssessmentType(new EReportingAssessmentTypeDAO().getOrInsert(
-                    samplingPoint.getAssessmentType(), session));
-            session.save(eReportingSamplingPoint);
-            session.flush();
-            session.refresh(eReportingSamplingPoint);
-        }
+    	final EReportingSamplingPoint eReportingSamplingPoint = new EReportingSamplingPoint();
+
+    	eReportingSamplingPoint.setIdentifier(identifier);
+    	eReportingSamplingPoint.setAssessmentType(new EReportingAssessmentTypeDAO().getEReportingAssessmentType(AqdConstants.AssessmentType.Fixed, session));
+
         return eReportingSamplingPoint;
     }
-
 }

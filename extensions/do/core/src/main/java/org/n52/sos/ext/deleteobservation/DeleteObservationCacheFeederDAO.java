@@ -150,19 +150,7 @@ public abstract class DeleteObservationCacheFeederDAO extends DatasourceCacheUpd
      * @throws CodedException
      */
     protected void updateFeatureOfInterest() throws OwsExceptionReport {
-        final String feature = o.getObservationConstellation().getFeatureOfInterest().getIdentifierCodeWithAuthority().getValue();
-        final String procedure = o.getObservationConstellation().getProcedure().getIdentifier();
-        final String dbFeature = CacheHelper.removePrefixAndGetFeatureIdentifier(feature);
-        final String dbProcedure = CacheHelper.removePrefixAndGetProcedureIdentifier(procedure);
-        if (isLastForProcedure(dbFeature, dbProcedure)) {
-            getCache().removeProcedureForFeatureOfInterest(feature, procedure);
-        }
-        for (String offering : o.getObservationConstellation().getOfferings()) {
-            final String dbOffering = CacheHelper.removePrefixAndGetOfferingIdentifier(offering);
-            if (isLastForOffering(dbFeature, dbOffering)) {
-                getCache().removeFeatureOfInterestForOffering(offering, feature);
-            }
-        }
+    	throw new RuntimeException("Updating the feature of interest is not supported yet.");
     }
 
     /**
@@ -309,35 +297,6 @@ public abstract class DeleteObservationCacheFeederDAO extends DatasourceCacheUpd
             }
         }
     }
-
-    /**
-     * Checks if there is no observation with the specified offering/feature
-     * combination.
-     *
-     * @param feature
-     *            the feature identifier
-     * @param offering
-     *            the offering identifier
-     *
-     * @return if there is no observation with the specified dbFeature and
-     *         offering
-     */
-    protected abstract boolean isLastForOffering(String feature, String offering) throws OwsExceptionReport;
-
-    /**
-     * Check if there is no observation with the specified dbProcedure/feature
-     * combination.
-     *
-     * @param feature
-     *            the feature identifier
-     * @param procedure
-     *            the procedure identifier
-     *
-     * @return if there is no observation with the specified dbFeature and
-     *         dbProcedure.
-     * @throws CodedException
-     */
-    protected abstract boolean isLastForProcedure(String feature, String procedure) throws OwsExceptionReport;
 
     protected abstract DateTime getMaxDateForOffering(String offering) throws OwsExceptionReport;
 

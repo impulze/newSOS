@@ -28,29 +28,30 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
-import org.n52.sos.aqd.AqdConstants;
-import org.n52.sos.aqd.AqdConstants.AssessmentType;
-import org.n52.sos.aqd.AqdHelper;
-import org.n52.sos.aqd.AqdSamplingPoint;
-import org.n52.sos.aqd.ReportObligationType;
-import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
+import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.OfferingDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
+import org.n52.sos.ds.hibernate.dao.UnitDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingAssessmentType;
+import org.n52.sos.ds.hibernate.entities.Offering;
+import org.n52.sos.ds.hibernate.entities.Unit;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingBlobObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingBooleanObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingCategoryObservation;
@@ -66,43 +67,27 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSweDataArrayObserv
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingTextObservation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
-import org.n52.sos.exception.CodedException;
-import org.n52.sos.exception.ows.OptionNotSupportedException;
-import org.n52.sos.ogc.gml.CodeType;
-import org.n52.sos.ogc.gml.ReferenceType;
-import org.n52.sos.ogc.om.NamedValue;
-import org.n52.sos.ogc.om.OmObservation;
-import org.n52.sos.ogc.om.values.HrefAttributeValue;
-import org.n52.sos.ogc.om.values.ReferenceValue;
-import org.n52.sos.ogc.om.values.Value;
+import org.n52.sos.exception.sos.ResponseExceedsSizeLimitException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
+import org.n52.sos.ogc.swe.SweDataArray;
+import org.n52.sos.ogc.swe.SweDataRecord;
+import org.n52.sos.ogc.swe.SweField;
+import org.n52.sos.ogc.swe.encoding.SweTextEncoding;
+import org.n52.sos.ogc.swe.simpleType.SweQuantity;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.w3c.xlink.W3CHrefAttribute;
-import com.google.common.collect.Lists;
+
+import org.n52.sos.service.ServiceConfiguration;
+import org.n52.sos.service.SosContextListener;
+import org.n52.sos.util.CollectionHelper;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
+import de.hzg.values.CalculatedData;
+import de.hzg.values.RawData;
+import de.hzg.values.ValueData;
 
 public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings,
-            Criterion filterCriterion, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, filterCriterion, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationForSosIndeterminateTimeFilter(Series series,
-            List<String> offerings, SosIndeterminateTime sosIndeterminateTime, Session session) {
-        return getSeriesObservationCriteriaForSosIndeterminateTimeFilter(series, offerings, sosIndeterminateTime,
-                session).list();
-    }
-
     @Override
     public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
             Collection<String> features, Session session) throws OwsExceptionReport {
@@ -122,64 +107,249 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
         return getSeriesObservationsFor(request, features, null, sosIndeterminateTime, session);
     }
 
-    @SuppressWarnings("unchecked")
+    private List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request, Collection<String> features,
+            Collection<String> offerings, Collection<String> procedures, Collection<String> observableProperties,
+            Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
+    	/* spatial filter for results not supported yet
+        if (request.hasSpatialFilteringProfileSpatialFilter()) {
+            c.add(SpatialRestrictions.filter(
+                    AbstractObservation.SAMPLING_GEOMETRY,
+                    request.getSpatialFilter().getOperator(),
+                    GeometryHandler.getInstance().switchCoordinateAxisFromToDatasourceIfNeeded(
+                            request.getSpatialFilter().getGeometry())));
+        }*/
+
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<String> procedureIdentifiers = new ArrayList<String>();
+    	final List<String> observablePropertyIdentifiers = new ArrayList<String>();
+
+    	if (CollectionHelper.isNotEmpty(features)) {
+    		boolean found = false;
+
+    		for (final String identifier: features) {
+    			if (identifier.equals(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName())) {
+    				found = true;
+    				break;
+    			}
+    		}
+
+    		if (!found) {
+    			return null;
+    		}
+    	}
+
+    	if (CollectionHelper.isNotEmpty(request.getOfferings())) {
+    		boolean found = false;
+
+    		for (final String identifier: request.getOfferings()) {
+    			if (identifier.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
+    				found = true;
+    				 break;
+    			}
+    		}
+
+    		if (!found) {
+    			return null;
+    		}
+    	}
+
+    	if (CollectionHelper.isNotEmpty(request.getProcedures())) {
+    		for (final String identifier: request.getProcedures()) {
+    			if (identifier.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+    				procedureIdentifiers.add(identifier.substring(sosConfiguration.getProcedureIdentifierPrefix().length()));
+    			}
+    		}
+    	}
+
+    	if (CollectionHelper.isNotEmpty(request.getObservedProperties())) {
+    		for (final String identifier: request.getObservedProperties()) {
+    			if (identifier.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
+    				observablePropertyIdentifiers.add(identifier.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length()));
+    			}
+    		}
+    	}
+
+    	final Criteria calculatedCriteria = session.createCriteria(CalculatedData.class);
+    	final Criteria calculatedOPICriteria = calculatedCriteria.createCriteria("observedPropertyInstance");
+    	final Criteria rawCriteria = session.createCriteria(RawData.class);
+    	final Criteria rawOPICriteria = rawCriteria.createCriteria("observedPropertyInstance");
+
+    	if (!procedureIdentifiers.isEmpty()) {
+    		calculatedOPICriteria.createCriteria("sensor").add(Restrictions.in("name", procedureIdentifiers));
+    		rawOPICriteria.createCriteria("sensor").add(Restrictions.in("name", procedureIdentifiers));
+    	}
+
+    	if (!observablePropertyIdentifiers.isEmpty()) {
+    		calculatedOPICriteria.add(Restrictions.in("name", observablePropertyIdentifiers));
+    		rawOPICriteria.add(Restrictions.in("name", observablePropertyIdentifiers));
+    	}
+
+    	if (filterCriterion != null) {
+    		calculatedCriteria.add(filterCriterion);
+    		rawCriteria.add(filterCriterion);
+    	}
+
+    	if (sosIndeterminateTime != null) {
+    		//TODO:
+    		//addIndeterminateTimeRestriction(calculatedCriteria, sosIndeterminateTime);
+    		//addIndeterminateTimeRestriction(rawCriteria, sosIndeterminateTime);
+    	}
+
+    	calculatedCriteria.setReadOnly(true).setCacheable(false).addOrder(Order.asc("date"));
+    	rawCriteria.setReadOnly(true).setCacheable(false).addOrder(Order.asc("date"));
+
+    	final List<CalculatedData> calculatedDataList;
+    	final List<RawData> rawDataList;
+
+    	try {
+    		rawDataList = rawCriteria.list();
+    		calculatedDataList = calculatedCriteria.list();
+    	} catch (OutOfMemoryError error) {
+    		throw new ResponseExceedsSizeLimitException().withMessage(
+    			"The observation response is to big for the maximal heap size of %d Byte of the "
+    			+ "virtual machine! Please either refine your getObservation request to reduce the "
+    			+ "number of observations in the response or ask the administrator of this SOS to "
+    			+ "increase the maximum heap size of the virtual machine!", Runtime.getRuntime().maxMemory());
+    	}
+
+    	final List<SeriesObservation> seriesObservations = new ArrayList<SeriesObservation>();
+ 
+    	if (calculatedDataList.isEmpty() && rawDataList.isEmpty()) {
+    		return seriesObservations;
+    	}
+
+    	final Offering offering = new OfferingDAO().getOfferingForIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName(), session);
+
+    	final Map<ObservedPropertyInstance, List<ValueData<? extends Number>>> valueMap = new HashMap<ObservedPropertyInstance, List<ValueData<? extends Number>>>();
+
+    	for (final RawData rawData: rawDataList) {
+    		final ValueData<? extends Number> value = rawData;
+    		List<ValueData<? extends Number>> thisValueDataList = valueMap.get(value.getObservedPropertyInstance());
+
+    		if (thisValueDataList == null) {
+    			thisValueDataList = new ArrayList<ValueData<? extends Number>>();
+    			valueMap.put(value.getObservedPropertyInstance(), thisValueDataList);
+    		}
+
+    		thisValueDataList.add(value);
+    		session.evict(value);
+    	}
+
+    	for (final CalculatedData calculatedData: calculatedDataList) {
+    		final ValueData<? extends Number> value = calculatedData;
+    		List<ValueData<? extends Number>> thisValueDataList = valueMap.get(value.getObservedPropertyInstance());
+
+    		if (thisValueDataList == null) {
+    			thisValueDataList = new ArrayList<ValueData<? extends Number>>();
+    			valueMap.put(value.getObservedPropertyInstance(), thisValueDataList);
+    		}
+
+    		thisValueDataList.add(value);
+    		session.evict(value);
+    	}
+
+    	for (final Map.Entry<ObservedPropertyInstance, List<ValueData<? extends Number>>> vdEntry: valueMap.entrySet()) {
+    		final ObservedPropertyInstance observedPropertyInstance = vdEntry.getKey();
+    		final List<ValueData<? extends Number>> values = vdEntry.getValue();
+    		final EReportingSweDataArrayObservation seriesObservation = new EReportingSweDataArrayObservation();
+    		final Unit unit = new UnitDAO().getUnitFromObservedPropertyInstance(observedPropertyInstance);
+    		final Date lastResultTime = values.get(values.size() - 1).getDate();
+    		final Date firstPhenomenonTime = values.get(0).getDate();
+
+    		seriesObservation.setPhenomenonTimeStart(firstPhenomenonTime);
+    		seriesObservation.setPhenomenonTimeEnd(lastResultTime);
+    		seriesObservation.setResultTime(lastResultTime);
+    		seriesObservation.setUnit(unit);
+    		seriesObservation.setDeleted(false);
+    		seriesObservation.setOfferings(Collections.singleton(offering));
+    		seriesObservation.setValidation(-1);
+    		seriesObservation.setVerification(3);
+    		seriesObservation.setPrimaryObservation("var");
+
+    		final EReportingSeries series = new EReportingSeries();
+    		final EReportingSamplingPoint point = new EReportingSamplingPointDAO().getEReportingSamplingPoint("urn:aqd_sampling_points:sampling_point_1", session);
+
+    		series.setSamplingPoint(point);
+    		series.setProcedure(ProcedureDAO.createTProcedure(observedPropertyInstance.getSensor(), session));
+    		series.setFeatureOfInterest(new FeatureOfInterestDAO().getFeatureOfInterest(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName(), session));
+    		series.setObservableProperty(ObservablePropertyDAO.createObservableProperty(observedPropertyInstance, session));
+    		series.setPublished(true);
+
+    		final SweQuantity sweQuantity = new SweQuantity();
+
+    		if (seriesObservation.getUnit() != null) {
+    			series.setUnit(seriesObservation.getUnit());
+    			sweQuantity.setUom(seriesObservation.getUnit().getUnit());
+    		}
+
+    		seriesObservation.setSeries(series);
+
+    		final SweDataArray sweDataArray = new SweDataArray();
+    		final SweDataRecord sweDataRecord = new SweDataRecord();
+    		final SweTextEncoding sweTextEncoding = new SweTextEncoding();
+    		final String tupleSeparator = ServiceConfiguration.getInstance().getTupleSeparator();
+    		final String tokenSeparator = ServiceConfiguration.getInstance().getTokenSeparator();
+    		final String decimalSeparator = ServiceConfiguration.getInstance().getDecimalSeparator();
+
+    		sweTextEncoding.setBlockSeparator(tupleSeparator);
+    		sweTextEncoding.setTokenSeparator(tokenSeparator);
+    		sweTextEncoding.setDecimalSeparator(decimalSeparator);
+    		sweDataArray.setEncoding(sweTextEncoding);
+    		sweDataArray.setElementType(sweDataRecord);
+
+    		if (observedPropertyInstance.getUseInterval()) {
+    			sweDataRecord.addField(new SweField("average", sweQuantity));
+    			sweDataRecord.addField(new SweField("min", sweQuantity));
+    			sweDataRecord.addField(new SweField("max", sweQuantity));
+    			sweDataRecord.addField(new SweField("median", sweQuantity));
+    			sweDataRecord.addField(new SweField("stddev", sweQuantity));
+    		} else {
+    			sweDataRecord.addField(new SweField("value", sweQuantity));
+    		}
+
+    		for (final ValueData<? extends Number> value: values) {
+    			final List<String> list;
+
+    			if (value.getObservedPropertyInstance().getUseInterval()) {
+    				list = new ArrayList<String>(5);
+
+    				list.add(value.getAverage().toString());
+    				list.add(value.getMin().toString());
+    				list.add(value.getMax().toString());
+    				list.add(value.getMedian().toString());
+    				list.add(value.getStddev().toString());
+    			} else {
+    				list = Collections.singletonList(value.getValue().toString());
+    			}
+
+    			sweDataArray.add(list);
+    		}
+
+    		seriesObservation.setValue(sweDataArray);
+    		seriesObservations.add(seriesObservation);
+    	}
+
+    	return seriesObservations;
+    }
+
+    @Override
+    public List<SeriesObservation> getSeriesObservationsFor(Series series, GetObservationRequest request,
+            SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
+    	// TODO: check in called function if AND or OR must be used
+    	return getSeriesObservationsFor(request,
+    			Collections.singletonList(series.getFeatureOfInterest().getIdentifier()),
+    			request.getOfferings(),
+    			Collections.singletonList(series.getProcedure().getIdentifier()),
+    			Collections.singletonList(series.getObservableProperty().getIdentifier()),
+    			null, sosIndeterminateTime, session);
+    }
+
     @Override
     protected List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
             Collection<String> features, Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime,
             Session session) throws HibernateException, OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(request, features, filterCriterion, sosIndeterminateTime, session)
-                .list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationsFor(Series series, GetObservationRequest request,
-            SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(series, request, sosIndeterminateTime, session).list();
-    }
-
-    @Override
-    protected void addSpecificRestrictions(Criteria c, GetObservationRequest request)
-            throws CodedException {
-        if (request.isSetResponseFormat() && AqdConstants.NS_AQD.equals(request.getResponseFormat())) {
-            ReportObligationType flow = AqdHelper.getInstance().getFlow(request.getExtensions());
-            if (ReportObligationType.E1A.equals(flow) || ReportObligationType.E2A.equals(flow)) {
-                addAssessmentType(c, AqdConstants.AssessmentType.Fixed.name());
-            } else if (ReportObligationType.E1B.equals(flow)) {
-                addAssessmentType(c, AqdConstants.AssessmentType.Model.name());
-            } else {
-                throw new OptionNotSupportedException().withMessage("The requested e-Reporting flow %s is not supported!",
-                        flow.name());
-            }
-         // add quality restrictions
-            EReportingDaoHelper.addValidityAndVerificationRestrictions(c, request);
-        }
-    }
-
-    private void addAssessmentType(Criteria c, String assessmentType) {
-        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(EReportingSeries.class);
-        detachedCriteria.add(Restrictions.eq(Series.DELETED, false));
-        detachedCriteria.createCriteria(EReportingSeries.SAMPLING_POINT).createCriteria(EReportingSamplingPoint.ASSESSMENTTYPE).
-        add(Restrictions.ilike(EReportingAssessmentType.ASSESSMENT_TYPE, assessmentType));
-        detachedCriteria.setProjection(Projections.distinct(Projections.property(Series.ID)));
-        c.add(Subqueries.propertyIn(SeriesObservation.SERIES, detachedCriteria));
-    }
-
-    @Override
-    protected void addObservationIdentifiersToObservation(ObservationIdentifiers observationIdentifiers,
-            AbstractObservation observation, Session session) throws CodedException {
-        EReportingSeriesIdentifiers identifiers = new EReportingSeriesIdentifiers();
-        identifiers.setFeatureOfInterest(observationIdentifiers.getFeatureOfInterest());
-        identifiers.setObservableProperty(observationIdentifiers.getObservableProperty());
-        identifiers.setProcedure(observationIdentifiers.getProcedure());
-        if (observationIdentifiers instanceof EReportingObservationIdentifiers) {
-            identifiers.setSamplingPoint(((EReportingObservationIdentifiers) observationIdentifiers)
-                    .getSamplingPoint());
-        }
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Series series = (Series) seriesDAO.getOrInsertSeries(identifiers, session);
-        ((SeriesObservation) observation).setSeries(series);
-        seriesDAO.updateSeriesWithFirstLatestValues(series, observation, session);
+    	// TODO: check in called function if AND or OR must be used
+    	return getSeriesObservationsFor(request, features, request.getOfferings(), request.getProcedures(), request.getObservedProperties(), filterCriterion, sosIndeterminateTime, session);
     }
 
     @Override
@@ -187,65 +357,6 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
             Set<ObservationConstellation> hObservationConstellations) {
         EReportingObservationIdentifiers observationIdentifiers = new EReportingObservationIdentifiers();
         return observationIdentifiers;
-    }
-
-    @Override
-    protected ObservationIdentifiers addAdditionalObjectsToObservationIdentifiers(
-            ObservationIdentifiers observationIdentifiers, OmObservation sosObservation, Session session) {
-        if (observationIdentifiers instanceof EReportingObservationIdentifiers) {
-            if (sosObservation.isSetParameter()) {
-                AqdSamplingPoint samplingPoint = new AqdSamplingPoint();
-                List<NamedValue<?>> remove = Lists.newArrayList();
-                for (NamedValue<?> namedValue : sosObservation.getParameter()) {
-                    if (checkForSamplingPoint(namedValue.getName())) {
-                        addSamplingPointParameterValuesToAqdSamplingPoint(samplingPoint, namedValue.getValue());
-                        remove.add(namedValue);
-                    } else if (checkForAssessmentType(namedValue.getName())) {
-                        addAssessmentTypeParameterValuesToAqdSamplingPoint(samplingPoint, namedValue.getValue());
-                        remove.add(namedValue);
-                    }
-                }
-                sosObservation.getParameter().removeAll(remove);
-                ((EReportingObservationIdentifiers) observationIdentifiers)
-                        .setSamplingPoint(new EReportingSamplingPointDAO().getOrInsert(samplingPoint, session));
-            }
-        }
-        return observationIdentifiers;
-    }
-
-    private AqdSamplingPoint addSamplingPointParameterValuesToAqdSamplingPoint(AqdSamplingPoint samplingPoint,
-            Value<?> value) {
-        if (value instanceof ReferenceValue) {
-            ReferenceType referenceType = ((ReferenceValue) value).getValue();
-            samplingPoint.setIdentifier(referenceType.getHref());
-            if (referenceType.isSetTitle()) {
-                samplingPoint.setName(new CodeType(referenceType.getTitle()));
-            }
-        } else if (value instanceof HrefAttributeValue) {
-            W3CHrefAttribute hrefAttribute = ((HrefAttributeValue) value).getValue();
-            samplingPoint.setIdentifier(hrefAttribute.getHref());
-        }
-        return samplingPoint;
-    }
-
-    private AqdSamplingPoint addAssessmentTypeParameterValuesToAqdSamplingPoint(AqdSamplingPoint samplingPoint,
-            Value<?> value) {
-        if (value instanceof ReferenceValue) {
-            samplingPoint.setAssessmentType(AssessmentType.fromConceptURI(((ReferenceValue) value).getValue()
-                    .getHref()));
-        } else if (value instanceof HrefAttributeValue) {
-            samplingPoint.setAssessmentType(AssessmentType.fromConceptURI(((HrefAttributeValue) value).getValue()
-                    .getHref()));
-        }
-        return samplingPoint;
-    }
-
-    private boolean checkForSamplingPoint(ReferenceType name) {
-        return name.isSetHref() && AqdConstants.ProcessParameter.SamplingPoint.getConceptURI().equals(name.getHref());
-    }
-
-    private boolean checkForAssessmentType(ReferenceType name) {
-        return name.isSetHref() && AqdConstants.ProcessParameter.AssessmentType.getConceptURI().equals(name.getHref());
     }
 
     @Override

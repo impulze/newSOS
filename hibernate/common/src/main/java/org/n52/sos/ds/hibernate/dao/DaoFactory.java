@@ -30,10 +30,10 @@ package org.n52.sos.ds.hibernate.dao;
 
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingObservationDAO;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingObservationTimeDAO;
+import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingValueDAO;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingValueTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
-import org.n52.sos.ds.hibernate.dao.series.SeriesDAO;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 
@@ -64,7 +64,7 @@ public class DaoFactory {
     }
 
     public AbstractSeriesDAO getSeriesDAO() throws CodedException {
-        return new SeriesDAO();
+        return new EReportingSeriesDAO();
     }
 
     /**

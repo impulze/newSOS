@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.xmlbeans.XmlObject;
 import org.hibernate.Session;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -69,12 +68,9 @@ import org.n52.sos.ogc.om.values.Value;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.ogc.sos.SosProcedureDescription;
-import org.n52.sos.ogc.swe.SweDataArray;
 import org.n52.sos.request.AbstractObservationRequest;
-import org.n52.sos.util.CodingHelper;
 import org.n52.sos.util.SosHelper;
 import org.n52.sos.util.StringHelper;
-import org.n52.sos.util.XmlHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,7 +196,7 @@ public class ObservationOmObservationCreator extends AbstractOmObservationCreato
             // setFetchSize/setMaxResult
             // + setFirstResult
         }
-        getSession().evict(hObservation);
+        //getSession().evict(hObservation);
         LOGGER.trace("Creating Observation done.");
         return sosObservation;
     }
@@ -245,8 +241,9 @@ public class ObservationOmObservationCreator extends AbstractOmObservationCreato
             return new UnknownValue(((BlobObservation) hObservation).getValue());
         } else if (hObservation instanceof SweDataArrayObservation) {
             SweDataArrayValue sweDataArrayValue = new SweDataArrayValue();
-            final XmlObject xml = XmlHelper.parseXmlString(((SweDataArrayObservation) hObservation).getValue());
-            sweDataArrayValue.setValue((SweDataArray) CodingHelper.decodeXmlElement(xml));
+            //final XmlObject xml = XmlHelper.parseXmlString(((SweDataArrayObservation) hObservation).getValue());
+            //sweDataArrayValue.setValue((SweDataArray) CodingHelper.decodeXmlElement(xml));
+            sweDataArrayValue.setValue(((SweDataArrayObservation)hObservation).getValue());
             return sweDataArrayValue;
         }
         return null;

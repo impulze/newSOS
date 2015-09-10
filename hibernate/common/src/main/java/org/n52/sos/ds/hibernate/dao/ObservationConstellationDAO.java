@@ -29,33 +29,29 @@
 package org.n52.sos.ds.hibernate.dao;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.sql.JoinType;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ObservationType;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.ObservationConstellationInfo;
 import org.n52.sos.exception.ows.InvalidParameterValueException;
 import org.n52.sos.ogc.om.OmObservationConstellation;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos2Constants;
-import org.n52.sos.service.Configurator;
-import org.n52.sos.util.CollectionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.n52.sos.service.SosContextListener;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for observation constellation
@@ -64,8 +60,21 @@ import com.google.common.collect.Sets;
  * @since 4.0.0
  */
 public class ObservationConstellationDAO {
+    private static ObservationConstellation createObservationConstellation(ObservedPropertyInstance observedPropertyInstance, Session session) {
+        final ObservationConstellation obsConst = new ObservationConstellation();
+        final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+        final Offering offering = new OfferingDAO().getOfferingForIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName(), session);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ObservationConstellationDAO.class);
+        obsConst.setObservableProperty(ObservablePropertyDAO.createObservableProperty(observedPropertyInstance, session));
+        obsConst.setProcedure(ProcedureDAO.createTProcedure(observedPropertyInstance.getSensor(), session));
+        obsConst.setOffering(offering);
+        obsConst.setObservationType(new ObservationTypeDAO().getObservationTypeObject(ObservationTypeDAO.HZG_OBSERVATION_TYPE, session));
+        obsConst.setDeleted(false);
+        obsConst.setDisabled(false);
+        obsConst.setHiddenChild(false);
+
+        return obsConst;
+    }
 
     /**
      * Get observation constellation objects for procedure and observable
@@ -81,20 +90,17 @@ public class ObservationConstellationDAO {
      *            Hibernate session
      * @return Observation constellation objects
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellation(Procedure procedure,
             ObservableProperty observableProperty, Collection<String> offerings, Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationConstellation.class)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                        .add(Restrictions.eq(ObservationConstellation.PROCEDURE, procedure))
-                        .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY, observableProperty))
-                        .createAlias(ObservationConstellation.OFFERING, "o")
-                        .add(Restrictions.in("o." + Offering.IDENTIFIER, offerings))
-                        .add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        LOGGER.debug("QUERY getObservationConstellation(procedure, observableProperty, offerings): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+        final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+        for (final String offering: offerings) {
+            if (offering.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
+                return getObservationConstellations(procedure.getIdentifier(), observableProperty.getIdentifier(), session);
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -111,14 +117,15 @@ public class ObservationConstellationDAO {
      *            Hibernate session
      * @return ObservationConstellations
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellationsForOfferings(Procedure procedure,
             ObservableProperty observableProperty, Collection<Offering> offerings, Session session) {
-        return session.createCriteria(ObservationConstellation.class)
-                .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                .add(Restrictions.eq(ObservationConstellation.PROCEDURE, procedure))
-                .add(Restrictions.in(ObservationConstellation.OFFERING, offerings))
-                .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY, observableProperty)).list();
+        final List<String> offeringIdentifiers = Lists.newArrayListWithCapacity(offerings.size());
+
+        for (final Offering offering: offerings) {
+            offeringIdentifiers.add(offering.getIdentifier());
+        }
+
+        return getObservationConstellation(procedure, observableProperty, offeringIdentifiers, session);
     }
 
     /**
@@ -155,17 +162,32 @@ public class ObservationConstellationDAO {
     @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellations(String procedure, String observableProperty,
             Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationConstellation.class)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                        .add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        criteria.createCriteria(ObservationConstellation.PROCEDURE).add(
-                Restrictions.eq(Procedure.IDENTIFIER, procedure));
-        criteria.createCriteria(ObservationConstellation.OBSERVABLE_PROPERTY).add(
-                Restrictions.eq(ObservableProperty.IDENTIFIER, observableProperty));
-        LOGGER.debug("QUERY getObservationConstellation(procedure, observableProperty): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+        if (!procedure.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+            return Collections.emptyList();
+        }
+
+        if (!observableProperty.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
+        	return Collections.emptyList();
+        }
+
+        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
+        final Criteria sensorCriteria = criteria.createCriteria("sensor");
+        final String instanceName = observableProperty.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length());
+        final String sensorName = procedure.substring(sosConfiguration.getProcedureIdentifierPrefix().length());
+
+        criteria.add(Restrictions.eq("name", instanceName));
+        sensorCriteria.add(Restrictions.eq("name", sensorName));
+
+        final List<ObservedPropertyInstance> results = criteria.list();
+        final List<ObservationConstellation> obsConsts = Lists.newArrayListWithCapacity(results.size());
+
+        for (final ObservedPropertyInstance observedPropertyInstance: results) {
+            obsConsts.add(createObservationConstellation(observedPropertyInstance, session));
+        }
+
+        return obsConsts;
     }
 
     /**
@@ -175,14 +197,21 @@ public class ObservationConstellationDAO {
      *            Hibernate session
      * @return Observation constellation objects
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellations(Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationConstellation.class)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                        .add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        LOGGER.debug("QUERY getObservationConstellations(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	// TODO: only add if they have calculated/raw data assigned
+    	final List<ObservedPropertyInstance> observedPropertyInstances = new ObservablePropertyDAO().getObservedPropertyInstances(session);
+        final List<ObservationConstellation> obsConsts = Lists.newArrayListWithCapacity(observedPropertyInstances.size());
+        final List<ObservedPropertyInstance> observedPropertyInstancesAdded = Lists.newArrayListWithCapacity(observedPropertyInstances.size());
+
+        for (final ObservedPropertyInstance observedPropertyInstance: observedPropertyInstances) {
+            if (!observedPropertyInstancesAdded.contains(observedPropertyInstance)) {
+                // TODOHZG: projections? how to add?
+                obsConsts.add(createObservationConstellation(observedPropertyInstance, session));
+                observedPropertyInstancesAdded.add(observedPropertyInstance);
+            }
+        }
+
+        return obsConsts;
     }
 
     /**
@@ -193,33 +222,22 @@ public class ObservationConstellationDAO {
      * @return Observation constellation info objects
      */
     public List<ObservationConstellationInfo> getObservationConstellationInfo(Session session) {
-        List<ObservationConstellationInfo> ocis = Lists.newArrayList();        
-            Criteria criteria = session.createCriteria(ObservationConstellation.class, "oc")
-                    .createAlias(ObservationConstellation.OFFERING, "o")
-                    .createAlias(ObservationConstellation.PROCEDURE, "p")
-                    .createAlias(ObservationConstellation.OBSERVABLE_PROPERTY, "op")
-                    .createAlias(ObservationConstellation.OBSERVATION_TYPE, "ot", JoinType.LEFT_OUTER_JOIN)
-                    .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                    .setProjection(Projections.projectionList()
-                        .add(Projections.property("o." + Offering.IDENTIFIER))
-                        .add(Projections.property("p." + Procedure.IDENTIFIER))
-                        .add(Projections.property("op." + ObservableProperty.IDENTIFIER))
-                        .add(Projections.property("ot." + ObservationType.OBSERVATION_TYPE))
-                        .add(Projections.property("oc." + ObservationConstellation.HIDDEN_CHILD)));
-            LOGGER.debug("QUERY getObservationConstellationInfo(): {}", HibernateHelper.getSqlString(criteria));
-            
-            @SuppressWarnings("unchecked")
-            List<Object[]> results = criteria.list();
-            for (Object[] result : results) {
-                ObservationConstellationInfo oci = new ObservationConstellationInfo();
-                oci.setOffering((String) result[0]);
-                oci.setProcedure((String) result[1]);
-                oci.setObservableProperty((String) result[2]);
-                oci.setObservationType((String) result[3]);
-                oci.setHiddenChild((Boolean) result[4]);
-                ocis.add(oci);
-            }
-        return ocis;
+        final List<ObservationConstellation> obsConsts = getObservationConstellations(session);
+        final List<ObservationConstellationInfo> obsConstInfos = Lists.newArrayListWithCapacity(obsConsts.size());
+
+        for (final ObservationConstellation obsConst: obsConsts) {
+            final ObservationConstellationInfo obsConstInfo = new ObservationConstellationInfo();
+
+            obsConstInfo.setOffering(obsConst.getOffering().getIdentifier());
+            obsConstInfo.setProcedure(obsConst.getProcedure().getIdentifier());
+            obsConstInfo.setObservableProperty(obsConst.getObservableProperty().getIdentifier());
+            obsConstInfo.setObservationType(obsConst.getObservationType().getObservationType());
+            obsConstInfo.setHiddenChild(false);
+
+            obsConstInfos.add(obsConstInfo);
+        }
+
+        return obsConstInfos;
     }    
     
     /**
@@ -240,34 +258,14 @@ public class ObservationConstellationDAO {
      */
     public ObservationConstellation checkOrInsertObservationConstellation(Procedure procedure,
             ObservableProperty observableProperty, Offering offering, boolean hiddenChild, Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationConstellation.class)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                        .add(Restrictions.eq(ObservationConstellation.OFFERING, offering))
-                        .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY, observableProperty))
-                        .add(Restrictions.eq(ObservationConstellation.PROCEDURE, procedure))
-                        .add(Restrictions.eq(ObservationConstellation.HIDDEN_CHILD, hiddenChild));
-        LOGGER.debug(
-                "QUERY checkOrInsertObservationConstellation(procedure, observableProperty, offering, hiddenChild): {}",
-                HibernateHelper.getSqlString(criteria));
-        ObservationConstellation obsConst = (ObservationConstellation) criteria.uniqueResult();
-        if (obsConst == null) {
-            obsConst = new ObservationConstellation();
-            obsConst.setObservableProperty(observableProperty);
-            obsConst.setProcedure(procedure);
-            obsConst.setOffering(offering);
-            obsConst.setDeleted(false);
-            obsConst.setHiddenChild(hiddenChild);
-            session.save(obsConst);
-            session.flush();
-            session.refresh(obsConst);
-        } else if (obsConst.getDeleted()) {
-            obsConst.setDeleted(false);
-            session.save(obsConst);
-            session.flush();
-            session.refresh(obsConst);
+        final List<String> offerings = Lists.newArrayList(offering.getIdentifier());
+        final List<ObservationConstellation> obsConsts = getObservationConstellation(procedure, observableProperty, offerings, session);
+
+        if (!obsConsts.isEmpty()) {
+            return obsConsts.get(0);
         }
-        return obsConst;
+
+        throw new RuntimeException("Insertion of observation constellations is not supported yet.");
     }
 
     /**
@@ -288,123 +286,69 @@ public class ObservationConstellationDAO {
     public ObservationConstellation checkObservationConstellation(
             OmObservationConstellation sosObservationConstellation, String offering, Session session,
             String parameterName) throws OwsExceptionReport {
-        String observableProperty = sosObservationConstellation.getObservableProperty().getIdentifier();
-        String procedure = sosObservationConstellation.getProcedure().getIdentifier();
+        final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
 
-        Criteria c =
-                session.createCriteria(ObservationConstellation.class).setResultTransformer(
-                        Criteria.DISTINCT_ROOT_ENTITY);
+        if (!offering.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
+            return null;
+        }
 
-        c.createCriteria(ObservationConstellation.OFFERING).add(Restrictions.eq(Offering.IDENTIFIER, offering));
+        final String observableProperty = sosObservationConstellation.getObservableProperty().getIdentifier();
+        final String procedure = sosObservationConstellation.getProcedure().getIdentifier();
 
-        c.createCriteria(ObservationConstellation.OBSERVABLE_PROPERTY).add(
-                Restrictions.eq(ObservableProperty.IDENTIFIER, observableProperty));
+        if (!observableProperty.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
+            return null;
+        }
 
-        c.createCriteria(ObservationConstellation.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedure));
+        if (!procedure.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+            return null;
+        }
 
-        LOGGER.debug("QUERY checkObservationConstellation(sosObservationConstellation, offering): {}",
-                HibernateHelper.getSqlString(c));
+        final String instanceName = observableProperty.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length());
+        final String sensorName = procedure.substring(sosConfiguration.getProcedureIdentifierPrefix().length());
+
+        final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class)
+        	.add(Restrictions.eq("name", instanceName));
+        criteria.createCriteria("sensor")
+        	.add(Restrictions.eq("name", sensorName));
+
         @SuppressWarnings("unchecked")
-        List<ObservationConstellation> hocs = c.list();
+		final List<ObservedPropertyInstance> results = criteria.list();
 
-        if (!hocs.isEmpty()) {
-            for (ObservationConstellation hoc : hocs) {
-                if (hoc.getObservationType() == null
-                        || (hoc.getObservationType() != null && (hoc.getObservationType().getObservationType()
-                                .equals("NOT_DEFINED") || hoc.getObservationType().getObservationType().isEmpty()))) {
-                    return updateObservationConstellation(hoc, sosObservationConstellation.getObservationType(),
-                            session);
-                } else {
-                    if (hoc.getObservationType().getObservationType()
-                            .equals(sosObservationConstellation.getObservationType())) {
-                        return hoc;
-                    } else {
-                        throw new InvalidParameterValueException()
-                                .at(parameterName)
-                                .withMessage(
-                                        "The requested observationType (%s) is invalid for procedure = %s, observedProperty = %s and offering = %s! The valid observationType is '%s'!",
-                                        sosObservationConstellation.getObservationType(), procedure,
-                                        observableProperty, sosObservationConstellation.getOfferings(),
-                                        hoc.getObservationType().getObservationType());
-                    }
-                }
-            }
-        } else {
+        if (results.isEmpty()) {
             throw new InvalidParameterValueException()
-                    .at(Sos2Constants.InsertObservationParams.observation)
-                    .withMessage(
-                            "The requested observation constellation (procedure=%s, observedProperty=%s and offering=%s) is invalid!",
-                            procedure, observableProperty, sosObservationConstellation.getOfferings());
+            .at(Sos2Constants.InsertObservationParams.observation)
+            .withMessage(
+                    "The requested observation constellation (procedure=%s, observedProperty=%s and offering=%s) is invalid!",
+                    procedure, observableProperty, sosObservationConstellation.getOfferings());
         }
-        return null;
-    }
 
-    /**
-     * Update observation constellation with observation type
-     * 
-     * @param observationConstellation
-     *            Observation constellation object
-     * @param observationType
-     *            Observation type
-     * @param session
-     *            Hibernate session
-     * @return Observation constellation object
-     */
-    @SuppressWarnings("unchecked")
-    public ObservationConstellation updateObservationConstellation(ObservationConstellation observationConstellation,
-            String observationType, Session session) {
-        ObservationType obsType = new ObservationTypeDAO().getObservationTypeObject(observationType, session);
-        observationConstellation.setObservationType(obsType);
-        session.saveOrUpdate(observationConstellation);
+        final List<ObservedPropertyInstance> observedPropertyInstancesAdded = Lists.newArrayListWithCapacity(results.size());
 
-        // update hidden child observation constellations
-        // TODO should hidden child observation constellations be restricted to
-        // the parent observation type?
-        Set<String> offerings =
-                new HashSet<String>(Configurator.getInstance().getCache()
-                        .getOfferingsForProcedure(observationConstellation.getProcedure().getIdentifier()));
-        offerings.remove(observationConstellation.getOffering().getIdentifier());
+        
+        for (final ObservedPropertyInstance observedPropertyInstance: results) {
+        	final ObservationConstellation obsConst = createObservationConstellation(observedPropertyInstance, session);
 
-        if (CollectionHelper.isNotEmpty(offerings)) {
-            Criteria c =
-                    session.createCriteria(ObservationConstellation.class)
-                            .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                            .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY,
-                                    observationConstellation.getObservableProperty()))
-                            .add(Restrictions.eq(ObservationConstellation.PROCEDURE,
-                                    observationConstellation.getProcedure()))
-                            .add(Restrictions.eq(ObservationConstellation.HIDDEN_CHILD, true));
-            c.createCriteria(ObservationConstellation.OFFERING).add(Restrictions.in(Offering.IDENTIFIER, offerings));
-            LOGGER.debug("QUERY updateObservationConstellation(observationConstellation, observationType): {}",
-                    HibernateHelper.getSqlString(c));
-            List<ObservationConstellation> hiddenChildObsConsts = c.list();
-            for (ObservationConstellation hiddenChildObsConst : hiddenChildObsConsts) {
-                hiddenChildObsConst.setObservationType(obsType);
-                session.saveOrUpdate(hiddenChildObsConst);
+            if (observedPropertyInstancesAdded.contains(observedPropertyInstance)) {
+                continue;
+            }
+
+            observedPropertyInstancesAdded.add(observedPropertyInstance);
+
+            if (obsConst.getObservationType().getObservationType()
+                    .equals(sosObservationConstellation.getObservationType())) {
+                return obsConst;
+            } else {
+                throw new InvalidParameterValueException()
+                        .at(parameterName)
+                        .withMessage(
+                                "The requested observationType (%s) is invalid for procedure = %s, observedProperty = %s and offering = %s! The valid observationType is '%s'!",
+                                sosObservationConstellation.getObservationType(), procedure,
+                                observableProperty, sosObservationConstellation.getOfferings(),
+                                obsConst.getObservationType().getObservationType());
             }
         }
 
-        return observationConstellation;
-    }
-
-    /**
-     * Return the non-deleted observation constellations for an offering
-     * 
-     * @param offering
-     *            Offering to fetch observation constellations for
-     * @param session
-     *            Session to use
-     * @return Offering's observation constellations
-     */
-    @SuppressWarnings("unchecked")
-    public List<ObservationConstellation> getObservationConstellationsForOffering(Offering offering, Session session) {
-            Criteria criteria =
-                    session.createCriteria(ObservationConstellation.class)
-                            .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                            .add(Restrictions.eq(ObservationConstellation.OFFERING, offering));
-            LOGGER.debug("QUERY getObservationConstellationsForOffering(offering): {}",
-                    HibernateHelper.getSqlString(criteria));
-            return criteria.list();
+        return null;
     }
 
     /**
@@ -420,16 +364,7 @@ public class ObservationConstellationDAO {
      */
     public void updateObservatioConstellationSetAsDeletedForProcedure(String procedure, boolean deleteFlag,
             Session session) {
-        @SuppressWarnings("unchecked")
-        List<ObservationConstellation> hObservationConstellations =
-                session.createCriteria(ObservationConstellation.class)
-                        .createCriteria(ObservationConstellation.PROCEDURE)
-                        .add(Restrictions.eq(Procedure.IDENTIFIER, procedure)).list();
-        for (ObservationConstellation hObservationConstellation : hObservationConstellations) {
-            hObservationConstellation.setDeleted(deleteFlag);
-            session.saveOrUpdate(hObservationConstellation);
-            session.flush();
-        }
+        throw new RuntimeException("Setting the deleted flag on observation constellations isn't supported yet.");
     }
 
     /**
@@ -446,35 +381,29 @@ public class ObservationConstellationDAO {
      *            Hibernate session
      * @return Resulting ObservationCollection entities
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellations(List<String> procedures,
             List<String> observedProperties, List<String> offerings, Session session) {
-        final Criteria c =
-                session.createCriteria(ObservationConstellation.class)
-                        .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        if (CollectionHelper.isNotEmpty(offerings)) {
-            c.createCriteria(ObservationConstellation.OFFERING).add(Restrictions.in(Offering.IDENTIFIER, offerings));
-        }
-        if (CollectionHelper.isNotEmpty(observedProperties)) {
-            c.createCriteria(ObservationConstellation.OBSERVABLE_PROPERTY).add(
-                    Restrictions.in(ObservableProperty.IDENTIFIER, observedProperties));
-        }
-        if (CollectionHelper.isNotEmpty(procedures)) {
-            c.createCriteria(ObservationConstellation.PROCEDURE)
-                    .add(Restrictions.in(Procedure.IDENTIFIER, procedures));
-        }
-        c.add(Restrictions.isNotNull(ObservationConstellation.OBSERVATION_TYPE));
-        LOGGER.debug("QUERY getObservationConstellations(): {}", HibernateHelper.getSqlString(c));
-        return c.list();
+        final List<ObservationConstellation> obsConsts = getObservationConstellations(session);
+        final Iterator<ObservationConstellation> iterator = obsConsts.iterator();
 
+        while (iterator.hasNext()) {
+            final ObservationConstellation obsConst = iterator.next();
+
+            if (!offerings.contains(obsConst.getOffering().getIdentifier())) {
+                iterator.remove();
+            } else if (!procedures.contains(obsConst.getProcedure().getIdentifier())) {
+                iterator.remove();
+            } else if (!observedProperties.contains(obsConst.getObservableProperty().getIdentifier())) {
+                iterator.remove();
+            }
+        }
+
+        return obsConsts;
     }
     
-    @SuppressWarnings("unchecked")
     protected Set<ObservationConstellation> getObservationConstellations(Session session, Procedure procedure) {
-        return Sets.newHashSet(session.createCriteria(ObservationConstellation.class)
-                .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                .add(Restrictions.eq(ObservationConstellation.PROCEDURE, procedure))
-                .list());
+        final List<ObservationConstellation> list = getObservationConstellations(procedure.getIdentifier(), procedure.getIdentifier(), session);
+
+        return Sets.newHashSet(list);
     }    
 }

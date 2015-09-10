@@ -28,115 +28,84 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import org.n52.sos.aqd.AqdConstants;
-import org.n52.sos.aqd.AqdHelper;
-import org.n52.sos.aqd.ReportObligationType;
+import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
+import org.n52.sos.ds.hibernate.dao.UnitDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
-import org.n52.sos.ds.hibernate.dao.series.SeriesIdentifiers;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingAssessmentType;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
+import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.exception.CodedException;
-import org.n52.sos.exception.ows.OptionNotSupportedException;
-import org.n52.sos.request.GetObservationRequest;
+import org.n52.sos.service.SosContextListener;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
+import de.hzg.measurement.Sensor;
 
 public class EReportingSeriesDAO extends AbstractSeriesDAO {
+    private Series getSeriesFromInstance(ObservedPropertyInstance observedPropertyInstance, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+		final EReportingSeries series = new EReportingSeries();
+
+		series.setProcedure(ProcedureDAO.createTProcedure(observedPropertyInstance.getSensor(), session));
+		series.setFeatureOfInterest(new FeatureOfInterestDAO().getFeatureOfInterest(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName(), session));
+		series.setObservableProperty(ObservablePropertyDAO.createObservableProperty(observedPropertyInstance,  session));
+		series.setDeleted(false);
+		series.setPublished(true);
+
+		if (!observedPropertyInstance.getIsRaw()) {
+			series.setUnit(new UnitDAO().getUnitFromObservedPropertyInstance(observedPropertyInstance));
+		}
+
+    	return series;
+    }
+
     @Override
     protected Class<?> getSeriesClass() {
         return EReportingSeries.class;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List<Series> getSeries(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
-        return getSeriesCriteria(request, features, session).list();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Series> getSeries(String observedProperty, Collection<String> features, Session session) {
-        return getSeriesCriteria(observedProperty, features, session).list();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public List<Series> getSeries(Collection<String> procedures, Collection<String> observedProperties,
             Collection<String> features, Session session) {
-        return getSeriesCriteria(procedures, observedProperties, features, session).list();
-    }
+    	// make sure query is applicable to our database model
+    	// for now quit on null, unsure how to handle it (depends on call)
+    	if (procedures == null || observedProperties == null || features == null) {
+    		throw new RuntimeException("Parameters to getSeries cannot be null for now: " + procedures + observedProperties + features);
+    	}
 
-    @Override
-    public EReportingSeries getSeriesFor(String procedure, String observableProperty, String featureOfInterest,
-            Session session) {
-        return (EReportingSeries) getSeriesCriteriaFor(procedure, observableProperty, featureOfInterest, session).uniqueResult();
-    }
+    	final List<ObservedPropertyInstance> allObservedPropertyInstances = new ArrayList<ObservedPropertyInstance>();
+   		final List<ObservedPropertyInstance> observedPropertyInstances = new ObservablePropertyDAO().getObservedPropertyInstancesForIdentifiers(observedProperties, session);
 
-    @Override
-    public EReportingSeries getOrInsertSeries(SeriesIdentifiers identifiers, Session session) throws CodedException {
-        return (EReportingSeries) super.getOrInsert(identifiers, session);
-    }
-    
-    /**
-     * Add EReportingSamplingPoint restriction to Hibernate Criteria
-     * 
-     * @param c
-     *            Hibernate Criteria to add restriction
-     * @param samplingPoint
-     *            EReportingSamplingPoint identifier to add
-     */
-    public void addEReportingSamplingPointToCriteria(Criteria c, String samplingPoint) {
-        c.createCriteria(EReportingSeries.SAMPLING_POINT).add(Restrictions.eq(EReportingSamplingPoint.IDENTIFIER, samplingPoint));
+   		if (observedPropertyInstances != null) {
+   			allObservedPropertyInstances.addAll(observedPropertyInstances);
+    	}
 
-    }
-    
-    /**
-     * Add EReportingSamplingPoint restriction to Hibernate Criteria
-     * 
-     * @param c
-     *            Hibernate Criteria to add restriction
-     * @param samplingPoint
-     *            EReportingSamplingPoint to add
-     */
-    public void addEReportingSamplingPointToCriteria(Criteria c, EReportingSamplingPoint samplingPoint) {
-        c.add(Restrictions.eq(EReportingSeries.SAMPLING_POINT, samplingPoint));
-    }
+   		final List<Sensor> sensors = new ProcedureDAO().getSensorsForIdentifiers(procedures, session);
 
-    /**
-     * Add EReportingSamplingPoint restriction to Hibernate Criteria
-     * 
-     * @param c
-     *            Hibernate Criteria to add restriction
-     * @param samplingPoints
-     *            EReportingSamplingPoint identifiers to add
-     */
-    public void addEReportingSamplingPointToCriteria(Criteria c, Collection<String> samplingPoints) {
-        c.createCriteria(EReportingSeries.SAMPLING_POINT).add(Restrictions.in(EReportingSamplingPoint.IDENTIFIER, samplingPoints));
-    }
+   		if (sensors != null) {
+   			for (final Sensor sensor: sensors) {
+   				allObservedPropertyInstances.addAll(sensor.getObservedPropertyInstances());
+  			}
+    	}
 
-    @Override
-    protected void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException {
-        if (request.isSetResponseFormat() && AqdConstants.NS_AQD.equals(request.getResponseFormat())) {
-            ReportObligationType flow = AqdHelper.getInstance().getFlow(request.getExtensions());
-            if (ReportObligationType.E1A.equals(flow) || ReportObligationType.E2A.equals(flow)) {
-                addAssessmentType(c, AqdConstants.AssessmentType.Fixed.name());
-            } else if (ReportObligationType.E1B.equals(flow)) {
-                addAssessmentType(c, AqdConstants.AssessmentType.Model.name());
-            } else {
-                throw new OptionNotSupportedException().withMessage("The requested e-Reporting flow %s is not supported!", flow.name());
-            }
-        }
+   		final List<FeatureOfInterest> fois = new FeatureOfInterestDAO().getFeatureOfInterestObject(features, session);
+
+   		if (fois == null || fois.isEmpty()) {
+   			allObservedPropertyInstances.clear();
+   		}
+
+   		final List<Series> series = new ArrayList<Series>();
+
+   		for (final ObservedPropertyInstance observedPropertyInstance: allObservedPropertyInstances) {
+   			series.add(getSeriesFromInstance(observedPropertyInstance, session));
+   		}
+
+   		return series;
     }
-    
-    private void addAssessmentType(Criteria c, String assessmentType) {
-        c.createCriteria(EReportingSeries.SAMPLING_POINT).createCriteria(EReportingSamplingPoint.ASSESSMENTTYPE).
-        add(Restrictions.ilike(EReportingAssessmentType.ASSESSMENT_TYPE, assessmentType));
-    }
-    
 }

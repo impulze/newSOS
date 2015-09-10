@@ -29,32 +29,32 @@
 package org.n52.sos.ds.hibernate.entities.ereporting;
 
 import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
-import org.n52.sos.util.StringHelper;
+import org.n52.sos.ogc.swe.SweDataArray;
 
 public class EReportingSweDataArrayObservation extends EReportingObservation implements SweDataArrayObservation {
 
     private static final long serialVersionUID = 2795656873464831213L;
 
-    private String value;
+    private SweDataArray value;
 
     @Override
-    public String getValue() {
+    public SweDataArray getValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(String value) {
+    public void setValue(SweDataArray value) {
         this.value = value;
     }
 
     @Override
     public boolean isSetValue() {
-        return StringHelper.isNotEmpty(value);
+        return !value.isEmpty();
     }
 
 	@Override
 	public String getValueAsString() {
-		return getValue();
+		return getValue().toString();
 	}
     
     
