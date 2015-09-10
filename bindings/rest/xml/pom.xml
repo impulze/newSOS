@@ -48,6 +48,7 @@
                     <sourceSchemas>
                         <sourceSchema>sosREST.xsd</sourceSchema>
                     </sourceSchemas>
+                    <javaSource>1.5</javaSource>
                 </configuration>
             </plugin>
             <plugin>
