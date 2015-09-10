@@ -319,7 +319,7 @@ public abstract class Nillable<T> {
         @Override
         public boolean equals(Object obj) {
             return obj instanceof Present && Objects
-                   .equal(get(), ((Present) obj).get());
+                   .equal(get(), ((Present<?>) obj).get());
         }
 
         @Override

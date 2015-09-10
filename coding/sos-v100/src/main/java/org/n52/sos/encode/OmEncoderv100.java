@@ -274,7 +274,7 @@ public class OmEncoderv100 extends AbstractXmlEncoder<Object> implements Observa
                 if (Strings.isNullOrEmpty(resultModel)
                         || (StringHelper.isNotEmpty(resultModel) && observationType.equals(resultModel))) {
                     if (sosObservation.getValue() instanceof StreamingValue) {
-                        StreamingValue streamingValue = (StreamingValue) sosObservation.getValue();
+                        StreamingValue<?> streamingValue = (StreamingValue<?>) sosObservation.getValue();
                         while (streamingValue.hasNextValue()) {
                             xbObservationCollection.addNewMember().set(
                                     createObservation(streamingValue.nextSingleObservation(), null));

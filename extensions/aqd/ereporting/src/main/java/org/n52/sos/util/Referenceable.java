@@ -104,7 +104,7 @@ public abstract class Referenceable<T> {
         @Override
         public boolean equals(Object obj) {
             return obj instanceof Instance && Objects
-                   .equal(this.getInstance(), ((Instance) obj).getInstance());
+                   .equal(this.getInstance(), ((Instance<?>) obj).getInstance());
         }
 
         @Override

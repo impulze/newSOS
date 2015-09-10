@@ -57,7 +57,7 @@ public class CompositeSimilar<T extends Similar<T>> implements Similar<T> {
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == getClass()) {
             @SuppressWarnings(value = "unchecked")
-            CompositeSimilar<T> key = (CompositeSimilar) obj;
+            CompositeSimilar<T> key = (CompositeSimilar<T>) obj;
             return key.matches(getSimilars()) && matches(key.getSimilars());
         }
         return false;

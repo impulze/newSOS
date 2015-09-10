@@ -59,7 +59,7 @@ public abstract class AbstractOrdered<T extends Ordered<T>> implements Ordered<T
     public int compareTo(Ordered<?> t) {
         int compare = Float.compare(getOrder(), t.getOrder());
         if (compare == 0 && t instanceof AbstractOrdered) {
-            AbstractOrdered<?> ao = (AbstractOrdered) t;
+            AbstractOrdered<?> ao = (AbstractOrdered<?>) t;
             if (getSuborder() == null) {
                 return 1;
             } else if (ao.getSuborder() == null) {

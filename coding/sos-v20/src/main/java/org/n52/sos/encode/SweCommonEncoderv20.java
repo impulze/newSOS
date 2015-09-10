@@ -157,7 +157,7 @@ public class SweCommonEncoderv20 extends AbstractXmlEncoder<Object> {
             throws OwsExceptionReport {
         XmlObject encodedObject = null;
         if (sosSweType instanceof SweCoordinate) {
-            encodedObject = createCoordinate((SweCoordinate) sosSweType);
+            encodedObject = createCoordinate((SweCoordinate<?>) sosSweType);
         } else if (sosSweType instanceof SweAbstractEncoding) {
             encodedObject = createAbstractEncoding((SweAbstractEncoding) sosSweType, additionalValues);
             if (additionalValues.containsKey(HelperValues.DOCUMENT)) {
@@ -198,7 +198,7 @@ public class SweCommonEncoderv20 extends AbstractXmlEncoder<Object> {
         }
         AbstractDataComponentType abstractDataComponentType = null;
         if (sosSweAbstractDataComponent instanceof SweAbstractSimpleType) {
-            abstractDataComponentType = createSimpleType((SweAbstractSimpleType) sosSweAbstractDataComponent);
+            abstractDataComponentType = createSimpleType((SweAbstractSimpleType<?>) sosSweAbstractDataComponent);
         } else if (sosSweAbstractDataComponent instanceof SweVector) {
             abstractDataComponentType = createVector((SweVector) sosSweAbstractDataComponent);
         } else if (sosSweAbstractDataComponent instanceof SweDataRecord) {

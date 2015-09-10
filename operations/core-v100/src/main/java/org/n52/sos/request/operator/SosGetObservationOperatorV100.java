@@ -252,7 +252,7 @@ public class SosGetObservationOperatorV100 extends
     private boolean checkForObservationAndMeasurementV20Type(String responseFormat) throws OwsExceptionReport {
         Encoder<XmlObject, OmObservation> encoder = CodingHelper.getEncoder(responseFormat, new OmObservation());
         if (encoder instanceof ObservationEncoder) {
-            return ((ObservationEncoder) encoder).isObservationAndMeasurmentV20Type();
+            return ((ObservationEncoder<XmlObject, OmObservation>) encoder).isObservationAndMeasurmentV20Type();
         }
         return false;
     }

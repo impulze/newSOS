@@ -82,7 +82,7 @@ public class ObservationUnfolder {
         } else {
 
             final SweDataArrayValue arrayValue =
-                    ((SweDataArrayValue) ((MultiObservationValues) multiObservation.getValue()).getValue());
+                    ((SweDataArrayValue) ((MultiObservationValues<?>) multiObservation.getValue()).getValue());
             final List<List<String>> values = arrayValue.getValue().getValues();
             final List<OmObservation> observationCollection = new ArrayList<OmObservation>(values.size());
             SweDataRecord elementType = null;

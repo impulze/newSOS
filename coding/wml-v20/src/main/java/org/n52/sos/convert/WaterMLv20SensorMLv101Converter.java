@@ -394,7 +394,7 @@ public class WaterMLv20SensorMLv101Converter implements Converter<SosProcedureDe
     private NamedValue<String> convertSMLFieldToNamedValuePair(final SweField field) {
         if (field.getElement() instanceof SweAbstractSimpleType) {
             final NamedValue<String> namedValueProperty =
-                    getNamedValuePairForSosSweAbstractSimpleType((SweAbstractSimpleType) field.getElement(), field.getName().getValue());
+                    getNamedValuePairForSosSweAbstractSimpleType((SweAbstractSimpleType<?>) field.getElement(), field.getName().getValue());
             namedValueProperty.getName().setTitle(field.getName().getValue());
             return namedValueProperty;
         }

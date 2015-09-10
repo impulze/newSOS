@@ -85,7 +85,7 @@ public class Activatable<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Activatable) {
-            Activatable<?> a = (Activatable) obj;
+            Activatable<?> a = (Activatable<?>) obj;
             return Objects.equal(isActive(), a.isActive()) && Objects.equal(getInternal(), a.getInternal());
 
         }

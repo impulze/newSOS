@@ -109,7 +109,7 @@ public class WmlTVPEncoderv20XmlStreamWriter extends AbstractOmV20XmlStreamWrite
             }
             close();
         } else if (observation.getValue() instanceof StreamingValue) {
-            StreamingValue observationValue = (StreamingValue) observation.getValue();
+            StreamingValue<?> observationValue = (StreamingValue<?>) observation.getValue();
             writeDefaultPointMetadata(observationValue.getUnit());
             writeNewLine();
             while (observationValue.hasNextValue()) {
