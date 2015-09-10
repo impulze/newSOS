@@ -36,15 +36,10 @@ import org.n52.sos.ogc.ows.CompositeOwsException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.ConformanceClasses;
 import org.n52.sos.ogc.sos.SosConstants;
-import org.n52.sos.ogc.sos.SosEnvelope;
-import org.n52.sos.ogc.sos.SosObservationOffering;
 import org.n52.sos.request.GetCapabilitiesRequest;
 import org.n52.sos.response.GetCapabilitiesResponse;
-import org.n52.sos.util.GeometryHandler;
 import org.n52.sos.wsdl.WSDLConstants;
 import org.n52.sos.wsdl.WSDLOperation;
-
-import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * @since 4.0.0

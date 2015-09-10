@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.ogc.sos.SosConstants;
-import org.n52.sos.util.http.HTTPConstants;
 import org.n52.sos.util.http.MediaTypes;
 
 /**

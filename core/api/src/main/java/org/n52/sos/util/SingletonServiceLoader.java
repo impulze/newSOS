@@ -39,8 +39,6 @@ import org.n52.sos.exception.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.n52.sos.exception.ConfigurationException;
-
 /**
  * Producer that loads a single instance of <code>T</code> with a
  * {@link ServiceLoader}.

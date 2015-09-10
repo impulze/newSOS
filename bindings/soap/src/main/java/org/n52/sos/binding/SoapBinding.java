@@ -33,7 +33,6 @@ import static org.n52.sos.util.http.HTTPStatus.BAD_REQUEST;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;

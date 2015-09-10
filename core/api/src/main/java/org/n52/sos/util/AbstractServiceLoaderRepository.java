@@ -37,8 +37,6 @@ import java.util.Set;
 
 import org.n52.sos.ds.ConnectionProvider;
 import org.n52.sos.ds.ConnectionProviderIdentificator;
-import org.n52.sos.ds.DatasourceDaoIdentifier;
-import org.n52.sos.ds.OperationDAO;
 import org.n52.sos.exception.ConfigurationException;
 import org.n52.sos.service.Configurator;
 import org.slf4j.Logger;

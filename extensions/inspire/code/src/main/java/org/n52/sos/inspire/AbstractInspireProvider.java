@@ -34,7 +34,6 @@ import org.n52.sos.cache.ContentCache;
 import org.n52.sos.inspire.capabilities.InspireExtendedCapabilitiesProvider;
 import org.n52.sos.inspire.offering.InspireOfferingExtensionProvider;
 import org.n52.sos.service.Configurator;
-import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.GeometryHandler;
 
 import com.google.common.collect.Sets;

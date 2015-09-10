@@ -31,8 +31,6 @@ package org.n52.sos.util;
 import org.n52.sos.i18n.LocaleHelper;
 
 import java.util.Locale;
-import java.util.Map;
-
 import org.n52.sos.cache.ContentCache;
 import org.n52.sos.i18n.LocalizedString;
 import org.n52.sos.i18n.MultilingualString;

@@ -45,13 +45,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.n52.sos.encode.json.JSONEncoder;
 import org.n52.sos.encode.json.JSONEncoderKey;
-import org.n52.sos.encode.json.JSONEncodingException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.HelperValues;
 import org.n52.sos.util.http.MediaTypes;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 
 /**

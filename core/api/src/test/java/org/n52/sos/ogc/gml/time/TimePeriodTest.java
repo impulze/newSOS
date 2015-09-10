@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.n52.sos.ogc.gml.time.Time.TimeIndeterminateValue;
-import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 
 /**
  * @author <a href="mailto:e.h.juerrens@52north.org">Eike Hinderk

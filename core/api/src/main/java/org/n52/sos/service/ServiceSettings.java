@@ -28,8 +28,6 @@
  */
 package org.n52.sos.service;
 
-import static org.n52.sos.config.SettingDefinitionProvider.ORDER_0;
-
 import java.util.Collections;
 import java.util.Set;
 

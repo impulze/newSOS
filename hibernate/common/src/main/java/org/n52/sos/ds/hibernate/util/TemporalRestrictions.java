@@ -29,7 +29,6 @@
 package org.n52.sos.ds.hibernate.util;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.hibernate.criterion.Conjunction;

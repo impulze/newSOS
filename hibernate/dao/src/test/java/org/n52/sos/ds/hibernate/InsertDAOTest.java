@@ -113,8 +113,6 @@ import org.n52.sos.response.InsertSensorResponse;
 import org.n52.sos.service.Configurator;
 import org.n52.sos.util.CodingHelper;
 import org.n52.sos.util.CollectionHelper;
-import org.n52.sos.util.Constants;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 

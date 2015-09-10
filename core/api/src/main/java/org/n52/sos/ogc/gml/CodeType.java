@@ -28,7 +28,6 @@
  */
 package org.n52.sos.ogc.gml;
 
-import org.n52.sos.util.Constants;
 import org.n52.sos.util.StringHelper;
 
 import com.google.common.base.Objects;

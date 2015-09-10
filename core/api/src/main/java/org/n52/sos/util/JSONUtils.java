@@ -40,8 +40,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Level;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
