@@ -28,12 +28,7 @@
  */
 package org.n52.sos.encoder;
 
-import org.apache.xmlbeans.XmlOptions;
-
 public class InspireEncoderTest {
-
-    private static XmlOptions xmlOptions = new XmlOptions();
-
     /*
      * xmlns:xsd="http://www.w3.org/2001/XMLSchema"
      * xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=

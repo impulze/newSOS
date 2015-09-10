@@ -33,9 +33,6 @@ import org.n52.sos.ogc.gml.AbstractFeature;
 import org.n52.sos.ogc.gml.CodeWithAuthority;
 import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.util.JTSHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -46,9 +43,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * @since 4.0.0
  */
 public class SamplingFeatureBuilder {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SamplingFeatureBuilder.class);
-
     public static SamplingFeatureBuilder aSamplingFeature() {
         return new SamplingFeatureBuilder();
     }

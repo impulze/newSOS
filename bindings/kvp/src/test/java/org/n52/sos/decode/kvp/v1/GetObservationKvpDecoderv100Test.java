@@ -69,8 +69,6 @@ public class GetObservationKvpDecoderv100Test extends DeleteSensorKvpDecoderv20 
 
     private static final String EVENT_TIME = "om:phenomenonTime," + START_TIME + "/" + END_TIME;
 
-    private static final String SPATIAL_FILTER_VALUE_REFERENCE = "om:featureOfInterest/*/sams:shape";
-
     private static final String ADDITIONAL_PARAMETER = "additionalParameter";
 
     private static final String EMPTY_STRING = "";

@@ -36,8 +36,6 @@ import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.request.GetObservationRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate data access class for series
@@ -46,9 +44,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SeriesDAO extends AbstractSeriesDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SeriesDAO.class);
-
     @Override
     @SuppressWarnings("unchecked")
     public List<Series> getSeries(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {

@@ -47,8 +47,6 @@ public abstract class AbstractGML implements Serializable{
     private CodeWithAuthority identifier;
     
     private CodeWithAuthority humanReadableIdentifier;
-    
-    private CodeWithAuthority originalIdentifier;
 
     /**
      * List of feature names
@@ -228,7 +226,6 @@ public abstract class AbstractGML implements Serializable{
     
     public AbstractGML setHumanReadableIdentifierAsIdentifier() {
     	if (isSetHumanReadableIdentifier()) {
-    		originalIdentifier = getIdentifierCodeWithAuthority();
     		setIdentifier(getHumanReadableIdentifierCodeWithAuthority());
     	}
     	return this;

@@ -33,16 +33,10 @@ import org.n52.sos.inspire.aqd.Pronunciation;
 import org.n52.sos.inspire.aqd.Spelling;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.util.AQDJSONConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 
 public class GeographicalNameJSONDecoder  extends AbstractJSONDecoder<GeographicalName>{
-
-    private static final Logger log = LoggerFactory.getLogger(GeographicalNameJSONDecoder.class);
-
     public GeographicalNameJSONDecoder() {
         super(GeographicalName.class);
     }

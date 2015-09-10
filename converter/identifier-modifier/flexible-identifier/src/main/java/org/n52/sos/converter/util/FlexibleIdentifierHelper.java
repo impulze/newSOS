@@ -39,14 +39,9 @@ import org.n52.sos.ogc.swe.simpleType.SweBoolean;
 import org.n52.sos.ogc.swes.SwesExtension;
 import org.n52.sos.ogc.swes.SwesExtensions;
 import org.n52.sos.util.JavaHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Configurable
 public class FlexibleIdentifierHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlexibleIdentifierHelper.class);
-
     public static final String RETURN_HUMAN_READABLE_IDENTIFIER = "returnHumanReadableIdentifier";
 
     private static FlexibleIdentifierHelper instance;

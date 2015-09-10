@@ -46,13 +46,8 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.OptionNotSupportedException;
 import org.n52.sos.request.GetObservationRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EReportingSeriesDAO extends AbstractSeriesDAO {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(EReportingSeriesDAO.class);
-
     @Override
     protected Class<?> getSeriesClass() {
         return EReportingSeries.class;

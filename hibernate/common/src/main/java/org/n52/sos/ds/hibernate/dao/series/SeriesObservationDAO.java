@@ -50,8 +50,6 @@ import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate data access class for series observations
@@ -60,9 +58,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SeriesObservationDAO extends AbstractSeriesObservationDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SeriesObservationDAO.class);
-
     /**
      * Query series observation for series and offerings
      * 

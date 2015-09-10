@@ -75,7 +75,7 @@ public class WSDLBuilder {
     //
     // private Port soapPort, kvpPort, poxPort;
 
-    private URI soapEndpoint, poxEndpoint, kvpEndpoint;
+    private URI soapEndpoint;
 
     public WSDLBuilder() {
     }
@@ -398,12 +398,10 @@ public class WSDLBuilder {
     }
 
     public WSDLBuilder setPoxEndpoint(URI endpoint) {
-        this.poxEndpoint = endpoint;
         return this;
     }
 
     public WSDLBuilder setKvpEndpoint(URI endpoint) {
-        this.kvpEndpoint = endpoint;
         return this;
     }
 

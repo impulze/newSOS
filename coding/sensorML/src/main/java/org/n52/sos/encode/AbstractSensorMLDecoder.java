@@ -35,9 +35,6 @@ import org.n52.sos.decode.Decoder;
 import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.sensorML.AbstractSensorML;
 import org.n52.sos.ogc.sensorML.elements.SmlIdentifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
@@ -49,9 +46,6 @@ import com.google.common.collect.Sets;
  *
  */
 public abstract class AbstractSensorMLDecoder implements Decoder<AbstractSensorML, XmlObject> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSensorMLDecoder.class);
-
     /**
      * Determine if an SosSMLIdentifier is the unique identifier for a procedure
      * 

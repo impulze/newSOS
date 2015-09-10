@@ -79,15 +79,9 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.w3c.xlink.W3CHrefAttribute;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
 
 public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EReportingObservationDAO.class);
-
     @SuppressWarnings("unchecked")
     @Override
     public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Session session) {
