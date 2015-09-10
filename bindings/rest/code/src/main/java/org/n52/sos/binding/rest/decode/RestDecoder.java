@@ -71,7 +71,6 @@ public class RestDecoder implements Decoder<RestRequest, HttpServletRequest> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(RestDecoder.class);
 
-    @SuppressWarnings("unchecked")
 	private final Set<DecoderKey> DECODER_KEYS = decoderKeysForElements(
             Constants.getInstance().getEncodingNamespace(), HttpServletRequest.class);
 //            union(

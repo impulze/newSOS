@@ -109,7 +109,6 @@ public abstract class AbstractRequestOperator<D extends OperationDAO, Q extends 
         this(service, version, operationName, true, requestType);
     }
     
-    @SuppressWarnings("unchecked")
     public AbstractRequestOperator(String service, String version, String operationName, boolean defaultActive, Class<Q> requestType) {
         this.operationName = operationName;
         this.requestOperatorKeyType = new RequestOperatorKey(service, version, operationName, defaultActive);

@@ -302,7 +302,6 @@ public abstract class AbstractOmV20XmlStreamWriter extends XmlStreamWriter<OmObs
      * @throws OwsExceptionReport
      *             If an error occurs when creating elements to be written
      */
-    @SuppressWarnings("unchecked")
     protected void writeProcedure(EncodingValues encodingValues) throws XMLStreamException,
             UnsupportedEncoderInputException, OwsExceptionReport {
 //        if (encodingValues.isSetEncoder() && checkEncodProcedureForEncoderKeys(encodingValues.getEncoder())) {

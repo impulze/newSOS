@@ -170,7 +170,6 @@ public class AdminDatasourceSettingsController extends AbstractDatasourceControl
         return node;
     }
 
-    @SuppressWarnings("unchecked")
     protected void setDefaultValue(SettingDefinition<?, ?> def, String sval) {
         if (sval != null) {
             Object val = getSettingsManager().getSettingFactory().newSettingValue(def, sval).getValue();

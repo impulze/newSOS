@@ -51,7 +51,6 @@ import com.google.common.collect.ImmutableSet;
 public class TransactionalRequestChecker {
     private Predicate<RequestContext> predicate;
 
-    @SuppressWarnings("unchecked")
     public TransactionalRequestChecker(TransactionalSecurityConfiguration config) {
         this.predicate = Predicates.and(createIpAdressPredicate(config),
                                         createTokenPredicate(config));

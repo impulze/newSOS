@@ -57,7 +57,6 @@ public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
         return Collections.emptyList();
     }
 
-    @SuppressWarnings("deprecation")
 	@Override
     public SosEnvelope getEnvelopeForFeatureIDs(Collection<String> featureIDs, Object connection) throws
             OwsExceptionReport {

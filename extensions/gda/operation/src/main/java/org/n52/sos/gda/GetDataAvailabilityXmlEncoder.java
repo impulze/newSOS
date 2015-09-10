@@ -58,7 +58,6 @@ import com.google.common.collect.Sets;
  */
 public class GetDataAvailabilityXmlEncoder extends AbstractResponseEncoder<GetDataAvailabilityResponse> {
 
-    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(GetDataAvailabilityXmlEncoder.class);
 
     public GetDataAvailabilityXmlEncoder() {

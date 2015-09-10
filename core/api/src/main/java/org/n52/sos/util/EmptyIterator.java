@@ -42,7 +42,6 @@ import java.util.NoSuchElementException;
 public class EmptyIterator<T> implements Iterator<T> {
     private static final EmptyIterator<?> instance = new EmptyIterator<Object>();
 
-    @SuppressWarnings(value = "unchecked")
     public static <T> Iterator<T> instance() {
         return (Iterator<T>) instance;
     }

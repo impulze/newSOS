@@ -106,7 +106,6 @@ public class CapabilitiesExtensionAjaxEndpoint extends AbstractAdminCapabiltiesA
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @RequestMapping(value="/{identifier}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_XML_VALUE)
-    @SuppressWarnings("unchecked")
     public void saveCapabilitiesExtension(
             @PathVariable("identifier") String identifier,
             @RequestBody String extension) throws XmlException, InvalidIdentifierException {
