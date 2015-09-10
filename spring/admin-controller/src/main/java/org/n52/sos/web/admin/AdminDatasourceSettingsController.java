@@ -178,7 +178,7 @@ public class AdminDatasourceSettingsController extends AbstractDatasourceControl
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "incomplete-switch" })
     protected void setDefaultValue(SettingDefinition<?, ?> def, Object val) {
         if (val != null) {
             switch (def.getType()) {

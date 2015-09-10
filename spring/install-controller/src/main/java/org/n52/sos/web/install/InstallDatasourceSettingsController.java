@@ -106,7 +106,7 @@ public class InstallDatasourceSettingsController extends AbstractController {
         return dialects;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "incomplete-switch" })
     protected void setDefaultValue(InstallationConfiguration c, SettingDefinition<?, ?> def) {
         Object val = c.getDatabaseSetting(def.getKey());
         if (val != null) {
