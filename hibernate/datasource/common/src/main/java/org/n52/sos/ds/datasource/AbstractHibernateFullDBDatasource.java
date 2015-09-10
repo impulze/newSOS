@@ -110,7 +110,8 @@ public abstract class AbstractHibernateFullDBDatasource extends AbstractHibernat
         return createProvidedJdbcDriverDefinition().setDefaultValue(defaultValue);
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public Properties getDatasourceProperties(final Map<String, Object> settings) {
         final Properties p = new Properties();
         if (supportsSchema) {

@@ -49,6 +49,7 @@ import org.n52.sos.ogc.sos.SosEnvelope;
  * 
  * @since 4.0.0
  */
+@SuppressWarnings("deprecation")
 public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
 
     @Override

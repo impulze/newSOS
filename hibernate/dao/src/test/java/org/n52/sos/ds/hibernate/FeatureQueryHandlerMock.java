@@ -49,6 +49,7 @@ import org.n52.sos.ogc.sos.SosEnvelope;
  * 
  * @since 4.0.0
  */
+@SuppressWarnings("deprecation")
 public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
 
     @Override
@@ -56,7 +57,8 @@ public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
         return Collections.emptyList();
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public SosEnvelope getEnvelopeForFeatureIDs(Collection<String> featureIDs, Object connection) throws
             OwsExceptionReport {
         return new SosEnvelope(null, getStorageEPSG());

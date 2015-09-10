@@ -135,7 +135,8 @@ public class ObservationsDecoder extends ResourceDecoder {
         return new ObservationsDeleteRequest(deleteObservationRequest);
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     protected RestRequest decodePostRequest(HttpServletRequest httpRequest,
             String pathPayload) throws OwsExceptionReport
     {

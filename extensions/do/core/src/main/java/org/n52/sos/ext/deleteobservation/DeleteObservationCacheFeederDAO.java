@@ -34,7 +34,6 @@ import java.util.Set;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.n52.sos.ds.DatasourceCacheUpdate;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
@@ -102,7 +101,8 @@ public abstract class DeleteObservationCacheFeederDAO extends DatasourceCacheUpd
      * @throws OwsExceptionReport
      *             if the FeatureQueryHandler fails
      */
-    protected SosEnvelope getEnvelope(Set<String> features) throws OwsExceptionReport {
+    @SuppressWarnings("deprecation")
+	protected SosEnvelope getEnvelope(Set<String> features) throws OwsExceptionReport {
         final Set<String> dbFeatures = new HashSet<String>(features.size());
         for (String feature : features) {
             dbFeatures.add(CacheHelper.removePrefixAndGetFeatureIdentifier(feature));

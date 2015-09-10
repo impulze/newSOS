@@ -71,7 +71,8 @@ public class GetDataAvailabilityXmlEncoder extends AbstractResponseEncoder<GetDa
         return Sets.newHashSet(GetDataAvailabilityConstants.GET_DATA_AVAILABILITY_SCHEMA_LOCATION);
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     protected XmlObject create(GetDataAvailabilityResponse response) throws OwsExceptionReport {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();

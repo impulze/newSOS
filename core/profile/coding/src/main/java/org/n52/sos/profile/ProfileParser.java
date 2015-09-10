@@ -47,7 +47,8 @@ import org.x52North.sensorweb.sos.profile.SosProfileType;
  */
 public class ProfileParser {
 
-    public static Profile parseSosProfile(SosProfileDocument sosProfileDoc) {
+    @SuppressWarnings("deprecation")
+	public static Profile parseSosProfile(SosProfileDocument sosProfileDoc) {
         ProfileImpl profile = new ProfileImpl();
         SosProfileType sosProfile = sosProfileDoc.getSosProfile();
         profile.setIdentifier(sosProfile.getIdentifier());
@@ -79,7 +80,8 @@ public class ProfileParser {
         return profile;
     }
 
-    private static void parseNoDataPlaceholder(ProfileImpl profile, NoDataPlaceholder noDataPlaceholder) {
+    @SuppressWarnings("deprecation")
+	private static void parseNoDataPlaceholder(ProfileImpl profile, NoDataPlaceholder noDataPlaceholder) {
         if (noDataPlaceholder.getResponsePlaceholder() != null
                 && !noDataPlaceholder.getResponsePlaceholder().isEmpty()) {
             profile.setResponseNoDataPlaceholder(noDataPlaceholder.getResponsePlaceholder());

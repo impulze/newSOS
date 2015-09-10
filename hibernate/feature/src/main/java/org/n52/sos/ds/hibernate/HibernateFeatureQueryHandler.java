@@ -528,7 +528,8 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
      * @return geometry
      * @throws OwsExceptionReport
      */
-    protected Geometry getGeomtery(final FeatureOfInterest feature, Session session) throws OwsExceptionReport {
+    @SuppressWarnings("deprecation")
+	protected Geometry getGeomtery(final FeatureOfInterest feature, Session session) throws OwsExceptionReport {
         if (feature.isSetGeometry()) {
             return GeometryHandler.getInstance().switchCoordinateAxisFromToDatasourceIfNeeded(feature.getGeom());
         } else if (feature.isSetLongLat()) {

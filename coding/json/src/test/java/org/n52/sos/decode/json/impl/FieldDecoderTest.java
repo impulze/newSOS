@@ -71,6 +71,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
  * 
  * @since 4.0.0
  */
+@SuppressWarnings("deprecation")
 public class FieldDecoderTest {
     @ClassRule
     public static final ConfiguredSettingsManager csm = new ConfiguredSettingsManager();
