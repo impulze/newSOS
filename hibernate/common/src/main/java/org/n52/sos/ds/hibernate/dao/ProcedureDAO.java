@@ -43,7 +43,6 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
-import org.hibernate.sql.JoinType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
@@ -63,7 +62,6 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.NoopTransformerAdapter;
 import org.n52.sos.ds.hibernate.util.QueryHelper;
 import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
@@ -99,11 +97,9 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      *            Hibernate session
      * @return Procedure objects
      */
-    @SuppressWarnings("unchecked")
     public List<Procedure> getProcedureObjects(final Session session) {
-        Criteria criteria = session.createCriteria(Procedure.class);
-        LOGGER.debug("QUERY getProcedureObjects(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	// TODOHZG: create procedures
+    	return Lists.newArrayList();
     }
 
     /**
@@ -113,30 +109,19 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      * @return Map keyed by procedure identifier with values of parent procedure identifier collections
      */
     public Map<String,Collection<String>> getProcedureIdentifiers(final Session session) {
-        Criteria criteria = session.createCriteria(Procedure.class)
-                .add(Restrictions.eq(Procedure.DELETED, false));
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.property(Procedure.IDENTIFIER));
-            criteria.createAlias(TProcedure.PARENTS, "pp", JoinType.LEFT_OUTER_JOIN);
-            projectionList.add(Projections.property("pp." + Procedure.IDENTIFIER));
-        criteria.setProjection(projectionList);
-        //return as List<Object[]> even if there's only one column for consistency
-        criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
+    	final List<Procedure> procedures = getProcedureObjects(session);
+        final Map<String, Collection<String>> map = Maps.newHashMap();
 
-        LOGGER.debug("QUERY getProcedureIdentifiers(): {}", HibernateHelper.getSqlString(criteria));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = criteria.list();
-        Map<String,Collection<String>> map = Maps.newHashMap();
-        for (Object[] result : results) {
-            String procedureIdentifier = (String) result[0];
-            String parentProcedureIdentifier = null;
-                parentProcedureIdentifier = (String) result[1];
-            if (parentProcedureIdentifier == null) {
-                map.put(procedureIdentifier, null);
-            } else {
-                CollectionHelper.addToCollectionMap(procedureIdentifier, parentProcedureIdentifier, map);
-            }
+        for (final Procedure procedure: procedures) {
+        	map.put(procedure.getIdentifier(), null);
+
+        	if (procedure instanceof TProcedure) {
+        		for (final Procedure parent: ((TProcedure)procedure).getParents()) {
+        			CollectionHelper.addToCollectionMap(procedure.getIdentifier(), parent.getIdentifier(), map);
+        		}
+        	}
         }
+
         return map;
     }
 
