@@ -100,7 +100,6 @@ public class H2FileDatasource extends AbstractH2Datasource {
         p.put(HibernateConstants.CONNECTION_POOL_SIZE, "1");
         p.put(HibernateConstants.CONNECTION_RELEASE_MODE, HibernateConstants.CONNECTION_RELEASE_MODE_AFTER_TRANSACTION);
         p.put(HibernateConstants.CURRENT_SESSION_CONTEXT, HibernateConstants.THREAD_LOCAL_SESSION_CONTEXT);
-        addMappingFileDirectories(settings, p);
         return p;
     }
 
@@ -110,7 +109,7 @@ public class H2FileDatasource extends AbstractH2Datasource {
         Matcher matcher = JDBC_URL_PATTERN.matcher(current.getProperty(HibernateConstants.CONNECTION_URL));
         matcher.find();
         settings.put(h2Database.getKey(), matcher.group(1));
-        settings.put(TRANSACTIONAL_KEY, isTransactional(current));
+        settings.put(TRANSACTIONAL_KEY, true);
         return settings;
     }
 
