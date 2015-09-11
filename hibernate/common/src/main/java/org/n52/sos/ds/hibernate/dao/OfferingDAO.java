@@ -56,13 +56,15 @@ import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.util.CollectionHelper;
-import org.n52.sos.util.DateTimeHelper;
+import org.n52.sos.service.SosContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
 
 /**
  * Hibernate data access class for offering
@@ -75,6 +77,23 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(OfferingDAO.class);
+
+    private static Offering createOffering(Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<String> foiTypeStrings = new FeatureOfInterestTypeDAO().getFeatureOfInterestTypes(session);
+    	final List<FeatureOfInterestType> foiTypes = new FeatureOfInterestTypeDAO().getFeatureOfInterestTypeObjects(foiTypeStrings, session);
+    	final List<String> obsTypeStrings = Lists.newArrayList(ObservationTypeDAO.HZG_OBSERVATION_TYPE_STRING);
+    	final List<ObservationType> obsTypes = new ObservationTypeDAO().getObservationTypeObjects(obsTypeStrings, session);
+    	final TOffering offering = new TOffering();
+
+    	offering.setIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName());
+    	offering.setDisabled(false);
+    	offering.setFeatureOfInterestTypes(Sets.newHashSet(foiTypes));
+    	offering.setObservationTypes(Sets.newHashSet(obsTypes));
+    	offering.setName("some name");
+
+    	return offering;
+    }
 
     /**
      * Get transactional offering object for identifier
@@ -101,14 +120,18 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      *            Hibernate session
      * @return Offering objects
      */
-    @SuppressWarnings("unchecked")
     public List<Offering> getOfferingObjectsForCacheUpdate(final Collection<String> identifiers, final Session session) {
-    	Criteria criteria = session.createCriteria(TOffering.class);
-		if (CollectionHelper.isNotEmpty(identifiers)) {
-		    criteria.add(Restrictions.in(Offering.IDENTIFIER, identifiers));
-		}
-        LOGGER.debug("QUERY getOfferingObjectsForCacheUpdate(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	if (identifiers.isEmpty()) {
+    		return Lists.newArrayList(createOffering(session));
+    	}
+
+    	final List<Offering> offerings = Lists.newArrayList();
+
+    	for (final String identifier: identifiers) {
+    		offerings.add(getTOfferingForIdentifier(identifier, session));
+    	}
+
+    	return offerings;
     }
 
     /**
@@ -239,28 +262,16 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      * @return Map of offering time extrema, keyed by offering identifier
      * @throws CodedException
      */
-    @SuppressWarnings("unchecked")
     public Map<String,OfferingTimeExtrema> getOfferingTimeExtrema(final Collection<String> identifiers,
             final Session session) throws OwsExceptionReport {
-        List<Object[]> results = null;
-            Criteria criteria = DaoFactory.getInstance().getObservationDAO()
-                .getDefaultObservationInfoCriteria(session)
-                .createAlias(AbstractObservation.OFFERINGS, "off")
-                .setProjection(Projections.projectionList()
-                    .add(Projections.groupProperty("off." + Offering.IDENTIFIER))
-                    .add(Projections.min(AbstractObservation.PHENOMENON_TIME_START))
-                    .add(Projections.max(AbstractObservation.PHENOMENON_TIME_START))
-                    .add(Projections.max(AbstractObservation.PHENOMENON_TIME_END))
-                    .add(Projections.min(AbstractObservation.RESULT_TIME))
-                    .add(Projections.max(AbstractObservation.RESULT_TIME)));
-            if (CollectionHelper.isNotEmpty(identifiers)) {
-                criteria.add(Restrictions.in(Offering.IDENTIFIER, identifiers));
-            }
-            LOGGER.debug("QUERY getOfferingTimeExtrema(): {}", HibernateHelper.getSqlString(criteria));
-            results = criteria.list();
+    	/* TODOHZG: this should return the maximum phenomenon and result times
+    	 * the code below was used previously in here
+    	 */
 
-        Map<String,OfferingTimeExtrema> map = Maps.newHashMap();
-        for (Object[] result : results) {
+    	final Map<String, OfferingTimeExtrema> map = Maps.newHashMap();
+
+    	/*
+    	for (Object[] result : results) {
             String offering = (String) result[0];
             OfferingTimeExtrema ote = new OfferingTimeExtrema();
             ote.setMinPhenomenonTime(DateTimeHelper.makeDateTime(result[1]));
@@ -271,6 +282,8 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
             ote.setMaxResultTime(DateTimeHelper.makeDateTime(result[5]));
             map.put(offering, ote);
         }
+        */
+
         return map;
     }
 
