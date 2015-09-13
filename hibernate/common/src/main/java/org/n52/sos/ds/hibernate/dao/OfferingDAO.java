@@ -78,7 +78,7 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(OfferingDAO.class);
 
-    private static Offering createOffering(Session session) {
+    private static TOffering createTOffering(Session session) {
     	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
     	final List<String> foiTypeStrings = new FeatureOfInterestTypeDAO().getFeatureOfInterestTypes(session);
     	final List<FeatureOfInterestType> foiTypes = new FeatureOfInterestTypeDAO().getFeatureOfInterestTypeObjects(foiTypeStrings, session);
@@ -105,10 +105,13 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      * @return Transactional offering object
      */
     public TOffering getTOfferingForIdentifier(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(TOffering.class).add(Restrictions.eq(Offering.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getTOfferingForIdentifier(): {}", HibernateHelper.getSqlString(criteria));
-        return (TOffering) criteria.uniqueResult();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+    	if (identifier.equals(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName())) {
+    		return createTOffering(session);
+    	}
+
+    	return null;
     }
 
     /**
@@ -122,7 +125,7 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     public List<Offering> getOfferingObjectsForCacheUpdate(final Collection<String> identifiers, final Session session) {
     	if (identifiers.isEmpty()) {
-    		return Lists.newArrayList(createOffering(session));
+    		return Lists.newArrayList((Offering)createTOffering(session));
     	}
 
     	final List<Offering> offerings = Lists.newArrayList();
@@ -144,10 +147,7 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      * @return Offering object
      */
     public Offering getOfferingForIdentifier(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(Offering.class).add(Restrictions.eq(Offering.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getOfferingForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (Offering) criteria.uniqueResult();
+    	return getTOfferingForIdentifier(identifier, session);
     }
 
     /**

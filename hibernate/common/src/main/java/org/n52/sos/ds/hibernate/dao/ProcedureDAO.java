@@ -70,6 +70,7 @@ import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
 import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
 import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.DateTimeHelper;
 import org.slf4j.Logger;
@@ -78,6 +79,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.Sensor;
 
 /**
  * Hibernate data access class for procedure
@@ -89,6 +93,17 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     //public class ProcedureDAO extends TimeCreator implements HibernateSqlQueryConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDAO.class);
+
+    public TProcedure createProcedureWithSensor(Sensor sensor, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final TProcedure procedure = new TProcedure();
+
+    	// TODOHZG: set description and format
+    	procedure.setDeleted(false);
+    	procedure.setIdentifier(sosConfiguration.getProcedureIdentifierPrefix() + sensor.getName());
+
+    	return procedure;
+    }
 
     /**
      * Get all procedure objects
