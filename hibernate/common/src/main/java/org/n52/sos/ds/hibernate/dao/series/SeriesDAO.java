@@ -69,11 +69,6 @@ public class SeriesDAO extends AbstractSeriesDAO {
     }
 
     @Override
-    public Series getOrInsertSeries(SeriesIdentifiers identifiers, final Session session) throws CodedException {
-        return getOrInsert(identifiers, session);
-    }
-
-    @Override
     protected Class <?>getSeriesClass() {
         return Series.class;
     }

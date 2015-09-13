@@ -35,30 +35,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.ObservableProperty;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationInfo;
-import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
 import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservationInfo;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
@@ -79,7 +71,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import de.hzg.common.SOSConfiguration;
 import de.hzg.measurement.Sensor;
@@ -173,23 +164,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
 //    }
 
     /**
-     * Get Procedure object for procedure identifier inclusive deleted procedure
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @return Procedure object
-     */
-    public Procedure getProcedureForIdentifierIncludeDeleted(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(Procedure.class).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getProcedureForIdentifierIncludeDeleted(identifier): {}",
-                HibernateHelper.getSqlString(criteria));
-        return (Procedure) criteria.uniqueResult();
-    }
-
-    /**
      * Get Procedure object for procedure identifier
      *
      * @param identifier
@@ -251,33 +225,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
         return foiProcMap;
     }
     
-    /**
-     * Get FOIs for all procedure identifiers
-     *
-     * @param session
-     *            Hibernate session
-     *
-     * @return Map of procedure identifier to foi identifier collection
-     * @throws CodedException
-     */
-    public Map<String,Collection<String>> getFeaturesOfInterestsForAllProcedures(final Session session) {
-        List<Object[]> results = getFeatureProcedureResult(session);
-        Map<String,Collection<String>> foiProcMap = Maps.newHashMap();
-        if (CollectionHelper.isNotEmpty(results)) {
-            for (Object[] result : results) {
-                String foi = (String) result[0];
-                String proc = (String) result[1];
-                Collection<String> procFois = foiProcMap.get(proc);
-                if (procFois == null) {
-                    procFois = Lists.newArrayList();
-                    foiProcMap.put(proc, procFois);
-                }
-                procFois.add(foi);
-            }
-        }
-        return foiProcMap;
-    }
-    
     private List<Object[]> getFeatureProcedureResult(Session session) {
     	// TODOHZG: for all series get FeatureOfInterest and Procedure
     	final List<EReportingSeries> allSeries = new EReportingSeriesDAO().getAllSeries(session);
@@ -292,55 +239,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     	return foisAndProcedures;
     }
 
-    /**
-     * Get procedure identifiers for FOI
-     *
-     * @param session
-     *            Hibernate session
-     * @param feature
-     *            FOI object
-     *
-     * @return Related procedure identifiers
-     * @throws CodedException
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getProceduresForFeatureOfInterest(final Session session, final FeatureOfInterest feature)
-            throws OwsExceptionReport {
-            Criteria c = null;
-                c = getDefaultCriteria(session);
-                c.add(Subqueries.propertyIn(Procedure.ID,
-                        getDetachedCriteriaProceduresForFeatureOfInterestFromSeries(feature, session)));
-                c.setProjection(Projections.distinct(Projections.property(Procedure.IDENTIFIER)));
-            LOGGER.debug("QUERY getProceduresForFeatureOfInterest(feature): {}", HibernateHelper.getSqlString(c));
-            return (List<String>) c.list();
-    }
-
-    /**
-     * Get procedure identifiers for offering identifier
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return Procedure identifiers
-     * @throws CodedException
-     *             If an error occurs
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getProcedureIdentifiersForOffering(final String offeringIdentifier, final Session session)
-            throws OwsExceptionReport {
-        Criteria c = null;
-
-            c = getDefaultCriteria(session);
-            c.add(Subqueries.propertyIn(Procedure.ID,
-                    getDetachedCriteriaProceduresForOfferingFromObservationConstellation(offeringIdentifier, session)));
-            c.setProjection(Projections.distinct(Projections.property(Procedure.IDENTIFIER)));
-        LOGGER.debug(
-                "QUERY getProcedureIdentifiersForOffering(offeringIdentifier) using ObservationContellation entitiy ({}): {}",
-                true, HibernateHelper.getSqlString(c));
-        return c.list();
-    }
-
     private Criteria getDefaultCriteria(Session session) {
         return session.createCriteria(Procedure.class).add(Restrictions.eq(Procedure.DELETED, false))
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -349,102 +247,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     private Criteria getDefaultTProcedureCriteria(Session session) {
         return session.createCriteria(TProcedure.class).add(Restrictions.eq(Procedure.DELETED, false))
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
-    /**
-     * Get procedure identifiers for observable property identifier
-     *
-     * @param observablePropertyIdentifier
-     *            Observable property identifier
-     * @param session
-     *            Hibernate session
-     * @return Procedure identifiers
-     * @throws CodedException 
-     */
-    @SuppressWarnings("unchecked")
-    public Collection<String> getProcedureIdentifiersForObservableProperty(final String observablePropertyIdentifier,
-            final Session session) throws CodedException {
-        Criteria c = null;
-            c = getDefaultCriteria(session);
-            c.setProjection(Projections.distinct(Projections.property(Procedure.IDENTIFIER)));
-            c.add(Subqueries.propertyIn(
-                    Procedure.ID,
-                    getDetachedCriteriaProceduresForObservablePropertyFromObservationConstellation(
-                            observablePropertyIdentifier, session)));
-        LOGGER.debug(
-                "QUERY getProcedureIdentifiersForObservableProperty(observablePropertyIdentifier) using ObservationContellation entitiy ({}): {}",
-                true, HibernateHelper.getSqlString(c));
-        return c.list();
-    }
-
-    /**
-     * Get transactional procedure object for procedure identifier
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @return Transactional procedure object
-     */
-    public TProcedure getTProcedureForIdentifier(final String identifier, final Session session) {
-        Criteria criteria = getDefaultTProcedureCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getTProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (TProcedure) criteria.uniqueResult();
-    }
-
-    /**
-     * Get transactional procedure object for procedure identifier and
-     * procedureDescriptionFormat
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param procedureDescriptionFormat
-     *            ProcedureDescriptionFormat identifier
-     * @param session
-     *            Hibernate session
-     * @return Transactional procedure object
-     * @throws UnsupportedOperatorException
-     * @throws UnsupportedValueReferenceException
-     * @throws UnsupportedTimeException
-     */
-    public TProcedure getTProcedureForIdentifier(final String identifier, String procedureDescriptionFormat,
-            Time validTime, final Session session) throws UnsupportedTimeException,
-            UnsupportedValueReferenceException, UnsupportedOperatorException {
-        Criteria criteria =
-                getDefaultTProcedureCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        Criteria createValidProcedureTime = criteria.createCriteria(TProcedure.VALID_PROCEDURE_TIME);
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
-        if (validTime == null || validTimeCriterion == null) {
-            createValidProcedureTime.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-        } else {
-            createValidProcedureTime.add(validTimeCriterion);
-        }
-        createValidProcedureTime.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
-                Restrictions.eq(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT, procedureDescriptionFormat));
-        LOGGER.debug("QUERY getTProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (TProcedure) criteria.uniqueResult();
-    }
-
-    /**
-     * Get transactional procedure object for procedure identifier and
-     * procedureDescriptionFormats
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param procedureDescriptionFormats
-     *            ProcedureDescriptionFormat identifiers
-     * @param session
-     *            Hibernate session
-     * @return Transactional procedure object
-     */
-    public TProcedure getTProcedureForIdentifier(final String identifier, Set<String> procedureDescriptionFormats,
-            final Session session) {
-        Criteria criteria =
-                getDefaultTProcedureCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        criteria.createCriteria(TProcedure.VALID_PROCEDURE_TIME).add(
-                Restrictions.in(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT, procedureDescriptionFormats));
-        LOGGER.debug("QUERY getTProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (TProcedure) criteria.uniqueResult();
     }
 
     /**
@@ -616,99 +418,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     }
 
     /**
-     * Insert and get procedure object
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param procedureDecriptionFormat
-     *            Procedure description format object
-     * @param parentProcedures
-     *            Parent procedure identifiers
-     * @param session
-     *            Hibernate session
-     * @return Procedure object
-     */
-    public Procedure getOrInsertProcedure(final String identifier,
-            final ProcedureDescriptionFormat procedureDecriptionFormat, final Collection<String> parentProcedures,
-            final Session session) {
-        Procedure procedure = getProcedureForIdentifierIncludeDeleted(identifier, session);
-        if (procedure == null) {
-            final TProcedure tProcedure = new TProcedure();
-            tProcedure.setProcedureDescriptionFormat(procedureDecriptionFormat);
-            tProcedure.setIdentifier(identifier);
-            if (CollectionHelper.isNotEmpty(parentProcedures)) {
-                tProcedure.setParents(Sets.newHashSet(getProceduresForIdentifiers(parentProcedures, session)));
-            }
-            procedure = tProcedure;
-        }
-        procedure.setDeleted(false);
-        session.saveOrUpdate(procedure);
-        session.flush();
-        session.refresh(procedure);
-        return procedure;
-    }
-
-    /**
-     * Get Hibernate Detached Criteria for class Series and featureOfInterest
-     * identifier
-     *
-     * @param featureOfInterest
-     *            FeatureOfInterest identifier parameter
-     * @param session
-     *            Hibernate session
-     * @return Hiberante Detached Criteria with Procedure entities
-     * @throws CodedException 
-     */
-    private DetachedCriteria getDetachedCriteriaProceduresForFeatureOfInterestFromSeries(
-            FeatureOfInterest featureOfInterest, Session session) throws CodedException {
-        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(DaoFactory.getInstance().getSeriesDAO().getClass());
-        detachedCriteria.add(Restrictions.eq(Series.DELETED, false));
-        detachedCriteria.add(Restrictions.eq(Series.FEATURE_OF_INTEREST, featureOfInterest));
-        detachedCriteria.setProjection(Projections.distinct(Projections.property(Series.PROCEDURE)));
-        return detachedCriteria;
-    }
-
-    /**
-     * Get Hibernate Detached Criteria for class ObservationConstellation and
-     * observableProperty identifier
-     *
-     * @param observablePropertyIdentifier
-     *            ObservableProperty identifier parameter
-     * @param session
-     *            Hibernate session
-     * @return Hiberante Detached Criteria with Procedure entities
-     */
-    private DetachedCriteria getDetachedCriteriaProceduresForObservablePropertyFromObservationConstellation(
-            String observablePropertyIdentifier, Session session) {
-        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(ObservationConstellation.class);
-        detachedCriteria.add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        detachedCriteria.createCriteria(ObservationConstellation.OBSERVABLE_PROPERTY).add(
-                Restrictions.eq(ObservableProperty.IDENTIFIER, observablePropertyIdentifier));
-        detachedCriteria.setProjection(Projections.distinct(Projections.property(ObservationConstellation.PROCEDURE)));
-        return detachedCriteria;
-    }
-
-    /**
-     * Get Hibernate Detached Criteria for class ObservationConstellation and
-     * offering identifier
-     *
-     * @param offeringIdentifier
-     *            Offering identifier parameter
-     * @param session
-     *            Hibernate session
-     * @return Detached Criteria with Procedure entities
-     */
-    private DetachedCriteria getDetachedCriteriaProceduresForOfferingFromObservationConstellation(
-            String offeringIdentifier, Session session) {
-        final DetachedCriteria detachedCriteria = DetachedCriteria.forClass(ObservationConstellation.class);
-        detachedCriteria.add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        detachedCriteria.createCriteria(ObservationConstellation.OFFERING).add(
-                Restrictions.eq(Offering.IDENTIFIER, offeringIdentifier));
-        detachedCriteria.setProjection(Projections.distinct(Projections.property(ObservationConstellation.PROCEDURE)));
-        return detachedCriteria;
-    }
-
-    /**
      * Add procedure identifier restriction to Hibernate Criteria for series
      *
      * @param criteria
@@ -732,22 +441,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      */
     private void addProcedureRestrictionForObservation(Criteria criteria, String procedure) {
         criteria.createCriteria(ObservationInfo.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedure));
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Set<String> getObservationIdentifiers(Session session, String procedureIdentifier) {
-            Criteria criteria =
-                    session.createCriteria(EReportingObservationInfo.class)
-                            .setProjection(
-                                    Projections.distinct(Projections.property(SeriesObservationInfo.IDENTIFIER)))
-                            .add(Restrictions.isNotNull(SeriesObservationInfo.IDENTIFIER))
-                            .add(Restrictions.eq(SeriesObservationInfo.DELETED, false));
-            Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-            seriesCriteria.createCriteria(Series.PROCEDURE).add(
-                    Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-            LOGGER.debug("QUERY getObservationIdentifiers(procedureIdentifier): {}",
-                    HibernateHelper.getSqlString(criteria));
-            return Sets.newHashSet(criteria.list());
     }
 
     public Map<String,String> getProcedureFormatMap(Session session) {

@@ -36,7 +36,6 @@ import org.hibernate.Session;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.Procedure;
@@ -46,7 +45,6 @@ import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
-import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.DateTimeHelper;
@@ -120,56 +118,7 @@ public abstract class AbstractSeriesDAO {
      */
     public abstract Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session);
     
-    /**
-     * Insert or update and get series for procedure, observable property and
-     * featureOfInterest
-     * 
-     * @param feature
-     *            FeatureOfInterest object
-     * @param observableProperty
-     *            ObservableProperty object
-     * @param procedure
-     *            Procedure object
-     * @param session
-     *            Hibernate session
-     * @return Series object
-     * @throws CodedException 
-     */
-    public abstract Series getOrInsertSeries(SeriesIdentifiers identifiers, final Session session) throws CodedException; 
-    
     protected abstract void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException;
-
-    protected Series getOrInsert(SeriesIdentifiers identifiers, final Session session) throws CodedException {
-        Criteria criteria = getDefaultAllSeriesCriteria(session);
-        identifiers.addIdentifierRestrictionsToCritera(criteria);
-        LOGGER.debug("QUERY getOrInsertSeries(feature, observableProperty, procedure): {}",
-                HibernateHelper.getSqlString(criteria));
-        Series series = (Series) criteria.uniqueResult();
-        if (series == null) {
-            series = getSeriesImpl();
-            identifiers.addValuesToSeries(series);
-            series.setDeleted(false);
-            series.setPublished(true);
-            session.save(series);
-            session.flush();
-            session.refresh(series);
-        } else if (series.isDeleted()) {
-            series.setDeleted(false);
-            session.update(series);
-            session.flush();
-            session.refresh(series);
-        }
-        return series;
-    }
-
-    
-    private Series getSeriesImpl() throws CodedException {
-        try {
-            return (Series)getSeriesClass().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new NoApplicableCodeException().causedBy(e).withMessage("Error while creating an instance of %s", getSeriesClass().getCanonicalName());
-        }
-    }
 
     public Criteria getSeriesCriteria(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
         final Criteria c =
@@ -335,53 +284,6 @@ public abstract class AbstractSeriesDAO {
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
     }
 
-    /**
-     * Get default Hibernate Criteria for querying all series
-     * 
-     * @param session
-     *            Hibernate Session
-     * @return Default criteria
-     */
-    public Criteria getDefaultAllSeriesCriteria(Session session) {
-        return session.createCriteria(getSeriesClass()).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-    
-    /**
-     * Update series values which will be used by the Timeseries API.
-     * Can be later used by the SOS.
-     * 
-     * @param series Series object
-     * @param hObservation Observation object
-     * @param session Hibernate session
-     */
-    public void updateSeriesWithFirstLatestValues(Series series, AbstractObservation hObservation, Session session) {
-        boolean minChanged = false;
-        boolean maxChanged = false;
-        if (!series.isSetFirstTimeStamp() || (series.isSetFirstTimeStamp() && series.getFirstTimeStamp().after(hObservation.getPhenomenonTimeStart()))) {
-            minChanged = true;
-            series.setFirstTimeStamp(hObservation.getPhenomenonTimeStart());
-        }
-        if (!series.isSetLastTimeStamp() || (series.isSetLastTimeStamp() && series.getLastTimeStamp().before(hObservation.getPhenomenonTimeEnd()))) {
-            maxChanged = true;
-            series.setLastTimeStamp(hObservation.getPhenomenonTimeEnd());
-        }
-
-        if (hObservation instanceof NumericObservation) {
-            if (minChanged) {
-                series.setFirstNumericValue(((NumericObservation) hObservation).getValue());
-            }
-            if (maxChanged) {
-                series.setLastNumericValue(((NumericObservation) hObservation).getValue());
-            }
-            if (!series.isSetUnit() && hObservation.isSetUnit()) {
-                // TODO check if both unit are equal. If not throw exception?
-                series.setUnit(hObservation.getUnit());
-            }
-        }
-        session.saveOrUpdate(series);
-        session.flush();
-    }
-    
 	/**
 	 * Check {@link Series} if the deleted observation time stamp corresponds to
 	 * the first/last series time stamp

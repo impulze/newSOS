@@ -32,11 +32,7 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate data access class for procedure description format
@@ -45,51 +41,6 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class ProcedureDescriptionFormatDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDescriptionFormatDAO.class);
-
-    /**
-     * Get procedure description format object
-     * 
-     * @param procedureDescriptionFormat
-     *            Procedure description format
-     * @param session
-     *            Hibernate session
-     * @return Procedure description format object
-     */
-    public ProcedureDescriptionFormat getProcedureDescriptionFormatObject(String procedureDescriptionFormat,
-            Session session) {
-        Criteria criteria =
-                session.createCriteria(ProcedureDescriptionFormat.class).add(
-                        Restrictions.eq(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
-                                procedureDescriptionFormat));
-        LOGGER.debug("QUERY getProcedureDescriptionFormatObject(procedureDescriptionFormat): {}",
-                HibernateHelper.getSqlString(criteria));
-        return (ProcedureDescriptionFormat) criteria.uniqueResult();
-    }
-
-    /**
-     * Insert and get procedure description format
-     * 
-     * @param procedureDescriptionFormat
-     *            Procedure description format
-     * @param session
-     *            Hibernate session
-     * @return Procedure description format object
-     */
-    public ProcedureDescriptionFormat getOrInsertProcedureDescriptionFormat(String procedureDescriptionFormat,
-            Session session) {
-        ProcedureDescriptionFormat hProcedureDescriptionFormat =
-                getProcedureDescriptionFormatObject(procedureDescriptionFormat, session);
-        if (hProcedureDescriptionFormat == null) {
-            hProcedureDescriptionFormat = new ProcedureDescriptionFormat();
-            hProcedureDescriptionFormat.setProcedureDescriptionFormat(procedureDescriptionFormat);
-            session.save(hProcedureDescriptionFormat);
-            session.flush();
-        }
-        return hProcedureDescriptionFormat;
-    }
-
     @SuppressWarnings("unchecked")
     public List<String> getProcedureDescriptionFormat(Session session) {
         Criteria c = session.createCriteria(ProcedureDescriptionFormat.class);

@@ -41,11 +41,8 @@ import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.ResultTemplate;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ogc.gml.AbstractFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 /**
  * Hibernate data access class for featureofInterest types
@@ -56,24 +53,6 @@ import com.google.common.collect.Lists;
 public class ResultTemplateDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultTemplateDAO.class);
-
-    /**
-     * Get result template object for result template identifier
-     * 
-     * @param identifier
-     *            Result template identifier
-     * @param session
-     *            Hibernate session
-     * @return Result template object
-     */
-    public ResultTemplate getResultTemplateObject(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(ResultTemplate.class)
-                        .add(Restrictions.eq(ResultTemplate.IDENTIFIER, identifier))
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        LOGGER.debug("QUERY getResultTemplateObject(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (ResultTemplate) criteria.uniqueResult();
-    }
 
     /**
      * Get all result template objects
@@ -104,26 +83,6 @@ public class ResultTemplateDAO {
             final ObservationConstellation observationConstellation, final Session session) {
         return getResultTemplateObject(observationConstellation.getOffering().getIdentifier(),
                 observationConstellation.getObservableProperty().getIdentifier(), session);
-    }
-
-    /**
-     * Get result template objects for observation constellation and
-     * featureOfInterest
-     * 
-     * @param observationConstellation
-     *            Observation constellation object
-     * @param sosAbstractFeature
-     *            FeatureOfInterest
-     * @param session
-     *            Hibernate session
-     * @return Result template objects
-     */
-    public List<ResultTemplate> getResultTemplateObjectsForObservationConstellationAndFeature(
-            final ObservationConstellation observationConstellation, final AbstractFeature sosAbstractFeature,
-            final Session session) {
-        return getResultTemplateObject(observationConstellation.getOffering().getIdentifier(),
-                observationConstellation.getObservableProperty().getIdentifier(),
-                Lists.newArrayList(sosAbstractFeature.getIdentifierCodeWithAuthority().getValue()), session);
     }
 
     /**

@@ -71,22 +71,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public abstract class AbstractSeriesObservationDAO extends AbstractObservationDAO {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSeriesObservationDAO.class);
-    
-    @Override
-    protected void addObservationIdentifiersToObservation(ObservationIdentifiers observationIdentifiers,
-            AbstractObservation observation, Session session) throws CodedException {
-        SeriesIdentifiers identifiers = new SeriesIdentifiers();
-        identifiers.setFeatureOfInterest(observationIdentifiers.getFeatureOfInterest());
-        identifiers.setObservableProperty(observationIdentifiers.getObservableProperty());
-        identifiers.setProcedure(observationIdentifiers.getProcedure());
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Series series =
-                (Series)seriesDAO
-                        .getOrInsertSeries(identifiers,
-                                session);
-        ((SeriesObservation) observation).setSeries(series);
-        seriesDAO.updateSeriesWithFirstLatestValues(series, observation, session);
-    }
 
     @Override
     public Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature, String procedure,

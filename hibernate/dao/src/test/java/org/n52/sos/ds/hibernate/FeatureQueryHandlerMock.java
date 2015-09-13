@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.n52.sos.ds.AbstractFeatureQueryHandler;
 import org.n52.sos.ds.FeatureQueryHandlerQueryObject;
@@ -61,11 +60,6 @@ public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
     public SosEnvelope getEnvelopeForFeatureIDs(Collection<String> featureIDs, Object connection) throws
             OwsExceptionReport {
         return new SosEnvelope(null, getStorageEPSG());
-    }
-
-    @Override
-    public String insertFeature(SamplingFeature samplingFeature, Object connection) throws OwsExceptionReport {
-        return UUID.randomUUID().toString();
     }
 
     @Override

@@ -85,15 +85,6 @@ public class ObservationDAO extends AbstractObservationDAO {
     public static final String SQL_QUERY_GET_FIRST_OBSERVATION_TIME = "getFirstObservationTime";
 
     @Override
-    protected void addObservationIdentifiersToObservation(ObservationIdentifiers observationIdentifiers,
-            AbstractObservation observation, Session session) {
-        Observation hObservation = (Observation) observation;
-        hObservation.setFeatureOfInterest(observationIdentifiers.getFeatureOfInterest());
-        hObservation.setObservableProperty(observationIdentifiers.getObservableProperty());
-        hObservation.setProcedure(observationIdentifiers.getProcedure());
-    }
-
-    @Override
     public Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature, String procedure,
             Session session) {
         Criteria criteria = getDefaultObservationInfoCriteria(session);
