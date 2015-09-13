@@ -31,7 +31,6 @@ package org.n52.sos.encode.swes;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -42,9 +41,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import net.opengis.swes.x20.DeleteSensorResponseDocument;
-
-import org.apache.xmlbeans.XmlObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -137,18 +133,5 @@ public class DeleteSensorResponseEncoderTest {
         new DeleteSensorResponseEncoder().encode(null);
         new DeleteSensorResponseEncoder().encode(null, new ByteArrayOutputStream());
         new DeleteSensorResponseEncoder().encode(null, new HashMap<SosConstants.HelperValues, String>());
-    }
-
-    @Test
-    public final void should_encode_DeleteSensor_response() throws OwsExceptionReport {
-        final DeleteSensorResponse response = new DeleteSensorResponse();
-        final String deletedProcedure = "deletedProcedure";
-        response.setDeletedProcedure(deletedProcedure);
-        final XmlObject encodedResponse = new DeleteSensorResponseEncoder().encode(response);
-        assertThat(encodedResponse, is(instanceOf(DeleteSensorResponseDocument.class)));
-        final DeleteSensorResponseDocument doc = (DeleteSensorResponseDocument) encodedResponse;
-        assertThat(doc.isNil(), is(FALSE));
-        assertThat(doc.getDeleteSensorResponse().getDeletedProcedure(), is(deletedProcedure));
-        assertThat(doc.validate(), is(TRUE));
     }
 }

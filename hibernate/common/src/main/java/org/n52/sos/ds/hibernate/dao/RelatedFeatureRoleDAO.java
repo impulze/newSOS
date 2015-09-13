@@ -28,17 +28,6 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import org.n52.sos.ds.hibernate.entities.RelatedFeatureRole;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Hibernate data access class for featureofInterest types
  * 
@@ -46,48 +35,4 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class RelatedFeatureRoleDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RelatedFeatureRoleDAO.class);
-
-    /**
-     * Get related feature role objects for role
-     * 
-     * @param role
-     *            Related feature role
-     * @param session
-     *            Hibernate session
-     * @return Related feature role objects
-     */
-    @SuppressWarnings("unchecked")
-    public List<RelatedFeatureRole> getRelatedFeatureRole(String role, Session session) {
-        Criteria criteria =
-                session.createCriteria(RelatedFeatureRole.class).add(
-                        Restrictions.eq(RelatedFeatureRole.RELATED_FEATURE_ROLE, role));
-        LOGGER.debug("QUERY getRelatedFeatureRole(role): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
-    }
-
-    /**
-     * Insert and get related feature role objects
-     * 
-     * @param role
-     *            Related feature role
-     * @param session
-     *            Hibernate session
-     * @return Related feature objects
-     */
-    public List<RelatedFeatureRole> getOrInsertRelatedFeatureRole(String role, Session session) {
-        List<RelatedFeatureRole> relFeatRoles = new RelatedFeatureRoleDAO().getRelatedFeatureRole(role, session);
-        if (relFeatRoles == null) {
-            relFeatRoles = new LinkedList<RelatedFeatureRole>();
-        }
-        if (relFeatRoles.isEmpty()) {
-            RelatedFeatureRole relFeatRole = new RelatedFeatureRole();
-            relFeatRole.setRelatedFeatureRole(role);
-            session.save(relFeatRole);
-            session.flush();
-            relFeatRoles.add(relFeatRole);
-        }
-        return relFeatRoles;
-    }
 }

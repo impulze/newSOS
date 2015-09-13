@@ -28,12 +28,6 @@
  */
 package org.n52.sos.ds;
 
-import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.ogc.swe.SweAbstractDataComponent;
-import org.n52.sos.ogc.swe.SweDataArray;
-import org.n52.sos.ogc.swe.SweDataRecord;
-
 /**
  * Abstract class for Result Handling operation DAOs to provide common methods
  * 
@@ -46,28 +40,4 @@ public abstract class AbstractResultHandlingDAO extends AbstractOperationDAO {
     public AbstractResultHandlingDAO(String service, String operationName) {
         super(service, operationName);
     }
-
-    /**
-     * Get internal SweDataRecord from internal ResultStructure
-     * 
-     * @param resultStructure
-     *            Internal ResultStructure
-     * @return internal SweDataRecord
-     * @throws OwsExceptionReport
-     *             If the ResultStructure is not supported
-     */
-    protected SweDataRecord setRecordFrom(final SweAbstractDataComponent resultStructure) throws OwsExceptionReport {
-        SweDataRecord record = null;
-        if (resultStructure instanceof SweDataArray
-                && ((SweDataArray) resultStructure).getElementType() instanceof SweDataRecord) {
-            final SweDataArray array = (SweDataArray) resultStructure;
-            record = (SweDataRecord) array.getElementType();
-        } else if (resultStructure instanceof SweDataRecord) {
-            record = (SweDataRecord) resultStructure;
-        } else {
-            throw new NoApplicableCodeException().withMessage("Unsupported ResultStructure!");
-        }
-        return record;
-    }
-
 }

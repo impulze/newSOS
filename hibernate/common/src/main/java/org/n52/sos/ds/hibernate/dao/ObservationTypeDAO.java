@@ -28,9 +28,7 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
@@ -108,22 +106,5 @@ public class ObservationTypeDAO {
             session.flush();
         }
         return hObservationType;
-    }
-
-    /**
-     * Insert or/and get observation type objects for observation types
-     * 
-     * @param observationTypes
-     *            Observation types
-     * @param session
-     *            Hibernate session
-     * @return Observation type objects
-     */
-    public List<ObservationType> getOrInsertObservationTypes(Set<String> observationTypes, Session session) {
-        List<ObservationType> obsTypes = new LinkedList<ObservationType>();
-        for (String observationType : observationTypes) {
-            obsTypes.add(getOrInsertObservationType(observationType, session));
-        }
-        return obsTypes;
     }
 }

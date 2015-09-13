@@ -54,7 +54,6 @@ import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.I18NDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
-import org.n52.sos.ds.hibernate.dao.FeatureOfInterestTypeDAO;
 import org.n52.sos.ds.hibernate.dao.HibernateSqlQueryConstants;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.TFeatureOfInterest;
@@ -62,31 +61,25 @@ import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.exception.ows.concrete.NotYetSupportedException;
 import org.n52.sos.i18n.I18NDAORepository;
 import org.n52.sos.i18n.LocalizedString;
 import org.n52.sos.i18n.metadata.I18NFeatureMetadata;
-import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.filter.SpatialFilter;
 import org.n52.sos.ogc.gml.AbstractFeature;
 import org.n52.sos.ogc.gml.CodeWithAuthority;
 import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.ogc.sos.SosEnvelope;
 import org.n52.sos.service.ServiceConfiguration;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.GeometryHandler;
 import org.n52.sos.util.JTSHelper;
-import org.n52.sos.util.JavaHelper;
 import org.n52.sos.util.SosHelper;
-import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -268,38 +261,6 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.n52.sos.ds.FeatureQueryHandler#insertFeature(org.n52.sos.ogc.om.features
-     * .samplingFeatures.SamplingFeature, java.lang.Object)
-     *
-     * FIXME check semantics of this method in respect to its name and the
-     * documentation in the super class
-     */
-    @Override
-    public String insertFeature(final SamplingFeature samplingFeature, final Object connection)
-            throws OwsExceptionReport {
-        if (StringHelper.isNotEmpty(samplingFeature.getUrl())) {
-            if (samplingFeature.isSetIdentifier()) {
-                return samplingFeature.getIdentifierCodeWithAuthority().getValue();
-            } else {
-                return samplingFeature.getUrl();
-            }
-        } else {
-            final Session session = HibernateSessionHolder.getSession(connection);
-            String featureIdentifier;
-            if (!samplingFeature.isSetIdentifier()) {
-                featureIdentifier =
-                        SosConstants.GENERATED_IDENTIFIER_PREFIX
-                                + JavaHelper.generateID(samplingFeature.getXmlDescription());
-                samplingFeature.setIdentifier(new CodeWithAuthority(featureIdentifier));
-            }
-            return insertFeatureOfInterest(samplingFeature, session).getIdentifier();
-        }
-    }
-
     @Deprecated
     @Override
     public int getDefaultEPSG() {
@@ -359,19 +320,6 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
         }
         // TODO if sampledFeatures are also in sosAbstractFois, reference them.
         return sosAbstractFois;
-    }
-
-    protected FeatureOfInterest getFeatureOfInterest(final String identifier, final Geometry geometry,
-            final Session session) throws OwsExceptionReport {
-        if (!identifier.startsWith(SosConstants.GENERATED_IDENTIFIER_PREFIX)) {
-            return (FeatureOfInterest) session.createCriteria(FeatureOfInterest.class)
-                    .add(Restrictions.eq(FeatureOfInterest.IDENTIFIER, identifier)).uniqueResult();
-        } else {
-            return (FeatureOfInterest) session
-                    .createCriteria(FeatureOfInterest.class)
-                    .add(SpatialRestrictions.eq(FeatureOfInterest.GEOMETRY, GeometryHandler.getInstance()
-                            .switchCoordinateAxisFromToDatasourceIfNeeded(geometry))).uniqueResult();
-        }
     }
 
     protected AbstractFeature createSosAbstractFeature(final FeatureOfInterest feature,
@@ -466,55 +414,6 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
                 }
             }
         }
-    }
-
-    protected FeatureOfInterest insertFeatureOfInterest(final SamplingFeature samplingFeature, final Session session)
-            throws OwsExceptionReport {
-        if (!GeometryHandler.getInstance().isSpatialDatasource()) {
-            throw new NotYetSupportedException("Insertion of full encoded features for non spatial datasources");
-        }
-        FeatureOfInterestDAO featureOfInterestDAO = new FeatureOfInterestDAO();
-        final String newId = samplingFeature.getIdentifierCodeWithAuthority().getValue();
-        FeatureOfInterest feature = getFeatureOfInterest(newId, samplingFeature.getGeometry(), session);
-        if (feature == null) {
-            feature = new TFeatureOfInterest();
-            featureOfInterestDAO.addIdentifierNameDescription(samplingFeature, feature, session);
-            processGeometryPreSave(samplingFeature, feature, session);
-            if (samplingFeature.isSetXmlDescription()) {
-                feature.setDescriptionXml(samplingFeature.getXmlDescription());
-            }
-            if (samplingFeature.isSetFeatureType()) {
-                feature.setFeatureOfInterestType(new FeatureOfInterestTypeDAO().getOrInsertFeatureOfInterestType(
-                        samplingFeature.getFeatureType(), session));
-            }
-            if (samplingFeature.isSetSampledFeatures()) {
-                Set<FeatureOfInterest> parents =
-                        Sets.newHashSetWithExpectedSize(samplingFeature.getSampledFeatures().size());
-                for (AbstractFeature sampledFeature : samplingFeature.getSampledFeatures()) {
-                    if (!OGCConstants.UNKNOWN.equals(sampledFeature.getIdentifierCodeWithAuthority().getValue())) {
-                        if (sampledFeature instanceof SamplingFeature) {
-                            parents.add(insertFeatureOfInterest((SamplingFeature) sampledFeature, session));
-                        } else {
-                            parents.add(insertFeatureOfInterest(new SamplingFeature(sampledFeature.getIdentifierCodeWithAuthority()), session));
-                        }
-                    }
-                }
-                ((TFeatureOfInterest) feature).setParents(parents);
-            }
-            session.save(feature);
-            session.flush();
-            session.refresh(feature);
-            featureOfInterestDAO.insertNameAndDescription(feature, samplingFeature, session);
-//            return newId;
-//        } else {
-//            return feature.getIdentifier();
-        }
-        return feature;
-    }
-
-    protected void processGeometryPreSave(final SamplingFeature ssf, final FeatureOfInterest f, Session session)
-            throws OwsExceptionReport {
-        f.setGeom(getGeometryHandler().switchCoordinateAxisFromToDatasourceIfNeeded(ssf.getGeometry()));
     }
 
     /**

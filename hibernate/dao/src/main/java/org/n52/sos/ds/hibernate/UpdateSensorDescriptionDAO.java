@@ -28,26 +28,11 @@
  */
 package org.n52.sos.ds.hibernate;
 
-import java.util.Set;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.AbstractUpdateSensorDescriptionDAO;
 import org.n52.sos.ds.HibernateDatasourceConstants;
-import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
-import org.n52.sos.ds.hibernate.dao.ProcedureDescriptionFormatDAO;
-import org.n52.sos.ds.hibernate.dao.ValidProcedureTimeDAO;
-import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
-import org.n52.sos.ds.hibernate.entities.TProcedure;
-import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
-import org.n52.sos.exception.ows.NoApplicableCodeException;
+import org.n52.sos.exception.ows.OperationNotSupportedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
-import org.n52.sos.ogc.sos.SosProcedureDescription;
 import org.n52.sos.request.UpdateSensorRequest;
 import org.n52.sos.response.UpdateSensorResponse;
 
@@ -57,9 +42,6 @@ import org.n52.sos.response.UpdateSensorResponse;
  * 
  */
 public class UpdateSensorDescriptionDAO extends AbstractUpdateSensorDescriptionDAO {
-
-    private HibernateSessionHolder sessionHolder = new HibernateSessionHolder();
-
     /**
      * constructor
      */
@@ -75,52 +57,6 @@ public class UpdateSensorDescriptionDAO extends AbstractUpdateSensorDescriptionD
     @Override
     public synchronized UpdateSensorResponse updateSensorDescription(UpdateSensorRequest request)
             throws OwsExceptionReport {
-        Session session = null;
-        Transaction transaction = null;
-        try {
-            session = sessionHolder.getSession();
-            transaction = session.beginTransaction();
-            UpdateSensorResponse response = new UpdateSensorResponse();
-            response.setService(request.getService());
-            response.setVersion(request.getVersion());
-            for (SosProcedureDescription procedureDescription : request.getProcedureDescriptions()) {
-                DateTime currentTime = new DateTime(DateTimeZone.UTC);
-                // TODO: check for all validTimes of descriptions for this
-                // identifier
-                // ITime validTime =
-                // getValidTimeForProcedure(procedureDescription);
-                Procedure procedure =
-                        new ProcedureDAO().getProcedureForIdentifier(request.getProcedureIdentifier(), session);
-                if (procedure instanceof TProcedure) {
-                    ProcedureDescriptionFormat procedureDescriptionFormat =
-                            new ProcedureDescriptionFormatDAO().getProcedureDescriptionFormatObject(
-                                    request.getProcedureDescriptionFormat(), session);
-                    Set<ValidProcedureTime> validProcedureTimes = ((TProcedure) procedure).getValidProcedureTimes();
-                    ValidProcedureTimeDAO validProcedureTimeDAO = new ValidProcedureTimeDAO();
-                    for (ValidProcedureTime validProcedureTime : validProcedureTimes) {
-                        if (validProcedureTime.getProcedureDescriptionFormat().equals(procedureDescriptionFormat)
-                                && validProcedureTime.getEndTime() == null) {
-                            validProcedureTime.setEndTime(currentTime.toDate());
-                            validProcedureTimeDAO.updateValidProcedureTime(validProcedureTime, session);
-                        }
-                    }
-                    validProcedureTimeDAO.insertValidProcedureTime(procedure, procedureDescriptionFormat,
-                            procedureDescription.getSensorDescriptionXmlString(), currentTime, session);
-                }
-            }
-            session.flush();
-            transaction.commit();
-            response.setUpdatedProcedure(request.getProcedureIdentifier());
-            return response;
-        } catch (HibernateException he) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new NoApplicableCodeException().causedBy(he).withMessage(
-                    "Error while processing data for UpdateSensorDescription document!");
-        } finally {
-            sessionHolder.returnSession(session);
-        }
+    	throw new OperationNotSupportedException(request.getOperationName());
     }
-
 }

@@ -38,8 +38,6 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
@@ -64,86 +62,6 @@ import com.google.common.collect.Maps;
 public class ValidProcedureTimeDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidProcedureTimeDAO.class);
-
-    /**
-     * Insert valid procedure time for procedrue
-     * 
-     * @param procedure
-     *            Procedure object
-     * @param xmlDescription
-     *            Procedure XML description
-     * @param validStartTime
-     *            Valid start time
-     * @param session
-     *            Hibernate session
-     */
-    public void insertValidProcedureTime(Procedure procedure, ProcedureDescriptionFormat procedureDescriptionFormat,
-            String xmlDescription, DateTime validStartTime, Session session) {
-        ValidProcedureTime vpd = new ValidProcedureTime();
-        vpd.setProcedure(procedure);
-        vpd.setProcedureDescriptionFormat(procedureDescriptionFormat);
-        vpd.setDescriptionXml(xmlDescription);
-        vpd.setStartTime(validStartTime.toDate());
-        session.save(vpd);
-        session.flush();
-    }
-
-    /**
-     * Update valid procedure time object
-     * 
-     * @param validProcedureTime
-     *            Valid procedure time object
-     * @param session
-     *            Hibernate session
-     */
-    public void updateValidProcedureTime(ValidProcedureTime validProcedureTime, Session session) {
-        session.saveOrUpdate(validProcedureTime);
-    }
-
-    /**
-     * Set valid end time to valid procedure time object for procedure
-     * identifier
-     * 
-     * @param procedureIdentifier
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @throws UnsupportedOperatorException
-     * @throws UnsupportedValueReferenceException
-     * @throws UnsupportedTimeException
-     */
-    public void setValidProcedureDescriptionEndTime(String procedureIdentifier, String procedureDescriptionFormat,
-            Session session) throws UnsupportedTimeException, UnsupportedValueReferenceException,
-            UnsupportedOperatorException {
-        TProcedure procedure =
-                new ProcedureDAO().getTProcedureForIdentifier(procedureIdentifier, procedureDescriptionFormat, null,
-                        session);
-        Set<ValidProcedureTime> validProcedureTimes = procedure.getValidProcedureTimes();
-        for (ValidProcedureTime validProcedureTime : validProcedureTimes) {
-            if (validProcedureTime.getEndTime() == null) {
-                validProcedureTime.setEndTime(new DateTime(DateTimeZone.UTC).toDate());
-            }
-        }
-    }
-
-    /**
-     * Set valid end time to valid procedure time object for procedure
-     * identifier
-     * 
-     * @param procedureIdentifier
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     */
-    public void setValidProcedureDescriptionEndTime(String procedureIdentifier, Session session) {
-        TProcedure procedure = new ProcedureDAO().getTProcedureForIdentifierIncludeDeleted(procedureIdentifier, session);
-        Set<ValidProcedureTime> validProcedureTimes = procedure.getValidProcedureTimes();
-        for (ValidProcedureTime validProcedureTime : validProcedureTimes) {
-            if (validProcedureTime.getEndTime() == null) {
-                validProcedureTime.setEndTime(new DateTime(DateTimeZone.UTC).toDate());
-            }
-        }
-    }
 
     /**
      * Get ValidProcedureTimes for requested parameters

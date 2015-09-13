@@ -58,7 +58,6 @@ import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.ScrollableIterable;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
@@ -72,22 +71,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public abstract class AbstractSeriesObservationDAO extends AbstractObservationDAO {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSeriesObservationDAO.class);
-    
-    @Override
-    protected void addObservationIdentifiersToObservation(ObservationIdentifiers observationIdentifiers,
-            AbstractObservation observation, Session session) throws CodedException {
-        SeriesIdentifiers identifiers = new SeriesIdentifiers();
-        identifiers.setFeatureOfInterest(observationIdentifiers.getFeatureOfInterest());
-        identifiers.setObservableProperty(observationIdentifiers.getObservableProperty());
-        identifiers.setProcedure(observationIdentifiers.getProcedure());
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Series series =
-                (Series)seriesDAO
-                        .getOrInsertSeries(identifiers,
-                                session);
-        ((SeriesObservation) observation).setSeries(series);
-        seriesDAO.updateSeriesWithFirstLatestValues(series, observation, session);
-    }
 
     @Override
     public Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature, String procedure,
@@ -413,25 +396,6 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
     protected ScrollableResults getStreamingSeriesObservationsFor(GetObservationRequest request, Collection<String> features,
             Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
         return getSeriesObservationCriteriaFor(request, features, filterCriterion, sosIndeterminateTime, session).setReadOnly(true).scroll(ScrollMode.FORWARD_ONLY);
-    }
-    
-    /**
-     * Update series observation by setting deleted flag
-     * 
-     * @param series
-     *            Series for which the observations should be updated
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate Session
-     */
-    public void updateObservationSetAsDeletedForSeries(List<Series> series, boolean deleteFlag, Session session) {
-        if (CollectionHelper.isNotEmpty(series)) {
-            Criteria criteria = getDefaultObservationCriteria(session);
-            criteria.add(Restrictions.in(SeriesObservation.SERIES, series));
-            ScrollableIterable<AbstractObservation> scroll = ScrollableIterable.fromCriteria(criteria);
-            updateObservation(scroll, deleteFlag, session);
-        }
     }
     
     /**

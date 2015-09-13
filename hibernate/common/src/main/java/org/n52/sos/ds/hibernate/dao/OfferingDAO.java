@@ -31,7 +31,6 @@ package org.n52.sos.ds.hibernate.dao;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +49,6 @@ import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.RelatedFeature;
 import org.n52.sos.ds.hibernate.entities.TOffering;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
@@ -443,58 +441,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
             }
         }
         return new HashMap<String, TimePeriod>(0);
-    }
-
-    /**
-     * Insert or update and get offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param offeringName
-     *            Offering name
-     * @param relatedFeatures
-     *            Related feature objects
-     * @param observationTypes
-     *            Allowed observation type objects
-     * @param featureOfInterestTypes
-     *            Allowed featureOfInterest type objects
-     * @param session
-     *            Hibernate session
-     * @return Offering object
-     */
-    public Offering getAndUpdateOrInsertNewOffering(final String offeringIdentifier, final String offeringName,
-            final List<RelatedFeature> relatedFeatures, final List<ObservationType> observationTypes,
-            final List<FeatureOfInterestType> featureOfInterestTypes, final Session session) {
-
-        TOffering offering = getTOfferingForIdentifier(offeringIdentifier, session);
-        if (offering == null) {
-            offering = new TOffering();
-            offering.setIdentifier(offeringIdentifier);
-            if (offeringName != null) {
-                offering.setName(offeringName);
-            } else {
-                offering.setName("Offering for the procedure " + offeringIdentifier);
-            }
-        }
-        if (!relatedFeatures.isEmpty()) {
-            offering.setRelatedFeatures(new HashSet<RelatedFeature>(relatedFeatures));
-        } else {
-            offering.setRelatedFeatures(new HashSet<RelatedFeature>(0));
-        }
-        if (!observationTypes.isEmpty()) {
-            offering.setObservationTypes(new HashSet<ObservationType>(observationTypes));
-        } else {
-            offering.setObservationTypes(new HashSet<ObservationType>(0));
-        }
-        if (!featureOfInterestTypes.isEmpty()) {
-            offering.setFeatureOfInterestTypes(new HashSet<FeatureOfInterestType>(featureOfInterestTypes));
-        } else {
-            offering.setFeatureOfInterestTypes(new HashSet<FeatureOfInterestType>(0));
-        }
-        session.saveOrUpdate(offering);
-        session.flush();
-        session.refresh(offering);
-        return offering;
     }
 
     /**

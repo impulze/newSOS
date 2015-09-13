@@ -28,22 +28,13 @@
  */
 package org.n52.sos.ds.hibernate;
 
-import java.util.List;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.n52.sos.ds.AbstractDeleteSensorDAO;
 import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
-import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
-import org.n52.sos.ds.hibernate.dao.ValidProcedureTimeDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
+import org.n52.sos.exception.ows.OperationNotSupportedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.request.DeleteSensorRequest;
@@ -55,8 +46,6 @@ import org.n52.sos.response.DeleteSensorResponse;
  * 
  */
 public class DeleteSensorDAO extends AbstractDeleteSensorDAO {
-    private HibernateSessionHolder sessionHolder = new HibernateSessionHolder();
-
     /**
      * constructor
      */
@@ -71,60 +60,7 @@ public class DeleteSensorDAO extends AbstractDeleteSensorDAO {
 
     @Override
     public synchronized DeleteSensorResponse deleteSensor(DeleteSensorRequest request) throws OwsExceptionReport {
-        DeleteSensorResponse response = new DeleteSensorResponse();
-        response.setService(request.getService());
-        response.setVersion(request.getVersion());
-        Session session = null;
-        Transaction transaction = null;
-        try {
-            session = sessionHolder.getSession();
-            transaction = session.beginTransaction();
-            setDeleteSensorFlag(request.getProcedureIdentifier(), true, session);
-            new ValidProcedureTimeDAO().setValidProcedureDescriptionEndTime(request.getProcedureIdentifier(), session);
-            transaction.commit();
-            response.setDeletedProcedure(request.getProcedureIdentifier());
-        } catch (HibernateException he) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new NoApplicableCodeException().causedBy(he).withMessage(
-                    "Error while updateing deleted sensor flag data!");
-        } finally {
-            sessionHolder.returnSession(session);
-        }
-        return response;
-    }
-
-    /**
-     * Set the deleted flag of the procedure and corresponding entities
-     * (observations, series, obervationConstellation) to <code>true</code>
-     * 
-     * @param identifier
-     *            Procedure identifier
-     * @param deleteFlag
-     *            Deleted flag to set
-     * @param session
-     *            Hibernate session
-     * @throws OwsExceptionReport
-     *             If the procedure is not contained in the database
-     */
-    private void setDeleteSensorFlag(String identifier, boolean deleteFlag, Session session) throws OwsExceptionReport {
-        Procedure procedure = new ProcedureDAO().getProcedureForIdentifier(identifier, session);
-        if (procedure != null) {
-            procedure.setDeleted(deleteFlag);
-            session.saveOrUpdate(procedure);
-            session.flush();
-            // set deleted flag in ObservationConstellation table to true
-                new ObservationConstellationDAO().updateObservatioConstellationSetAsDeletedForProcedure(identifier,
-                        deleteFlag, session);
-            // set deleted flag in Series and Observation table for series concept to true
-                List<Series> series =
-                        DaoFactory.getInstance().getSeriesDAO().updateSeriesSetAsDeletedForProcedureAndGetSeries(identifier, deleteFlag,
-                                session);
-                getSeriesObservationDAO().updateObservationSetAsDeletedForSeries(series, deleteFlag, session);
-        } else {
-            throw new NoApplicableCodeException().withMessage("The requested identifier is not contained in database");
-        }
+    	throw new OperationNotSupportedException(request.getOperationName());
     }
     
     protected AbstractSeriesObservationDAO getSeriesObservationDAO() throws OwsExceptionReport {

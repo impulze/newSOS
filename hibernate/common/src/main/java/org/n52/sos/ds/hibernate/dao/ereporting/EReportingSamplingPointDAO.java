@@ -32,7 +32,6 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.aqd.AqdConstants.AssessmentType;
-import org.n52.sos.aqd.AqdSamplingPoint;
 import org.n52.sos.ds.hibernate.dao.AbstractIdentifierNameDescriptionDAO;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
@@ -102,31 +101,4 @@ public class EReportingSamplingPointDAO extends AbstractIdentifierNameDescriptio
         LOGGER.debug("QUERY getEReportingSamplingPoint(identifier): {}", HibernateHelper.getSqlString(c));
         return (EReportingSamplingPoint) c.uniqueResult();
     }
-
-    /**
-     * Get or insert {@link AqdSamplingPoint}
-     * 
-     * @param samplingPoint
-     *            {@link AqdSamplingPoint} to insert
-     * @param session
-     *            Hibernate session
-     * @return The resulting {@link EReportingSamplingPoint}
-     */
-    public EReportingSamplingPoint getOrInsert(AqdSamplingPoint samplingPoint, Session session) {
-        Criteria c = getDefaultCriteria(session);
-        c.add(Restrictions.eq(EReportingSamplingPoint.IDENTIFIER, samplingPoint.getIdentifier()));
-        LOGGER.debug("QUERY getOrIntert(samplingPoint): {}", HibernateHelper.getSqlString(c));
-        EReportingSamplingPoint eReportingSamplingPoint = (EReportingSamplingPoint) c.uniqueResult();
-        if (eReportingSamplingPoint == null) {
-            eReportingSamplingPoint = new EReportingSamplingPoint();
-            addIdentifierNameDescription(samplingPoint, eReportingSamplingPoint, session);
-            eReportingSamplingPoint.setAssessmentType(new EReportingAssessmentTypeDAO().getOrInsert(
-                    samplingPoint.getAssessmentType(), session));
-            session.save(eReportingSamplingPoint);
-            session.flush();
-            session.refresh(eReportingSamplingPoint);
-        }
-        return eReportingSamplingPoint;
-    }
-
 }

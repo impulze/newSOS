@@ -28,19 +28,12 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.util.List;
-
 import org.hibernate.Session;
-
 import org.n52.sos.ds.hibernate.entities.AbstractIdentifierNameDescriptionEntity;
-import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.i18n.I18NDAORepository;
-import org.n52.sos.i18n.metadata.I18NFeatureMetadata;
 import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.gml.AbstractGML;
 import org.n52.sos.ogc.gml.CodeType;
 import org.n52.sos.ogc.gml.CodeWithAuthority;
-import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 
 public class AbstractIdentifierNameDescriptionDAO extends TimeCreator {
 
@@ -116,24 +109,5 @@ public class AbstractIdentifierNameDescriptionDAO extends TimeCreator {
             return entity.getDescription();
         }
         return null;
-    }
-
-    public void insertNames(FeatureOfInterest feature, List<CodeType> name, Session session) {
-        CodespaceDAO codespaceDAO = new CodespaceDAO();
-        I18NDAORepository.getInstance().getDAO(I18NFeatureMetadata.class);
-        for (CodeType codeType : name) {
-            codespaceDAO.getOrInsertCodespace(codeType.getCodeSpace(), session);
-        }
-    }
-
-    public void insertNameAndDescription(AbstractIdentifierNameDescriptionEntity entity, SamplingFeature samplingFeature, Session session) {
-        if (samplingFeature.isSetName()) {
-
-
-        }
-//        session.saveOrUpdate(
-//
-//        AbstractI18NDAO<?, ?> i18ndao = DaoFactory.getInstance().getI18NDAO(feature, session);
-//        featureOfInterestDAO.addIdentifierNameDescription(samplingFeature, feature, session);
     }
 }

@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -58,7 +57,6 @@ import org.n52.sos.ds.hibernate.entities.interfaces.GeometryObservation;
 import org.n52.sos.ds.hibernate.entities.interfaces.NumericObservation;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.Observation;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
@@ -67,20 +65,12 @@ import org.n52.sos.ds.hibernate.entities.Unit;
 import org.n52.sos.ds.hibernate.entities.interfaces.BooleanObservation;
 import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.ScrollableIterable;
 import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
-import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.exception.ows.OptionNotSupportedException;
-import org.n52.sos.ogc.gml.time.Time;
-import org.n52.sos.ogc.gml.time.Time.TimeIndeterminateValue;
-import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.gml.time.TimePeriod;
-import org.n52.sos.ogc.om.NamedValue;
 import org.n52.sos.ogc.om.OmConstants;
 import org.n52.sos.ogc.om.OmObservation;
-import org.n52.sos.ogc.om.SingleObservationValue;
 import org.n52.sos.ogc.om.values.BooleanValue;
 import org.n52.sos.ogc.om.values.CategoryValue;
 import org.n52.sos.ogc.om.values.CountValue;
@@ -91,7 +81,6 @@ import org.n52.sos.ogc.om.values.TextValue;
 import org.n52.sos.ogc.om.values.UnknownValue;
 import org.n52.sos.ogc.om.values.Value;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.ogc.sos.SosEnvelope;
 import org.n52.sos.request.GetObservationRequest;
@@ -114,21 +103,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescriptionDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractObservationDAO.class);
-
-    /**
-     * Add observation identifier (procedure, observableProperty,
-     * featureOfInterest) to observation
-     *
-     * @param observationIdentifiers
-     *            Observation identifiers
-     * @param observation
-     *            Observation to add identifiers
-     * @param session
-     *            Hibernate session
-     * @throws CodedException 
-     */
-    protected abstract void addObservationIdentifiersToObservation(ObservationIdentifiers observationIdentifiers,
-            AbstractObservation observation, Session session) throws CodedException;
 
     /**
      * Get Hibernate Criteria for querying observations with parameters
@@ -476,147 +450,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
     }
 
     /**
-     * Get Hibernate Criteria for observation with restriction procedure Insert
-     * a multi value observation for observation constellations and
-     * featureOfInterest
-     *
-     * @param observationConstellations
-     *            Observation constellation objects
-     * @param feature
-     *            FeatureOfInterest object
-     * @param containerObservation
-     *            SOS observation
-     * @param codespaceCache
-     *            Map based codespace object cache to prevent redundant queries
-     * @param unitCache
-     *            Map based unit object cache to prevent redundant queries
-     * @param session
-     *            Hibernate session
-     * @throws OwsExceptionReport
-     *             If an error occurs
-     */
-    public void insertObservationMultiValue(Set<ObservationConstellation> observationConstellations,
-            FeatureOfInterest feature, OmObservation containerObservation, Map<String, Codespace> codespaceCache,
-            Map<String, Unit> unitCache, Session session) throws OwsExceptionReport {
-        List<OmObservation> unfoldObservations = HibernateObservationUtilities.unfoldObservation(containerObservation);
-        for (OmObservation sosObservation : unfoldObservations) {
-            insertObservationSingleValue(observationConstellations, feature, sosObservation, codespaceCache,
-                    unitCache, session);
-        }
-    }
-
-    /**
-     * Insert a single observation for observation constellations and
-     * featureOfInterest without local caching for codespaces and units
-     *
-     * @param observationConstellations
-     *            Observation constellation objects
-     * @param feature
-     *            FeatureOfInterest object
-     * @param sosObservation
-     *            SOS observation to insert
-     * @param session
-     *            Hibernate session
-     * @throws OwsExceptionReport
-     */
-    public void insertObservationSingleValue(Set<ObservationConstellation> hObservationConstellations,
-            FeatureOfInterest hFeature, OmObservation sosObservation, Session session) throws OwsExceptionReport {
-        insertObservationSingleValue(hObservationConstellations, hFeature, sosObservation, null, null, session);
-    }
-
-    /**
-     * Insert a single observation for observation constellations and
-     * featureOfInterest with local caching for codespaces and units
-     *
-     * @param observationConstellations
-     *            Observation constellation objects
-     * @param feature
-     *            FeatureOfInterest object
-     * @param sosObservation
-     *            SOS observation to insert
-     * @param codespaceCache
-     *            Map cache for codespace objects (to prevent redundant
-     *            querying)
-     * @param unitCache
-     *            Map cache for unit objects (to prevent redundant querying)
-     * @param session
-     *            Hibernate session
-     * @throws OwsExceptionReport
-     */
-    @SuppressWarnings("rawtypes")
-    public void insertObservationSingleValue(Set<ObservationConstellation> hObservationConstellations,
-            FeatureOfInterest hFeature, OmObservation sosObservation, Map<String, Codespace> codespaceCache,
-            Map<String, Unit> unitCache, Session session) throws OwsExceptionReport {
-        SingleObservationValue<?> value = (SingleObservationValue) sosObservation.getValue();
-        AbstractObservation hObservation = createObservationFromValue(value.getValue(), session);
-        hObservation.setDeleted(false);
-        addIdentifierNameDescription(sosObservation, hObservation, session);
-        addPhenomeonTimeAndResultTimeToObservation(hObservation, sosObservation.getPhenomenonTime(),
-                sosObservation.getResultTime());
-
-        if (value.getValue().getUnit() != null) {
-            hObservation.setUnit(getUnit(value.getValue().getUnit(), unitCache, session));
-        }
-        addOfferingsToObservation(hObservation, hObservationConstellations);
-        ObservationIdentifiers observationIdentifiers = createObservationIdentifiers(hObservationConstellations);
-        addProcedureObservablePropertyToObservationIdentifiers(hObservationConstellations, observationIdentifiers);
-        addFeatureOfInterestToObservationIdentifiers(hFeature, observationIdentifiers);
-        addAdditionalObjectsToObservationIdentifiers(observationIdentifiers, sosObservation, session);
-        addObservationIdentifiersToObservation(observationIdentifiers, hObservation, session);
-        if (sosObservation.isSetSpatialFilteringProfileParameter()) {
-            hObservation.setSamplingGeometry(GeometryHandler.getInstance()
-                    .switchCoordinateAxisFromToDatasourceIfNeeded(
-                            sosObservation.getSpatialFilteringProfileParameter().getValue().getValue()));
-        }
-
-        session.saveOrUpdate(hObservation);
-        // don't flush here because we may be batching
-
-        if (sosObservation.isSetParameter()) {
-            insertParameter(sosObservation.getParameter(), hObservation, session);
-        }
-    }
-
-    protected void addOfferingsToObservation(AbstractObservation hObservation,
-            Set<ObservationConstellation> hObservationConstellations) {
-        for (ObservationConstellation observationConstellation : hObservationConstellations) {
-            hObservation.getOfferings().add(observationConstellation.getOffering());
-        }
-    }
-
-    protected ObservationIdentifiers createObservationIdentifiers(Set<ObservationConstellation> hObservationConstellations) {
-        ObservationIdentifiers observationIdentifiers = new ObservationIdentifiers();
-        addProcedureObservablePropertyToObservationIdentifiers(hObservationConstellations, observationIdentifiers);
-        return observationIdentifiers;
-    }
-
-    protected ObservationIdentifiers addProcedureObservablePropertyToObservationIdentifiers(
-            Set<ObservationConstellation> hObservationConstellations, ObservationIdentifiers observationIdentifiers) {
-        if (CollectionHelper.isNotEmpty(hObservationConstellations)) {
-            boolean firstObsConst = true;
-            for (ObservationConstellation observationConstellation : hObservationConstellations) {
-                if (firstObsConst) {
-                    observationIdentifiers.setObservableProperty(observationConstellation.getObservableProperty());
-                    observationIdentifiers.setProcedure(observationConstellation.getProcedure());
-                    firstObsConst = false;
-                }
-            }
-        }
-        return observationIdentifiers;
-    }
-
-    protected ObservationIdentifiers addFeatureOfInterestToObservationIdentifiers(FeatureOfInterest hFeature,
-            ObservationIdentifiers observationIdentifiers) {
-        observationIdentifiers.setFeatureOfInterest(hFeature);
-        return observationIdentifiers;
-    }
-
-    protected ObservationIdentifiers addAdditionalObjectsToObservationIdentifiers(ObservationIdentifiers observationIdentifiers,
-            OmObservation sosObservation, Session session) {
-        return observationIdentifiers;
-    }
-
-    /**
      * If the local codespace cache isn't null, use it when retrieving
      * codespaces.
      * 
@@ -711,24 +544,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
         // TODO if this observation is a deleted=true, how to set deleted=false
         // instead of insert
 
-    }
-
-    /**
-     * Insert om:parameter into database. Differs between Spatial Filtering
-     * Profile parameter and others.
-     *
-     * @param parameter
-     *            om:Parameter to insert
-     * @param observation
-     *            related observation
-     * @param session
-     *            Hibernate session
-     * @throws OwsExceptionReport
-     */
-    protected void insertParameter(Collection<NamedValue<?>> parameter, AbstractObservation observation,
-            Session session) throws OwsExceptionReport {
-        throw new OptionNotSupportedException().at("om:parameter").withMessage(
-                "The om:parameter support is not yet implemented!");
     }
 
     /**
@@ -997,78 +812,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
     }
 
     /**
-     * Add phenomenon and result time to observation object
-     *
-     * @param observation
-     *            Observation object
-     * @param phenomenonTime
-     *            SOS phenomenon time
-     * @param resultTime
-     *            SOS result Time
-     * @throws CodedException
-     *             If an error occurs
-     */
-    protected void addPhenomeonTimeAndResultTimeToObservation(AbstractObservation observation, Time phenomenonTime,
-            TimeInstant resultTime) throws CodedException {
-        addPhenomenonTimeToObservation(observation, phenomenonTime);
-        addResultTimeToObservation(observation, resultTime, phenomenonTime);
-    }
-
-    /**
-     * Add phenomenon time to observation object
-     *
-     * @param observation
-     *            Observation object
-     * @param phenomenonTime
-     *            SOS phenomenon time
-     */
-    protected void addPhenomenonTimeToObservation(AbstractObservation observation, Time phenomenonTime) {
-        if (phenomenonTime instanceof TimeInstant) {
-            TimeInstant time = (TimeInstant) phenomenonTime;
-            observation.setPhenomenonTimeStart(time.getValue().toDate());
-            observation.setPhenomenonTimeEnd(time.getValue().toDate());
-        } else if (phenomenonTime instanceof TimePeriod) {
-            TimePeriod time = (TimePeriod) phenomenonTime;
-            observation.setPhenomenonTimeStart(time.getStart().toDate());
-            observation.setPhenomenonTimeEnd(time.getEnd().toDate());
-        }
-    }
-
-    /**
-     * Add result time to observation object
-     *
-     * @param observation
-     *            Observation object
-     * @param resultTime
-     *            SOS result time
-     * @param phenomenonTime
-     *            SOS phenomenon time
-     * @throws CodedException
-     *             If an error occurs
-     */
-    protected void addResultTimeToObservation(AbstractObservation observation, TimeInstant resultTime,
-            Time phenomenonTime) throws CodedException {
-        if (resultTime != null) {
-            if (resultTime.getValue() != null) {
-                observation.setResultTime(resultTime.getValue().toDate());
-            } else if (TimeIndeterminateValue.contains(Sos2Constants.EN_PHENOMENON_TIME)
-                    && phenomenonTime instanceof TimeInstant) {
-                observation.setResultTime(((TimeInstant) phenomenonTime).getValue().toDate());
-            } else {
-                throw new NoApplicableCodeException()
-                        .withMessage("Error while adding result time to Hibernate Observation entitiy!");
-            }
-        } else {
-            if (phenomenonTime instanceof TimeInstant) {
-                observation.setResultTime(((TimeInstant) phenomenonTime).getValue().toDate());
-            } else {
-                throw new NoApplicableCodeException()
-                        .withMessage("Error while adding result time to Hibernate Observation entitiy!");
-            }
-        }
-    }
-
-    /**
      * Add valid time to observation object
      *
      * @param observation
@@ -1080,31 +823,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
         if (validTime != null) {
             observation.setValidTimeStart(validTime.getStart().toDate());
             observation.setValidTimeEnd(validTime.getEnd().toDate());
-        }
-    }
-
-    /**
-     * Update observations, set deleted flag
-     *
-     * @param scroll
-     *            Observations to update
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate session
-     */
-    protected void updateObservation(ScrollableIterable<AbstractObservation> scroll, boolean deleteFlag,
-            Session session) {
-        if (scroll != null) {
-            try {
-                for (AbstractObservation o : scroll) {
-                    o.setDeleted(deleteFlag);
-                    session.update(o);
-                    session.flush();
-                }
-            } finally {
-                scroll.close();
-            }
         }
     }
 

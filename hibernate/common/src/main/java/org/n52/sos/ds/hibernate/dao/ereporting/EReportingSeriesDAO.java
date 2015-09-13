@@ -41,7 +41,6 @@ import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
-import org.n52.sos.ds.hibernate.dao.series.SeriesIdentifiers;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingAssessmentType;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
@@ -109,11 +108,6 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
     public EReportingSeries getSeriesFor(String procedure, String observableProperty, String featureOfInterest,
             Session session) {
         return (EReportingSeries) getSeriesCriteriaFor(procedure, observableProperty, featureOfInterest, session).uniqueResult();
-    }
-
-    @Override
-    public EReportingSeries getOrInsertSeries(SeriesIdentifiers identifiers, Session session) throws CodedException {
-        return (EReportingSeries) super.getOrInsert(identifiers, session);
     }
     
     /**

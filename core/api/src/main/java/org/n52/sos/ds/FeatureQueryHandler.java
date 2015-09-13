@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.n52.sos.ogc.filter.SpatialFilter;
 import org.n52.sos.ogc.gml.AbstractFeature;
-import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosEnvelope;
 
@@ -172,18 +171,6 @@ public interface FeatureQueryHandler extends DatasourceDaoIdentifier {
      */
     SosEnvelope getEnvelopeForFeatureIDs(FeatureQueryHandlerQueryObject queryObject)
             throws OwsExceptionReport;
-
-    /**
-     * FIXME Add javadoc to clarify the semantics of this method
-     * 
-     * @param samplingFeature
-     *            Feature to insert into datasource
-     * @param connection
-     *            Datasource connection
-     * @return Identifier of the inserted feature
-     * @throws OwsExceptionReport
-     */
-    String insertFeature(SamplingFeature samplingFeature, Object connection) throws OwsExceptionReport;
 
     @Deprecated
     int getDefaultEPSG();
