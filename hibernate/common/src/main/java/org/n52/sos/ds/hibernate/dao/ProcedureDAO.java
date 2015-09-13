@@ -45,6 +45,7 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
@@ -277,20 +278,18 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
         return foiProcMap;
     }
     
-    @SuppressWarnings("unchecked")
     private List<Object[]> getFeatureProcedureResult(Session session) {
-        List<Object[]> results;
-            Criteria c = null;
-                c = session.createCriteria(EReportingSeries.class)
-                    .createAlias(Series.FEATURE_OF_INTEREST, "f")
-                    .createAlias(Series.PROCEDURE, "p")
-                    .add(Restrictions.eq(Series.DELETED, false))
-                    .setProjection(Projections.distinct(Projections.projectionList()
-                        .add(Projections.property("f." + FeatureOfInterest.IDENTIFIER))
-                        .add(Projections.property("p." + Procedure.IDENTIFIER))));
-            LOGGER.debug("QUERY getProceduresForAllFeaturesOfInterest(feature): {}", HibernateHelper.getSqlString(c));
-            results = c.list();
-        return results;
+    	// TODOHZG: for all series get FeatureOfInterest and Procedure
+    	final List<EReportingSeries> allSeries = new EReportingSeriesDAO().getAllSeries(session);
+    	final List<Object[]> foisAndProcedures = Lists.newArrayList();
+
+    	for (final EReportingSeries series: allSeries) {
+    		final Object[] pair = new Object[] { series.getFeatureOfInterest().getIdentifier(), series.getProcedure().getIdentifier() };
+
+    		foisAndProcedures.add(pair);
+    	}
+
+    	return foisAndProcedures;
     }
 
     /**

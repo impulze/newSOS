@@ -37,13 +37,10 @@ import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.sql.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
@@ -56,7 +53,6 @@ import org.n52.sos.ds.hibernate.entities.TFeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.NoopTransformerAdapter;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.OGCConstants;
@@ -64,10 +60,14 @@ import org.n52.sos.ogc.gml.AbstractFeature;
 import org.n52.sos.ogc.om.features.samplingFeatures.SamplingFeature;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.service.Configurator;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.http.HTTPStatus;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import de.hzg.common.SOSConfiguration;
 
 /**
  * Hibernate data access class for featureOfInterest
@@ -79,6 +79,18 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureOfInterestDAO.class);
 
+    public FeatureOfInterest createFeatureOfInterest(Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final TFeatureOfInterest foi = new TFeatureOfInterest();
+
+    	// TODOHZG: add additional information
+    	foi.setIdentifier(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName());
+    	foi.setName("some foi name");
+    	foi.setFeatureOfInterestType(new FeatureOfInterestTypeDAO().getFeatureOfInterestTypeObject(FeatureOfInterestTypeDAO.HZG_FEATURE_OF_INTEREST_TYPE_STRING, session));
+
+    	return foi;
+    }
+
     /**
      * Get featureOfInterest object for identifier
      *
@@ -89,11 +101,13 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return FeatureOfInterest entity
      */
     public FeatureOfInterest getFeatureOfInterest(final String identifier, final Session session) {
-        Criteria criteria =
-                session.createCriteria(FeatureOfInterest.class).add(
-                        Restrictions.eq(FeatureOfInterest.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getFeatureOfInterest(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (FeatureOfInterest) criteria.uniqueResult();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+    	if (identifier.equals(sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName())) {
+    		return (FeatureOfInterest)createFeatureOfInterest(session);
+    	}
+
+    	return null;
     }
 
     /**
@@ -191,11 +205,8 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      *            Hibernate session
      * @return FeatureOfInterest objects
      */
-    @SuppressWarnings("unchecked")
     public List<FeatureOfInterest> getFeatureOfInterestObjects(final Session session) {
-        Criteria criteria = session.createCriteria(FeatureOfInterest.class);
-        LOGGER.debug("QUERY getFeatureOfInterestObjects(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	return Lists.newArrayList(createFeatureOfInterest(session));
     }
 
     /**
@@ -206,32 +217,20 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return Map keyed by FOI identifiers, with value collections of parent FOI identifiers if supported
      */
     public Map<String,Collection<String>> getFeatureOfInterestIdentifiersWithParents(final Session session) {
-        Criteria criteria = session.createCriteria(FeatureOfInterest.class);
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.property(FeatureOfInterest.IDENTIFIER));
+    	final List<FeatureOfInterest> fois = Lists.newArrayList(createFeatureOfInterest(session));
+        final Map<String, Collection<String>> map = Maps.newHashMap();
 
-        //get parents if transactional profile is active
-            criteria.createAlias(TFeatureOfInterest.PARENTS, "pfoi", JoinType.LEFT_OUTER_JOIN);
-            projectionList.add(Projections.property("pfoi." + FeatureOfInterest.IDENTIFIER));
-        criteria.setProjection(projectionList);
-        //return as List<Object[]> even if there's only one column for consistency
-        criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
+        for (final FeatureOfInterest foi: fois) {
+        	map.put(foi.getIdentifier(), null);
 
-        LOGGER.debug("QUERY getFeatureOfInterestIdentifiersWithParents(): {}", HibernateHelper.getSqlString(criteria));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = criteria.list();
-        Map<String,Collection<String>> foiMap = Maps.newHashMap();
-        for(Object[] result : results) {
-            String featureIdentifier = (String) result[0];
-            String parentFeatureIdentifier = null;
-                parentFeatureIdentifier = (String) result[1];
-            if (parentFeatureIdentifier != null) {
-                CollectionHelper.addToCollectionMap(featureIdentifier, parentFeatureIdentifier, foiMap);
-            } else {
-                foiMap.put(featureIdentifier, null);
-            }
+        	if (foi instanceof TFeatureOfInterest) {
+        		for (final FeatureOfInterest parent: ((TFeatureOfInterest)foi).getParents()) {
+        			CollectionHelper.addToCollectionMap(foi.getIdentifier(), parent.getIdentifier(), map);
+        		}
+        	}
         }
-        return foiMap;
+
+        return map;
     }
 
     /**
