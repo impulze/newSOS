@@ -48,12 +48,16 @@ import org.n52.sos.ogc.om.OmObservationConstellation;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.service.Configurator;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for observation constellation
@@ -174,8 +178,25 @@ public class ObservationConstellationDAO {
      * @return Observation constellation objects
      */
     public List<ObservationConstellation> getObservationConstellations(Session session) {
-    	// TODOHZG: create observation constellations from observed property instances
-    	return Lists.newArrayList();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<ObservedPropertyInstance> instances = new ObservablePropertyDAO().getObservedPropertyInstances(session);
+    	final List<ObservationConstellation> obsConsts = Lists.newArrayList();
+
+    	for (final ObservedPropertyInstance instance: instances) {
+    		final ObservationConstellation obsConst = new ObservationConstellation();
+
+    		obsConst.setDeleted(false);
+    		obsConst.setDisabled(false);
+    		obsConst.setHiddenChild(false);
+    		obsConst.setObservableProperty(new ObservablePropertyDAO().createObservablePropertyWithInstance(instance, session));
+    		obsConst.setObservationType(new ObservationTypeDAO().getObservationTypeObject(ObservationTypeDAO.HZG_OBSERVATION_TYPE_STRING, session));
+    		obsConst.setOffering(new OfferingDAO().getOfferingForIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName(), session));
+    		obsConst.setProcedure(new ProcedureDAO().createProcedureWithSensor(instance.getSensor(), session));
+
+    		obsConsts.add(obsConst);
+    	}
+
+    	return obsConsts;
     }
 
     /**

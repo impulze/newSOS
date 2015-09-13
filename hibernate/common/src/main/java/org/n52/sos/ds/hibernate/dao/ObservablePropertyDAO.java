@@ -49,6 +49,10 @@ import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.om.OmObservableProperty;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.n52.sos.service.SosContextListener;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for observable properties
@@ -59,6 +63,24 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservablePropertyDAO.class);
+
+    List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
+    	final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
+    	@SuppressWarnings("unchecked")
+		final List<ObservedPropertyInstance> instances = criteria.list();
+
+    	return instances;
+    }
+
+    ObservableProperty createObservablePropertyWithInstance(ObservedPropertyInstance instance, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final ObservableProperty obsProp = new ObservableProperty();
+
+    	obsProp.setDisabled(false);
+    	obsProp.setIdentifier(sosConfiguration.getObservablePropertyIdentifierPrefix() + instance.getName());
+
+    	return obsProp;
+    }
 
     /**
      * Get observable property objects for observable property identifiers
