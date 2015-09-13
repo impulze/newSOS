@@ -33,9 +33,10 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
+import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.Procedure;
@@ -45,7 +46,9 @@ import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
+import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.request.GetObservationRequest;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.DateTimeHelper;
 import org.n52.sos.util.StringHelper;
@@ -53,6 +56,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.values.CalculatedData;
+import de.hzg.values.RawData;
 
 public abstract class AbstractSeriesDAO {
     
@@ -116,9 +123,41 @@ public abstract class AbstractSeriesDAO {
      *            Hibernate session
      * @return Matching series
      */
-    public abstract Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session);
+    public abstract Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session); 
     
     protected abstract void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException;
+
+    protected Series getOrInsert(SeriesIdentifiers identifiers, final Session session) throws CodedException {
+        Criteria criteria = getDefaultAllSeriesCriteria(session);
+        identifiers.addIdentifierRestrictionsToCritera(criteria);
+        LOGGER.debug("QUERY getOrInsertSeries(feature, observableProperty, procedure): {}",
+                HibernateHelper.getSqlString(criteria));
+        Series series = (Series) criteria.uniqueResult();
+        if (series == null) {
+            series = getSeriesImpl();
+            identifiers.addValuesToSeries(series);
+            series.setDeleted(false);
+            series.setPublished(true);
+            session.save(series);
+            session.flush();
+            session.refresh(series);
+        } else if (series.isDeleted()) {
+            series.setDeleted(false);
+            session.update(series);
+            session.flush();
+            session.refresh(series);
+        }
+        return series;
+    }
+
+    
+    private Series getSeriesImpl() throws CodedException {
+        try {
+            return (Series)getSeriesClass().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new NoApplicableCodeException().causedBy(e).withMessage("Error while creating an instance of %s", getSeriesClass().getCanonicalName());
+        }
+    }
 
     public Criteria getSeriesCriteria(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
         final Criteria c =
@@ -284,6 +323,79 @@ public abstract class AbstractSeriesDAO {
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
     }
 
+    /**
+     * Get default Hibernate Criteria for querying all series
+     * 
+     * @param session
+     *            Hibernate Session
+     * @return Default criteria
+     */
+    public Criteria getDefaultAllSeriesCriteria(Session session) {
+        return session.createCriteria(getSeriesClass()).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+    }
+    
+    /**
+     * Update Series for procedure by setting deleted flag and return changed
+     * series
+     * 
+     * @param procedure
+     *            Procedure for which the series should be changed
+     * @param deleteFlag
+     *            New deleted flag value
+     * @param session
+     *            Hibernate session
+     * @return Updated Series
+     */
+    @SuppressWarnings("unchecked")
+    public List<Series> updateSeriesSetAsDeletedForProcedureAndGetSeries(String procedure, boolean deleteFlag,
+            Session session) {
+        Criteria criteria = getDefaultAllSeriesCriteria(session);
+        addProcedureToCriteria(criteria, procedure);
+        List<Series> hSeries = criteria.list();
+        for (Series series : hSeries) {
+            series.setDeleted(deleteFlag);
+            session.saveOrUpdate(series);
+            session.flush();
+        }
+        return hSeries;
+    }
+    
+    /**
+     * Update series values which will be used by the Timeseries API.
+     * Can be later used by the SOS.
+     * 
+     * @param series Series object
+     * @param hObservation Observation object
+     * @param session Hibernate session
+     */
+    public void updateSeriesWithFirstLatestValues(Series series, AbstractObservation hObservation, Session session) {
+        boolean minChanged = false;
+        boolean maxChanged = false;
+        if (!series.isSetFirstTimeStamp() || (series.isSetFirstTimeStamp() && series.getFirstTimeStamp().after(hObservation.getPhenomenonTimeStart()))) {
+            minChanged = true;
+            series.setFirstTimeStamp(hObservation.getPhenomenonTimeStart());
+        }
+        if (!series.isSetLastTimeStamp() || (series.isSetLastTimeStamp() && series.getLastTimeStamp().before(hObservation.getPhenomenonTimeEnd()))) {
+            maxChanged = true;
+            series.setLastTimeStamp(hObservation.getPhenomenonTimeEnd());
+        }
+
+        if (hObservation instanceof NumericObservation) {
+            if (minChanged) {
+                series.setFirstNumericValue(((NumericObservation) hObservation).getValue());
+            }
+            if (maxChanged) {
+                series.setLastNumericValue(((NumericObservation) hObservation).getValue());
+            }
+            if (!series.isSetUnit() && hObservation.isSetUnit()) {
+                // TODO check if both unit are equal. If not throw exception?
+                series.setUnit(hObservation.getUnit());
+            }
+        }
+        session.saveOrUpdate(series);
+        session.flush();
+    }
+    
 	/**
 	 * Check {@link Series} if the deleted observation time stamp corresponds to
 	 * the first/last series time stamp
@@ -313,23 +425,48 @@ public abstract class AbstractSeriesDAO {
 		session.saveOrUpdate(series);
 	}
 	
+	private Criteria createTimeExtremaCriteria(String name, Class<?> clazz, Session session) {
+		final Criteria criteria = session.createCriteria(clazz)
+				.createAlias("observedPropertyInstance", "ob")
+				.createAlias("ob.sensor", "s")
+				.add(Restrictions.eq("s.name", name))
+				.setProjection(Projections.projectionList()
+						.add(Projections.min("date"))
+						.add(Projections.max("date")));
+
+		return criteria;
+	}
+
 	public TimeExtrema getProcedureTimeExtrema(Session session, String procedure) {
-        Criteria c = getDefaultSeriesCriteria(session);
-        addProcedureToCriteria(c, procedure);
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.min(Series.FIRST_TIME_STAMP));
-        projectionList.add(Projections.max(Series.LAST_TIME_STAMP));
-        c.setProjection(projectionList);
-            LOGGER.debug("QUERY getProcedureTimeExtrema(procedureIdentifier): {}", HibernateHelper.getSqlString(c));
-            Object[] result = (Object[]) c.uniqueResult();
-        
-        TimeExtrema pte = new TimeExtrema();
-        if (result != null) {
-            pte.setMinTime(DateTimeHelper.makeDateTime(result[0]));
-            pte.setMaxTime(DateTimeHelper.makeDateTime(result[1]));
-        }
-        return pte;
-    }
+		final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+		final String prefix = sosConfiguration.getProcedureIdentifierPrefix();
+		final String name = procedure.substring(prefix.length());
+		final TimeExtrema pte = new TimeExtrema();
+
+		Object[] result = (Object[])createTimeExtremaCriteria(name, CalculatedData.class, session).uniqueResult();
+
+		if (result != null) {
+			pte.setMinTime(DateTimeHelper.makeDateTime(result[0]));
+			pte.setMaxTime(DateTimeHelper.makeDateTime(result[1]));
+		}
+
+		result = (Object[])createTimeExtremaCriteria(name, RawData.class, session).uniqueResult();
+
+		if (result != null) {
+			final DateTime rawMin = DateTimeHelper.makeDateTime(result[0]);
+			final DateTime rawMax = DateTimeHelper.makeDateTime(result[1]);
+
+			if (pte.getMinTime() == null || rawMin.isBefore(pte.getMinTime())) {
+				pte.setMinTime(rawMin);
+			}
+
+			if (pte.getMaxTime() == null || rawMax.isAfter(pte.getMaxTime())) {
+				pte.setMaxTime(rawMin);
+			}
+		}
+
+		return pte;
+	}
     
     /**
      * Create series query criteria for parameter

@@ -70,7 +70,7 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
 			series.setDeleted(false);
 			series.setFeatureOfInterest(foi);
 			series.setObservableProperty(obsPropDAO.createObservablePropertyWithInstance(instance, session));
-			series.setProcedure(procedureDAO.createProcedureWithSensor(instance.getSensor(), session));
+			series.setProcedure(procedureDAO.createProceduresWithSensors(Lists.newArrayList(instance.getSensor()), session).get(0));
 			series.setPublished(true);
 			series.setSamplingPoint(samplingPoint);
 

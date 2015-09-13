@@ -152,7 +152,7 @@ public class ObservationConstellationDAO {
     		obsConst.setObservableProperty(new ObservablePropertyDAO().createObservablePropertyWithInstance(instance, session));
     		obsConst.setObservationType(new ObservationTypeDAO().getObservationTypeObject(ObservationTypeDAO.HZG_OBSERVATION_TYPE_STRING, session));
     		obsConst.setOffering(new OfferingDAO().getOfferingForIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName(), session));
-    		obsConst.setProcedure(new ProcedureDAO().createProcedureWithSensor(instance.getSensor(), session));
+    		obsConst.setProcedure(new ProcedureDAO().createProceduresWithSensors(Lists.newArrayList(instance.getSensor()), session).get(0));
 
     		obsConsts.add(obsConst);
     	}
