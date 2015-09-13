@@ -37,8 +37,12 @@ import org.hibernate.criterion.Restrictions;
 import org.n52.sos.aqd.AqdConstants;
 import org.n52.sos.aqd.AqdHelper;
 import org.n52.sos.aqd.ReportObligationType;
+import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesIdentifiers;
+import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingAssessmentType;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
@@ -47,7 +51,36 @@ import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.OptionNotSupportedException;
 import org.n52.sos.request.GetObservationRequest;
 
+import com.google.common.collect.Lists;
+
+import de.hzg.measurement.ObservedPropertyInstance;
+
 public class EReportingSeriesDAO extends AbstractSeriesDAO {
+	public List<EReportingSeries> getAllSeries(Session session) {
+		// TODOHZG: get all series
+		final ObservablePropertyDAO obsPropDAO = new ObservablePropertyDAO();
+		final ProcedureDAO procedureDAO = new ProcedureDAO();
+		final EReportingSamplingPoint samplingPoint = new EReportingSamplingPointDAO().createSamplingPoint(session);
+		final List<ObservedPropertyInstance> instances = obsPropDAO.getObservedPropertyInstances(session);
+		final FeatureOfInterest foi = new FeatureOfInterestDAO().createFeatureOfInterest(session);
+		final List<EReportingSeries> allSeries = Lists.newArrayListWithCapacity(instances.size());
+
+		for (final ObservedPropertyInstance instance: instances) {
+			final EReportingSeries series = new EReportingSeries();
+
+			series.setDeleted(false);
+			series.setFeatureOfInterest(foi);
+			series.setObservableProperty(obsPropDAO.createObservablePropertyWithInstance(instance, session));
+			series.setProcedure(procedureDAO.createProcedureWithSensor(instance.getSensor(), session));
+			series.setPublished(true);
+			series.setSamplingPoint(samplingPoint);
+
+			allSeries.add(series);
+		}
+
+		return allSeries;
+	}
+
     @Override
     protected Class<?> getSeriesClass() {
         return EReportingSeries.class;

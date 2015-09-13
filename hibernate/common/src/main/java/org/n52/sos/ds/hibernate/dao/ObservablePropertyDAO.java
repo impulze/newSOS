@@ -64,7 +64,7 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservablePropertyDAO.class);
 
-    List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
+    public List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
     	final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
     	@SuppressWarnings("unchecked")
 		final List<ObservedPropertyInstance> instances = criteria.list();
@@ -72,7 +72,7 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     	return instances;
     }
 
-    ObservableProperty createObservablePropertyWithInstance(ObservedPropertyInstance instance, Session session) {
+    public ObservableProperty createObservablePropertyWithInstance(ObservedPropertyInstance instance, Session session) {
     	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
     	final ObservableProperty obsProp = new ObservableProperty();
 
