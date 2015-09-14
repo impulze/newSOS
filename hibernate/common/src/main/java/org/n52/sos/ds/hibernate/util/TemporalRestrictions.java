@@ -146,46 +146,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeforeRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion before(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new BeforeRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeforeRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion before(String property, Time value) throws UnsupportedTimeException {
-        return filter(new BeforeRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -200,46 +160,6 @@ public class TemporalRestrictions {
      */
     public static Criterion before(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
         return filter(new BeforeRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see AfterRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion after(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new AfterRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see AfterRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion after(String property, Time value) throws UnsupportedTimeException {
-        return filter(new AfterRestriction(), property, value);
     }
 
     /**
@@ -264,46 +184,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeginsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begins(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new BeginsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeginsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begins(String property, Time value) throws UnsupportedTimeException {
-        return filter(new BeginsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -318,46 +198,6 @@ public class TemporalRestrictions {
      */
     public static Criterion begins(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
         return filter(new BeginsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion ends(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new EndsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion ends(String property, Time value) throws UnsupportedTimeException {
-        return filter(new EndsRestriction(), property, value);
     }
 
     /**
@@ -382,46 +222,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion endedBy(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new EndedByRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion endedBy(String property, Time value) throws UnsupportedTimeException {
-        return filter(new EndedByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -436,46 +236,6 @@ public class TemporalRestrictions {
      */
     public static Criterion endedBy(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
         return filter(new EndedByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BegunByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begunBy(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new BegunByRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BegunByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begunBy(String property, Time value) throws UnsupportedTimeException {
-        return filter(new BegunByRestriction(), property, value);
     }
 
     /**
@@ -500,46 +260,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see DuringRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion during(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new DuringRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see DuringRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion during(String property, Time value) throws UnsupportedTimeException {
-        return filter(new DuringRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -559,46 +279,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see TEqualsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion tEquals(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new TEqualsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see TEqualsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion tEquals(String property, Time value) throws UnsupportedTimeException {
-        return filter(new TEqualsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -613,46 +293,6 @@ public class TemporalRestrictions {
      */
     public static Criterion tEquals(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
         return filter(new TEqualsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see ContainsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion contains(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new ContainsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see ContainsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion contains(String property, Time value) throws UnsupportedTimeException {
-        return filter(new ContainsRestriction(), property, value);
     }
 
     /**
@@ -678,46 +318,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlapsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlaps(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new OverlapsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlapsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlaps(String property, Time value) throws UnsupportedTimeException {
-        return filter(new OverlapsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -733,46 +333,6 @@ public class TemporalRestrictions {
     public static Criterion overlaps(TimePrimitiveFieldDescriptor property, Time value)
             throws UnsupportedTimeException {
         return filter(new OverlapsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MeetsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion meets(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new MeetsRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MeetsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion meets(String property, Time value) throws UnsupportedTimeException {
-        return filter(new MeetsRestriction(), property, value);
     }
 
     /**
@@ -797,46 +357,6 @@ public class TemporalRestrictions {
     /**
      * Creates a temporal restriction for the specified time and property.
      * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MetByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion metBy(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new MetByRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MetByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion metBy(String property, Time value) throws UnsupportedTimeException {
-        return filter(new MetByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
      * @param property
      *            the property
      * @param value
@@ -851,46 +371,6 @@ public class TemporalRestrictions {
      */
     public static Criterion metBy(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
         return filter(new MetByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param begin
-     *            the begin property name
-     * @param end
-     *            the end property name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlappedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlappedBy(String begin, String end, Time value) throws UnsupportedTimeException {
-        return filter(new OverlappedByRestriction(), begin, end, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlappedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlappedBy(String property, Time value) throws UnsupportedTimeException {
-        return filter(new OverlappedByRestriction(), property, value);
     }
 
     /**
@@ -911,52 +391,6 @@ public class TemporalRestrictions {
     public static Criterion overlappedBy(TimePrimitiveFieldDescriptor property, Time value)
             throws UnsupportedTimeException {
         return filter(new OverlappedByRestriction(), property, value);
-    }
-
-    /**
-     * Create a new <tt>Criterion</tt> using the specified property, restricion
-     * and value.
-     * 
-     * @param restriction
-     *            the restriction
-     * @param begin
-     *            the begin property field name
-     * @param end
-     *            the end property field name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    private static Criterion filter(TemporalRestriction restriction, String begin, String end, Time value)
-            throws UnsupportedTimeException {
-        return filter(restriction, new TimePrimitiveFieldDescriptor(begin, end), value);
-    }
-
-    /**
-     * Create a new <tt>Criterion</tt> using the specified property, restricion
-     * and value.
-     * 
-     * @param restriction
-     *            the restriction
-     * @param property
-     *            the property field name
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    private static Criterion filter(TemporalRestriction restriction, String property, Time value)
-            throws UnsupportedTimeException {
-        return filter(restriction, new TimePrimitiveFieldDescriptor(property), value);
     }
 
     /**
