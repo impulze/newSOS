@@ -28,6 +28,9 @@
  */
 package org.n52.sos.ds.hibernate.dao.series;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
@@ -41,6 +44,7 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValueTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.ObservationTimeExtrema;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
@@ -84,8 +88,8 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      *             If an error occurs
      */
     public ObservationTimeExtrema getTimeExtremaForSeries(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        Criteria c = getSeriesValueCriteriaFor(request, series, temporalFilterCriterion, null, session);
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        Criteria c = getSeriesValueCriteriaFor(request, series, temporalFilterDisjunctions, null, session);
         addMinMaxTimeProjection(c);
         LOGGER.debug("QUERY getTimeExtremaForSeries(request, series, temporalFilter): {}",
                 HibernateHelper.getSqlString(c));
@@ -127,8 +131,8 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      *             If an error occurs when executing the query
      */
     public SeriesValueTime getMinSeriesValueFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterCriterion,
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterDisjunctions,
                 SosIndeterminateTime.first, session).uniqueResult();
     }
 
@@ -148,8 +152,8 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      *             If an error occurs when executing the query
      */
     public SeriesValueTime getMaxSeriesValueFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterCriterion,
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterDisjunctions,
                 SosIndeterminateTime.latest, session).uniqueResult();
     }
 
@@ -253,7 +257,7 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      *             restrictions
      */
     private Criteria getSeriesValueCriteriaFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session)
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime, Session session)
             throws OwsExceptionReport {
         final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValueTime.SERIES, "s");
         checkAndAddSpatialFilteringProfileCriterion(c, request, session);
@@ -266,9 +270,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
         }
 
         String logArgs = "request, series, offerings";
-        if (temporalFilterCriterion != null) {
+        if (temporalFilterDisjunctions != null) {
             logArgs += ", filterCriterion";
-            c.add(temporalFilterCriterion);
+            //c.add(temporalFilterCriterion);
         }
         if (sosIndeterminateTime != null) {
             logArgs += ", sosIndeterminateTime";

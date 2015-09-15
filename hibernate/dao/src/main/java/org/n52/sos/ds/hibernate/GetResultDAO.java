@@ -34,6 +34,7 @@ import static org.n52.sos.util.http.HTTPStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
@@ -58,11 +59,8 @@ import org.n52.sos.ds.hibernate.util.QueryHelper;
 import org.n52.sos.ds.hibernate.util.ResultHandlingHelper;
 import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.ds.hibernate.util.TemporalRestrictions;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.exception.ows.concrete.UnsupportedOperatorException;
-import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
-import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
-import org.n52.sos.ogc.filter.TemporalFilter;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.ConformanceClasses;
 import org.n52.sos.ogc.sos.SosConstants;
@@ -184,7 +182,8 @@ public class GetResultDAO extends AbstractGetResultDAO {
             addOfferingRestriction(c, request.getOffering());
         }
         if (request.getTemporalFilter() != null && !request.getTemporalFilter().isEmpty()) {
-            addTemporalFilter(c, request.getTemporalFilter());
+        	// TODOHZG: filter observations by temporal filters
+        	final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = TemporalRestrictions.getDisjunctions(request.getTemporalFilter());
         }
         c.addOrder(Order.asc(Observation.PHENOMENON_TIME_START));
 
@@ -225,7 +224,8 @@ public class GetResultDAO extends AbstractGetResultDAO {
             addOfferingRestriction(c, request.getOffering());
         }
         if (request.getTemporalFilter() != null && !request.getTemporalFilter().isEmpty()) {
-            addTemporalFilter(c, request.getTemporalFilter());
+        	// TODOHZG: filter series by temporal filters
+        	final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = TemporalRestrictions.getDisjunctions(request.getTemporalFilter());
         }
 
         LOGGER.debug("QUERY queryObservation(request, featureIdentifiers): {}", HibernateHelper.getSqlString(c));
@@ -262,25 +262,6 @@ public class GetResultDAO extends AbstractGetResultDAO {
      */
     private void addOfferingRestriction(Criteria c, String offering) {
         c.createCriteria(AbstractObservation.OFFERINGS).add(Restrictions.eq(Offering.IDENTIFIER, offering));
-    }
-
-    /**
-     * Add offering identifier restriction to Hibernate Criteria
-     * 
-     * @param c
-     *            Hibernate Criteria to add restriction
-     * @param temporalFilter
-     *            Temporal filters to add
-     * @throws UnsupportedTimeException
-     *             If the time is not supported
-     * @throws UnsupportedValueReferenceException
-     *             If the valueReference is not supported
-     * @throws UnsupportedOperatorException
-     *             If the temporal operator is not supported
-     */
-    private void addTemporalFilter(Criteria c, List<TemporalFilter> temporalFilter) throws UnsupportedTimeException,
-            UnsupportedValueReferenceException, UnsupportedOperatorException {
-        c.add(TemporalRestrictions.filter(temporalFilter));
     }
 
     /**

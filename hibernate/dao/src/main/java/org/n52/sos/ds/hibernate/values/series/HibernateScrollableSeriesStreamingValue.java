@@ -130,9 +130,9 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
         }
         try {
             // query with temporal filter
-            if (temporalFilterCriterion != null) {
+            if (temporalFilterDisjunctions != null) {
                 setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, series,
-                        temporalFilterCriterion, session));
+                        temporalFilterDisjunctions, session));
             }
             // query without temporal or indeterminate filters
             else {

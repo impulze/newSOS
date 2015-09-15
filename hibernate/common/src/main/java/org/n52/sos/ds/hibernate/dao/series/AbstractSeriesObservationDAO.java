@@ -33,13 +33,13 @@ import static org.hibernate.criterion.Restrictions.eq;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -58,6 +58,7 @@ import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
@@ -221,16 +222,14 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @return Matching result times
      */
     @SuppressWarnings("unchecked")
-    public List<Date> getResultTimesForSeriesObservation(Series series, List<String> offerings, Criterion filter,
+    public List<Date> getResultTimesForSeriesObservation(Series series, List<String> offerings, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions,
             Session session) {
         Criteria criteria = createCriteriaFor(getObservationTimeClass(), series, session);
         if (CollectionHelper.isNotEmpty(offerings)) {
             criteria.createCriteria(SeriesObservationTime.OFFERINGS).add(
                     Restrictions.in(Offering.IDENTIFIER, offerings));
         }
-        if (filter != null) {
-            criteria.add(filter);
-        }
+        // TODOHZG: filter series observations by temporal filters
         criteria.setProjection(Projections.distinct(Projections.property(SeriesObservationTime.RESULT_TIME)));
         criteria.addOrder(Order.asc(SeriesObservationTime.RESULT_TIME));
         LOGGER.debug("QUERY getResultTimesForSeriesObservation({}): {}", HibernateHelper.getSqlString(criteria));
@@ -261,8 +260,8 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
     }
     
     public ScrollableResults getSeriesNotMatchingSeries(Set<Long> seriesIDs, GetObservationRequest request,
-            Set<String> features, Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        Criteria c = getSeriesObservationCriteriaFor(request, features, temporalFilterCriterion, null, session).createAlias(SeriesObservation.SERIES, "s");
+            Set<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        Criteria c = getSeriesObservationCriteriaFor(request, features, temporalFilterDisjunctions, null, session).createAlias(SeriesObservation.SERIES, "s");
         c.add(Restrictions.not(Restrictions.in("s." + Series.ID, seriesIDs)));
         c.setProjection(Projections.property(SeriesObservation.SERIES));
         return c.setReadOnly(true).scroll(ScrollMode.FORWARD_ONLY);
@@ -293,7 +292,7 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @throws OwsExceptionReport 
      */
     protected Criteria getSeriesObservationCriteriaFor(GetObservationRequest request, Collection<String> features,
-                Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
             
             final Criteria c = getDefaultObservationCriteria(session);
             String seriesAliasPrefix = createSeriesAliasAndRestrictions(c);
@@ -318,9 +317,10 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
             }
             
             String logArgs = "request, features, offerings";
-            if (filterCriterion != null) {
+            // TODOHZG: filter series by temporal filters
+            if (temporalFilterDisjunctions != null) {
                 logArgs += ", filterCriterion";
-                c.add(filterCriterion);
+                //c.add(filterCriterion);
             }
             if (sosIndeterminateTime != null) {
                 logArgs += ", sosIndeterminateTime";
@@ -372,8 +372,8 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @throws OwsExceptionReport 
      */
     public ScrollableResults getStreamingSeriesObservationsFor(GetObservationRequest request, Collection<String> features,
-            Criterion filterCriterion, Session session) throws OwsExceptionReport {
-        return getStreamingSeriesObservationsFor(request, features, filterCriterion, null, session);
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        return getStreamingSeriesObservationsFor(request, features, temporalFilterDisjunctions, null, session);
     }
     
     /**
@@ -394,8 +394,8 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @throws OwsExceptionReport 
      */
     protected ScrollableResults getStreamingSeriesObservationsFor(GetObservationRequest request, Collection<String> features,
-            Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(request, features, filterCriterion, sosIndeterminateTime, session).setReadOnly(true).scroll(ScrollMode.FORWARD_ONLY);
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
+        return getSeriesObservationCriteriaFor(request, features, temporalFilterDisjunctions, sosIndeterminateTime, session).setReadOnly(true).scroll(ScrollMode.FORWARD_ONLY);
     }
     
     /**
@@ -461,7 +461,7 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      *            Hibernate session
      * @return Series observations that fit
      */
-    public abstract List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Criterion filterCriterion, Session sessionn);
+    public abstract List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session sessionn);
     
     /**
      * Query first/latest series obserations for series (and offerings)
@@ -507,7 +507,7 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @return Series observations that fit
      * @throws OwsExceptionReport
      */
-    public abstract List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request, Collection<String> features, Criterion filterCriterion, Session session) throws OwsExceptionReport;
+    public abstract List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request, Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport;
     
     /**
      * Query series observations for GetObservation request, features, and an
@@ -546,7 +546,7 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
      * @return Series observations that fit
      * @throws OwsExceptionReport
      */
-    protected abstract List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request, Collection<String> features, Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport;
+    protected abstract List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request, Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport;
     
     
     public abstract List<SeriesObservation> getSeriesObservationsFor(Series series, GetObservationRequest request, SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport;
@@ -582,9 +582,10 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
     }
     
     protected Criteria getSeriesObservationCriteriaFor(Series series, List<String> offerings,
-            Criterion filterCriterion, Session session) {
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) {
         final Criteria criteria = createCriteriaFor(getObservationClass(), series, offerings, session);
-        criteria.add(filterCriterion);
+        // TODOHZG: filter series by temporal filters
+        //criteria.add(filterCriterion);
         LOGGER.debug("QUERY getSeriesObservationFor(series, offerings, temporalFilter): {}",
                 HibernateHelper.getSqlString(criteria));
         return criteria;

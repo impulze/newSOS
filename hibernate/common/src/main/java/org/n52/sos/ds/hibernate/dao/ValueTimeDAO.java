@@ -28,6 +28,9 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
@@ -38,6 +41,7 @@ import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.values.ObservationValueTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
@@ -73,9 +77,9 @@ public class ValueTimeDAO extends AbstractValueDAO {
      * @throws OwsExceptionReport If an error occurs when executing the query
      */
     public ObservationValueTime getMinValueFor(GetObservationRequest request, long procedure, long observableProperty,
-            long featureOfInterest, Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
+            long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
         return (ObservationValueTime) getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest,
-                temporalFilterCriterion, SosIndeterminateTime.first, session).uniqueResult();
+                temporalFilterDisjunctions, SosIndeterminateTime.first, session).uniqueResult();
     }
 
     /**
@@ -96,9 +100,9 @@ public class ValueTimeDAO extends AbstractValueDAO {
      * @throws OwsExceptionReport If an error occurs when executing the query
      */
     public ObservationValueTime getMaxValueFor(GetObservationRequest request, long procedure, long observableProperty,
-            long featureOfInterest, Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
+            long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
         return (ObservationValueTime) getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest,
-                temporalFilterCriterion, SosIndeterminateTime.latest, session).uniqueResult();
+                temporalFilterDisjunctions, SosIndeterminateTime.latest, session).uniqueResult();
     }
 
     /**
@@ -163,7 +167,7 @@ public class ValueTimeDAO extends AbstractValueDAO {
      *             restrictions
      */
     private Criteria getValueCriteriaFor(GetObservationRequest request, long procedure, long observableProperty,
-            long featureOfInterest, Criterion temporalFilterCriterion, SosIndeterminateTime sosIndeterminateTime,
+            long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime,
             Session session) throws OwsExceptionReport {
         final Criteria c =
                 getDefaultObservationCriteria(ObservationValueTime.class, session).createAlias(ObservationValueTime.PROCEDURE, "p")
@@ -181,9 +185,10 @@ public class ValueTimeDAO extends AbstractValueDAO {
         }
 
         String logArgs = "request, series, offerings";
-        if (temporalFilterCriterion != null) {
+        // TODOHZG: filter value times by temporal filters
+        if (temporalFilterDisjunctions != null) {
             logArgs += ", filterCriterion";
-            c.add(temporalFilterCriterion);
+            //c.add(temporalFilterCriterion);
         }
         if (sosIndeterminateTime != null) {
             logArgs += ", sosIndeterminateTime";

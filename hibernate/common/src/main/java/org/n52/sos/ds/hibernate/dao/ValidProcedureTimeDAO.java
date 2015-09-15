@@ -28,13 +28,13 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -44,6 +44,7 @@ import org.n52.sos.ds.hibernate.entities.TProcedure;
 import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.QueryHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.ows.concrete.UnsupportedOperatorException;
 import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
 import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
@@ -91,13 +92,14 @@ public class ValidProcedureTimeDAO {
         criteria.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
                 Restrictions.eq(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT, procedureDescriptionFormat));
 
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
+        final Map<String, Collection<TimeCriterion>> validTimeFilter = QueryHelper.getValidTimeCriterion(validTime);
         // if validTime == null or validTimeCriterion == null, query latest
         // valid procedure description
-        if (validTime == null || validTimeCriterion == null) {
+    	// TODOHZG: filter procedure times by temporal filters
+        if (validTime == null || validTimeFilter == null) {
             criteria.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
         } else {
-            criteria.add(validTimeCriterion);
+            //criteria.add(validTimeCriterion);
         }
         LOGGER.debug("QUERY getValidProcedureTimes(procedure,procedureDescriptionFormat, validTime): {}",
                 HibernateHelper.getSqlString(criteria));
@@ -114,13 +116,14 @@ public class ValidProcedureTimeDAO {
                 Restrictions.in(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
                         possibleProcedureDescriptionFormats));
 
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
+        final Map<String, Collection<TimeCriterion>> validTimeFilter = QueryHelper.getValidTimeCriterion(validTime);
         // if validTime == null or validTimeCriterion == null, query latest
         // valid procedure description
-        if (validTime == null || validTimeCriterion == null) {
+    	// TODOHZG: filter procedure times by temporal filters
+        if (validTime == null || validTimeFilter == null) {
             criteria.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
         } else {
-            criteria.add(validTimeCriterion);
+            //criteria.add(validTimeFilter);
         }
         LOGGER.debug("QUERY getValidProcedureTimes(procedure, possibleProcedureDescriptionFormats, validTime): {}",
                 HibernateHelper.getSqlString(criteria));

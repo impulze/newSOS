@@ -131,9 +131,9 @@ public class HibernateScrollableStreamingValue extends HibernateStreamingValue {
         }
         try {
             // query with temporal filter
-            if (temporalFilterCriterion != null) {
+            if (temporalFilterDisjunctions != null) {
                 setScrollableResult(valueDAO.getStreamingValuesFor(request, procedure, observableProperty,
-                        featureOfInterest, temporalFilterCriterion, session));
+                        featureOfInterest, temporalFilterDisjunctions, session));
             }
             // query without temporal or indeterminate filters
             else {

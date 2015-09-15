@@ -39,6 +39,7 @@ import org.joda.time.DateTime;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
 import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.om.OmObservation;
@@ -72,7 +73,7 @@ public abstract class AbstractHibernateStreamingValue extends StreamingValue<Abs
 
     protected GetObservationRequest request;
 
-    protected Criterion temporalFilterCriterion;
+    protected Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions;
 
     @Override
     public Collection<OmObservation> mergeObservation() throws OwsExceptionReport {
@@ -127,8 +128,8 @@ public abstract class AbstractHibernateStreamingValue extends StreamingValue<Abs
      * @param temporalFilterCriterion
      *            Temporal filter {@link Criterion}
      */
-    public void setTemporalFilterCriterion(Criterion temporalFilterCriterion) {
-        this.temporalFilterCriterion = temporalFilterCriterion;
+    public void setTemporalFilterDisjunctions(Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions) {
+        this.temporalFilterDisjunctions = temporalFilterDisjunctions;
 
     }
 

@@ -87,8 +87,8 @@ public class HibernateStreamingObservation extends AbstractHibernateStreamingObs
         try {
             if (observationNotQueried) {
                 // query with temporal filter
-                if (temporalFilterCriterion != null) {
-                    setResult(observationDAO.getStreamingObservationsFor(request, features, temporalFilterCriterion,
+                if (temporalFilterDisjunctions != null) {
+                    setResult(observationDAO.getStreamingObservationsFor(request, features, temporalFilterDisjunctions,
                             session));
                 }
                 // query without temporal or indeterminate filters
@@ -98,9 +98,9 @@ public class HibernateStreamingObservation extends AbstractHibernateStreamingObs
                 observationNotQueried = false;
             }
             if (!observationNotQueried && showMetadataOfEmptyObservation) {
-                if (temporalFilterCriterion != null) {
+                if (temporalFilterDisjunctions != null) {
                     setResult(observationDAO.getNotMatchingSeries(procedureIds, observablePropertyIds, featureIds,
-                            request, features, temporalFilterCriterion, session));
+                            request, features, temporalFilterDisjunctions, session));
                 }
                 // query without temporal or indeterminate filters
                 else {

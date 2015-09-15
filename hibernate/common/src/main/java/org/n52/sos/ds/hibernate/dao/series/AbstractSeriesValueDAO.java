@@ -28,7 +28,9 @@
  */
 package org.n52.sos.ds.hibernate.dao.series;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -45,6 +47,7 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.CollectionHelper;
@@ -82,8 +85,8 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
      *             If an error occurs when querying the {@link AbstractValue}s
      */
     public ScrollableResults getStreamingSeriesValuesFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        return getSeriesValueCriteriaFor(request, series, temporalFilterCriterion, session).scroll(
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        return getSeriesValueCriteriaFor(request, series, temporalFilterDisjunctions, session).scroll(
                 ScrollMode.FORWARD_ONLY);
     }
 
@@ -126,9 +129,9 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
      */
     @SuppressWarnings("unchecked")
     public List<AbstractValue> getStreamingSeriesValuesFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, int chunkSize, int currentRow, Session session)
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, int chunkSize, int currentRow, Session session)
             throws OwsExceptionReport {
-        Criteria c = getSeriesValueCriteriaFor(request, series, temporalFilterCriterion, session);
+        Criteria c = getSeriesValueCriteriaFor(request, series, temporalFilterDisjunctions, session);
         addChunkValuesToCriteria(c, chunkSize, currentRow, request);
         LOGGER.debug("QUERY getStreamingSeriesValuesFor(): {}", HibernateHelper.getSqlString(c));
         return (List<AbstractValue>) c.list();
@@ -177,7 +180,7 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
      *             restrictions
      */
     private Criteria getSeriesValueCriteriaFor(GetObservationRequest request, long series,
-            Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
         final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValue.SERIES, "s");
 
         checkAndAddSpatialFilteringProfileCriterion(c, request, session);
@@ -189,9 +192,10 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
         }
 
         String logArgs = "request, series, offerings";
-        if (temporalFilterCriterion != null) {
+        // TODOHZG: filter series by temporal filters
+        if (temporalFilterDisjunctions != null) {
             logArgs += ", filterCriterion";
-            c.add(temporalFilterCriterion);
+            //c.add(temporalFilterCriteiron);
         }
         addSpecificRestrictions(c, request);
         LOGGER.debug("QUERY getStreamingSeriesValuesFor({}): {}", logArgs, HibernateHelper.getSqlString(c));

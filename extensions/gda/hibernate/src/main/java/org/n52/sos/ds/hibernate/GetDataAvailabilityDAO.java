@@ -28,6 +28,7 @@
  */
 package org.n52.sos.ds.hibernate;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,6 @@ import java.util.Map;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.ResultTransformer;
@@ -54,6 +54,7 @@ import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TemporalRestrictions;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.gda.AbstractGetDataAvailabilityDAO;
 import org.n52.sos.gda.GetDataAvailabilityRequest;
@@ -234,12 +235,14 @@ public class GetDataAvailabilityDAO extends AbstractGetDataAvailabilityDAO imple
      */
     private List<TimeInstant> getResultTimesFromSeriesObservation(AbstractSeriesObservationDAO seriesObservationDAO,
             Series series, GetDataAvailabilityRequest request, Session session) throws OwsExceptionReport {
-        Criterion filter = null;
+        final Map<String, Collection<TimeCriterion>> map;
         if (hasPhenomenonTimeFilter(request.getExtensions())) {
-            filter = TemporalRestrictions.filter(getPhenomenonTimeFilter(request.getExtensions()));
+            map = TemporalRestrictions.getDisjunctions(Lists.newArrayList(getPhenomenonTimeFilter(request.getExtensions())));
+        } else {
+        	map = null;
         }
         List<Date> dateTimes =
-                seriesObservationDAO.getResultTimesForSeriesObservation(series, request.getOfferings(), filter,
+                seriesObservationDAO.getResultTimesForSeriesObservation(series, request.getOfferings(), map,
                         session);
         List<TimeInstant> resultTimes = Lists.newArrayList();
         for (Date date : dateTimes) {

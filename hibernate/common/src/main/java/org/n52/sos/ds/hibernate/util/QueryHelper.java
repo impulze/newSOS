@@ -31,10 +31,10 @@ package org.n52.sos.ds.hibernate.util;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.joda.time.DateTime;
 import org.n52.sos.ds.FeatureQueryHandlerQueryObject;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
@@ -122,12 +122,12 @@ public class QueryHelper {
      * @throws UnsupportedOperatorException
      *             If the temporal operator is not supported
      */
-    public static Criterion getValidTimeCriterion(Time validTime) throws UnsupportedTimeException,
+    public static Map<String, Collection<TimeCriterion>> getValidTimeCriterion(Time validTime) throws UnsupportedTimeException,
             UnsupportedValueReferenceException, UnsupportedOperatorException {
         if (validTime instanceof TimeInstant) {
-            return TemporalRestrictions.filter(getFiltersForTimeInstant((TimeInstant) validTime));
+            return TemporalRestrictions.getDisjunctions(getFiltersForTimeInstant((TimeInstant) validTime));
         } else if (validTime instanceof TimePeriod) {
-            return TemporalRestrictions.filter(getFiltersForTimePeriod(validTime));
+            return TemporalRestrictions.getDisjunctions(getFiltersForTimePeriod(validTime));
         }
         return null;
     }
