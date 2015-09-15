@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.xmlbeans.XmlObject;
@@ -356,11 +357,11 @@ public class HibernateGetObservationHelper {
      * @throws OwsExceptionReport
      *             If a temporal filter is not supported
      */
-    public static Criterion getTemporalFilterCriterion(final GetObservationRequest request) throws OwsExceptionReport {
+    public static Map<String, Collection<TimeCriterion>> getTemporalFilterDisjunctions(final GetObservationRequest request) throws OwsExceptionReport {
 
         final List<TemporalFilter> filters = request.getNotFirstLatestTemporalFilter();
         if (request.hasTemporalFilters() && CollectionHelper.isNotEmpty(filters)) {
-            return TemporalRestrictions.filter(filters);
+            return TemporalRestrictions.getDisjunctions(filters);
         } else {
             return null;
         }

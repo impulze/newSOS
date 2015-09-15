@@ -28,6 +28,8 @@
  */
 package org.n52.sos.ds.hibernate.values;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
@@ -40,6 +42,7 @@ import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.util.HibernateGetObservationHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.i18n.LocaleHelper;
@@ -71,7 +74,7 @@ public abstract class AbstractHibernateStreamingObservation extends StreamingObs
 
     protected Set<String> features;
 
-    protected Criterion temporalFilterCriterion;
+    protected Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions;
 
     protected boolean showMetadataOfEmptyObservation = false;
 
@@ -172,8 +175,8 @@ public abstract class AbstractHibernateStreamingObservation extends StreamingObs
      * @param temporalFilterCriterion
      *            Temporal filter {@link Criterion}
      */
-    public void setTemporalFilterCriterion(Criterion temporalFilterCriterion) {
-        this.temporalFilterCriterion = temporalFilterCriterion;
+    public void setTemporalFilterDisjunctions(Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions) {
+        this.temporalFilterDisjunctions = temporalFilterDisjunctions;
     }
 
     /**

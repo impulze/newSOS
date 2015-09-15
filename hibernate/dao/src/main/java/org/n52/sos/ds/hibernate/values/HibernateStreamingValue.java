@@ -88,13 +88,13 @@ public abstract class HibernateStreamingValue extends AbstractHibernateStreaming
             ObservationValueTime minTime;
             ObservationValueTime maxTime;
             // query with temporal filter
-            if (temporalFilterCriterion != null) {
+            if (temporalFilterDisjunctions != null) {
                 minTime =
                         valueTimeDAO.getMinValueFor(request, procedure, observableProperty, featureOfInterest,
-                                temporalFilterCriterion, session);
+                                temporalFilterDisjunctions, session);
                 maxTime =
                         valueTimeDAO.getMaxValueFor(request, procedure, observableProperty, featureOfInterest,
-                                temporalFilterCriterion, session);
+                                temporalFilterDisjunctions, session);
             }
             // query without temporal or indeterminate filters
             else {

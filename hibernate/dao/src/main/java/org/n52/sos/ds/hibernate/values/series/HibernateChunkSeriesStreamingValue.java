@@ -154,9 +154,9 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
         try {
             // query with temporal filter
             Collection<AbstractValue> seriesValuesResult = null;
-            if (temporalFilterCriterion != null) {
+            if (temporalFilterDisjunctions != null) {
                 seriesValuesResult =
-                        seriesValueDAO.getStreamingSeriesValuesFor(request, series, temporalFilterCriterion,
+                        seriesValueDAO.getStreamingSeriesValuesFor(request, series, temporalFilterDisjunctions,
                                 chunkSize, currentRow, session);
             }
             // query without temporal or indeterminate filters

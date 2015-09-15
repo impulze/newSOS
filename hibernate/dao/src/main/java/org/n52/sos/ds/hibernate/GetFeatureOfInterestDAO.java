@@ -31,6 +31,7 @@ package org.n52.sos.ds.hibernate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
@@ -54,6 +55,7 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TemporalRestrictions;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.MissingParameterValueException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
@@ -419,7 +421,8 @@ public class GetFeatureOfInterestDAO extends AbstractGetFeatureOfInterestDAO imp
         }
         // temporal filter
         if (req.isSetTemporalFilters()) {
-            detachedCriteria.add(TemporalRestrictions.filter(req.getTemporalFilters()));
+        	// TODOHZG: filter series by temporal filters
+        	final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = TemporalRestrictions.getDisjunctions(req.getTemporalFilters());
         }
 
         detachedCriteria.setProjection(Projections.distinct(Projections.property(SeriesObservationInfo.SERIES)));

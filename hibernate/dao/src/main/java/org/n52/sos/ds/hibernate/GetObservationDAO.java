@@ -37,7 +37,6 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.n52.sos.convert.ConverterException;
 import org.n52.sos.ds.AbstractGetObservationDAO;
 import org.n52.sos.ds.HibernateDatasourceConstants;
@@ -54,6 +53,7 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.util.HibernateGetObservationHelper;
 import org.n52.sos.ds.hibernate.util.QueryHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
 import org.n52.sos.ds.hibernate.values.HibernateChunkStreamingValue;
 import org.n52.sos.ds.hibernate.values.HibernateScrollableStreamingValue;
@@ -200,13 +200,13 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
         }
         // temporal filters
         final List<SosIndeterminateTime> sosIndeterminateTimeFilters = request.getFirstLatestTemporalFilter();
-        final Criterion filterCriterion = HibernateGetObservationHelper.getTemporalFilterCriterion(request);
+   		final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = HibernateGetObservationHelper.getTemporalFilterDisjunctions(request);
 
         // final List<OmObservation> result = new LinkedList<OmObservation>();
         Collection<AbstractObservation> observations = Lists.newArrayList();
         // query with temporal filter
-        if (filterCriterion != null) {
-            observations = observationDAO.getObservationsFor(request, features, filterCriterion, session);
+        if (temporalFilterDisjunctions != null) {
+            observations = observationDAO.getObservationsFor(request, features, temporalFilterDisjunctions, session);
         }
         // query with first/latest value filter
         else if (CollectionHelper.isNotEmpty(sosIndeterminateTimeFilters)) {
@@ -293,7 +293,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
         }
         // temporal filters
         final List<SosIndeterminateTime> sosIndeterminateTimeFilters = request.getFirstLatestTemporalFilter();
-        final Criterion filterCriterion = HibernateGetObservationHelper.getTemporalFilterCriterion(request);
+        final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = HibernateGetObservationHelper.getTemporalFilterDisjunctions(request);
 
         final List<OmObservation> result = new LinkedList<OmObservation>();
         Collection<SeriesObservation> seriesObservations = Lists.newArrayList();
@@ -301,9 +301,9 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
         AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
 
         // query with temporal filter
-        if (filterCriterion != null) {
+        if (temporalFilterDisjunctions != null) {
             seriesObservations =
-                    observationDAO.getSeriesObservationsFor(request, features, filterCriterion, session);
+                    observationDAO.getSeriesObservationsFor(request, features, temporalFilterDisjunctions, session);
         }
         // query with first/latest value filter
         else if (CollectionHelper.isNotEmpty(sosIndeterminateTimeFilters)) {
@@ -388,7 +388,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
         if (features != null && features.isEmpty()) {
             return result;
         }
-        Criterion temporalFilterCriterion = HibernateGetObservationHelper.getTemporalFilterCriterion(request);
+        final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = HibernateGetObservationHelper.getTemporalFilterDisjunctions(request);
         List<ObservationConstellation> observations = HibernateGetObservationHelper.getAndCheckObservationConstellationSize(
                 request, session);
         HibernateGetObservationHelper.checkMaxNumberOfReturnedSeriesSize(observations.size());
@@ -406,7 +406,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
                         getStreamingValue(request, oc.getProcedure().getProcedureId(), oc.getObservableProperty()
                                 .getObservablePropertyId(), featureOfInterest.getFeatureOfInterestId());
                 streamingValue.setResponseFormat(request.getResponseFormat());
-                streamingValue.setTemporalFilterCriterion(temporalFilterCriterion);
+                streamingValue.setTemporalFilterDisjunctions(temporalFilterDisjunctions);
                 streamingValue.setObservationTemplate(observationTemplate);
                 streamingValue.setMaxNumberOfValues(maxNumberOfValuesPerSeries);
                 observationTemplate.setValue(streamingValue);
@@ -439,7 +439,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
         if (features != null && features.isEmpty()) {
             return result;
         }
-        Criterion temporalFilterCriterion = HibernateGetObservationHelper.getTemporalFilterCriterion(request);
+        final Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions = HibernateGetObservationHelper.getTemporalFilterDisjunctions(request);
         List<Series> serieses = DaoFactory.getInstance().getSeriesDAO().getSeries(request, features, session);
         HibernateGetObservationHelper.checkMaxNumberOfReturnedSeriesSize(serieses.size());
         int maxNumberOfValuesPerSeries = HibernateGetObservationHelper.getMaxNumberOfValuesPerSeries(serieses.size());
@@ -450,7 +450,7 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
             OmObservation observationTemplate = createSosObservationFromSeries.iterator().next();
             HibernateSeriesStreamingValue streamingValue = getSeriesStreamingValue(request, series.getSeriesId());
             streamingValue.setResponseFormat(request.getResponseFormat());
-            streamingValue.setTemporalFilterCriterion(temporalFilterCriterion);
+            streamingValue.setTemporalFilterDisjunctions(temporalFilterDisjunctions);
             streamingValue.setObservationTemplate(observationTemplate);
             streamingValue.setMaxNumberOfValues(maxNumberOfValuesPerSeries);
             observationTemplate.setValue(streamingValue);

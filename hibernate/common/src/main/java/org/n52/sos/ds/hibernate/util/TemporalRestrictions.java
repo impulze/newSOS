@@ -31,10 +31,8 @@ package org.n52.sos.ds.hibernate.util;
 import java.util.Collection;
 import java.util.Map;
 
-import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.Observation;
 import org.n52.sos.ds.hibernate.entities.ValidProcedureTime;
 import org.n52.sos.ds.hibernate.util.TemporalRestriction.AfterRestriction;
@@ -56,6 +54,7 @@ import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
 import org.n52.sos.ogc.filter.FilterConstants.TimeOperator;
 import org.n52.sos.ogc.filter.TemporalFilter;
 import org.n52.sos.ogc.gml.time.Time;
+import org.n52.sos.util.CollectionHelper;
 
 import com.google.common.collect.Maps;
 
@@ -144,278 +143,6 @@ public class TemporalRestrictions {
             new TimePrimitiveFieldDescriptor(ValidProcedureTime.START_TIME, ValidProcedureTime.END_TIME);
 
     /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeforeRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion before(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new BeforeRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>-
-     * 
-     * @see AfterRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion after(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new AfterRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BeginsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begins(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new BeginsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion ends(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new EndsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see EndedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion endedBy(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new EndedByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see BegunByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion begunBy(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new BegunByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see DuringRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion during(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new DuringRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see TEqualsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion tEquals(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new TEqualsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see ContainsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion contains(TimePrimitiveFieldDescriptor property, Time value)
-            throws UnsupportedTimeException {
-        return filter(new ContainsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlapsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlaps(TimePrimitiveFieldDescriptor property, Time value)
-            throws UnsupportedTimeException {
-        return filter(new OverlapsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MeetsRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion meets(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new MeetsRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see MetByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion metBy(TimePrimitiveFieldDescriptor property, Time value) throws UnsupportedTimeException {
-        return filter(new MetByRestriction(), property, value);
-    }
-
-    /**
-     * Creates a temporal restriction for the specified time and property.
-     * 
-     * @param property
-     *            the property
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @see OverlappedByRestriction
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    public static Criterion overlappedBy(TimePrimitiveFieldDescriptor property, Time value)
-            throws UnsupportedTimeException {
-        return filter(new OverlappedByRestriction(), property, value);
-    }
-
-    /**
-     * Create a new <tt>Criterion</tt> using the specified property, restricion
-     * and value.
-     * 
-     * @param restriction
-     *            the restriction
-     * @param property
-     *            the property field name(s)
-     * @param value
-     *            the value
-     * 
-     * @return the <tt>Criterion</tt>
-     * 
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     */
-    private static Criterion filter(TemporalRestriction restriction, TimePrimitiveFieldDescriptor property, Time value)
-            throws UnsupportedTimeException {
-        return restriction.get(property, value);
-    }
-
-    /**
      * Create a new <tt>Criterion</tt> using the specified filter.
      * 
      * @param filter
@@ -433,71 +160,28 @@ public class TemporalRestrictions {
      *             if no restriction definition for the {@link TimeOperator} is
      *             found
      */
-    public static Criterion filter(TemporalFilter filter) throws UnsupportedTimeException,
+    public static TimeCriterion filter(TemporalFilter filter) throws UnsupportedTimeException,
             UnsupportedValueReferenceException, UnsupportedOperatorException {
         TimePrimitiveFieldDescriptor property = getFields(filter.getValueReference());
         Time value = filter.getTime();
         switch (filter.getOperator()) {
         case TM_Before:
-            return before(property, value);
         case TM_After:
-            return after(property, value);
         case TM_Begins:
-            return begins(property, value);
         case TM_Ends:
-            return ends(property, value);
         case TM_EndedBy:
-            return endedBy(property, value);
         case TM_BegunBy:
-            return begunBy(property, value);
         case TM_During:
-            return during(property, value);
         case TM_Equals:
-            return tEquals(property, value);
         case TM_Contains:
-            return contains(property, value);
         case TM_Overlaps:
-            return overlaps(property, value);
         case TM_Meets:
-            return meets(property, value);
         case TM_MetBy:
-            return metBy(property, value);
         case TM_OverlappedBy:
-            return overlappedBy(property, value);
+        	return new TimeCriterion(property, value, filter.getOperator());
         default:
             throw new UnsupportedOperatorException(filter.getOperator());
         }
-    }
-
-    /**
-     * Creates a {@link Conjunction} for the specified temporal filters.
-     * 
-     * @param temporalFilters
-     *            the filters
-     * 
-     * @return Hibernate temporal filter criterion
-     * 
-     * @throws UnsupportedTimeException
-     *             if the value and property combination is not applicable for
-     *             this restriction
-     * @throws UnsupportedValueReferenceException
-     *             if the {@link TemporalFilter#getValueReference() value
-     *             reference} can not be decoded
-     * @throws UnsupportedOperatorException
-     *             if no restriction definition for the {@link TimeOperator} is
-     *             found
-     */
-    public static Criterion filter(Iterable<TemporalFilter> temporalFilters) throws UnsupportedTimeException,
-            UnsupportedValueReferenceException, UnsupportedOperatorException {
-        Conjunction conjunction = Restrictions.conjunction();
-        Collection<Disjunction> disjunctions = getDisjunction(temporalFilters);
-        if (disjunctions.size() == 1) {
-            return disjunctions.iterator().next();
-        }
-        for (Disjunction disjunction : disjunctions) {
-            conjunction.add(disjunction);
-        }
-        return conjunction;
     }
 
     /**
@@ -517,19 +201,13 @@ public class TemporalRestrictions {
      *             if no restriction definition for the {@link TimeOperator} is
      *             found
      */
-    private static Collection<Disjunction> getDisjunction(Iterable<TemporalFilter> temporalFilters)
+    public static Map<String, Collection<TimeCriterion>> getDisjunctions(Iterable<TemporalFilter> temporalFilters)
             throws UnsupportedTimeException, UnsupportedValueReferenceException, UnsupportedOperatorException {
-        Map<String, Disjunction> map = Maps.newHashMap();
+        Map<String, Collection<TimeCriterion>> map = Maps.newHashMap();
         for (TemporalFilter temporalFilter : temporalFilters) {
-            if (map.containsKey(temporalFilter.getValueReference())) {
-                map.get(temporalFilter.getValueReference()).add(filter(temporalFilter));
-            } else {
-                Disjunction disjunction = Restrictions.disjunction();
-                disjunction.add(filter(temporalFilter));
-                map.put(temporalFilter.getValueReference(), disjunction);
-            }
+        	CollectionHelper.addToCollectionMap(temporalFilter.getValueReference(), filter(temporalFilter), map);
         }
-        return (Collection<Disjunction>) map.values();
+        return map;
     }
 
     /**

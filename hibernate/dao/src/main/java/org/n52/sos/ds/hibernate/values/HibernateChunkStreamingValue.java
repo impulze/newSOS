@@ -153,10 +153,10 @@ public class HibernateChunkStreamingValue extends HibernateStreamingValue {
         try {
             // query with temporal filter
             Collection<AbstractValue> valuesResult = null;
-            if (temporalFilterCriterion != null) {
+            if (temporalFilterDisjunctions != null) {
                 valuesResult =
                         valueDAO.getStreamingValuesFor(request, procedure, observableProperty, featureOfInterest,
-                                temporalFilterCriterion, chunkSize, currentRow, session);
+                                temporalFilterDisjunctions, chunkSize, currentRow, session);
             }
             // query without temporal or indeterminate filters
             else {

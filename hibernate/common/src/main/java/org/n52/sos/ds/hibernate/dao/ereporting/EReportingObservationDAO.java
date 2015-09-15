@@ -30,11 +30,11 @@ package org.n52.sos.ds.hibernate.dao.ereporting;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -59,6 +59,7 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSweDataArrayObserv
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingTextObservation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.OptionNotSupportedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
@@ -75,8 +76,8 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
     @SuppressWarnings("unchecked")
     @Override
     public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings,
-            Criterion filterCriterion, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, filterCriterion, session).list();
+    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) {
+        return getSeriesObservationCriteriaFor(series, offerings, temporalFilterDisjunctions, session).list();
     }
 
     @SuppressWarnings("unchecked")
@@ -95,8 +96,8 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
 
     @Override
     public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, Criterion filterCriterion, Session session) throws OwsExceptionReport {
-        return getSeriesObservationsFor(request, features, filterCriterion, null, session);
+            Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
+        return getSeriesObservationsFor(request, features, temporalFilterDisjunctions, null, session);
     }
 
     @Override
@@ -109,9 +110,9 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
     @SuppressWarnings("unchecked")
     @Override
     protected List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, Criterion filterCriterion, SosIndeterminateTime sosIndeterminateTime,
+            Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime,
             Session session) throws HibernateException, OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(request, features, filterCriterion, sosIndeterminateTime, session)
+        return getSeriesObservationCriteriaFor(request, features, temporalFilterDisjunctions, sosIndeterminateTime, session)
                 .list();
     }
 

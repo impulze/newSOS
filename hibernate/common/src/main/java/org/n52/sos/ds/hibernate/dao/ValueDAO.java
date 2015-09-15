@@ -28,7 +28,9 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -46,6 +48,7 @@ import org.n52.sos.ds.hibernate.entities.Unit;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.entities.values.ObservationValue;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
+import org.n52.sos.ds.hibernate.util.TimeCriterion;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
@@ -86,9 +89,9 @@ public class ValueDAO extends AbstractValueDAO {
      *             If an error occurs when querying the {@link AbstractValue}s
      */
     public ScrollableResults getStreamingValuesFor(GetObservationRequest request, long procedure,
-            long observableProperty, long featureOfInterest, Criterion temporalFilterCriterion, Session session)
+            long observableProperty, long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session)
             throws HibernateException, OwsExceptionReport {
-        return getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest, temporalFilterCriterion,
+        return getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest, temporalFilterDisjunctions,
                 session).scroll(ScrollMode.FORWARD_ONLY);
     }
 
@@ -140,11 +143,11 @@ public class ValueDAO extends AbstractValueDAO {
      */
     @SuppressWarnings("unchecked")
     public List<AbstractValue> getStreamingValuesFor(GetObservationRequest request, long procedure,
-            long observableProperty, long featureOfInterest, Criterion temporalFilterCriterion, int chunkSize,
+            long observableProperty, long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, int chunkSize,
             int currentRow, Session session) throws OwsExceptionReport {
         Criteria c =
                 getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest,
-                        temporalFilterCriterion, session);
+                        temporalFilterDisjunctions, session);
         addChunkValuesToCriteria(c, chunkSize, currentRow, request);
         LOGGER.debug("QUERY getStreamingValuesFor(): {}", HibernateHelper.getSqlString(c));
         return (List<AbstractValue>) c.list();
@@ -202,7 +205,7 @@ public class ValueDAO extends AbstractValueDAO {
      *             restrictions
      */
     private Criteria getValueCriteriaFor(GetObservationRequest request, long procedure, long observableProperty,
-            long featureOfInterest, Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
+            long featureOfInterest, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
         final Criteria c =
                 getDefaultObservationCriteria(ObservationValue.class, session)
                         .createAlias(ObservationValue.PROCEDURE, "p")
@@ -221,9 +224,10 @@ public class ValueDAO extends AbstractValueDAO {
         }
 
         String logArgs = "request, series, offerings";
-        if (temporalFilterCriterion != null) {
+        // TODOHZG: filter values by temporal filters
+        if (temporalFilterDisjunctions != null) {
             logArgs += ", filterCriterion";
-            c.add(temporalFilterCriterion);
+            //c.add(temporalFilterCriterion);
         }
         addSpecificRestrictions(c, request);
         LOGGER.debug("QUERY getStreamingValuesFor({}): {}", logArgs, HibernateHelper.getSqlString(c));
