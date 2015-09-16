@@ -29,7 +29,6 @@
 package org.n52.sos.ogc.om;
 
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,9 @@ public abstract class AbstractStreaming extends AbstractObservationValue<Value<O
 
     public abstract OmObservation nextSingleObservation() throws OwsExceptionReport;
     
+    public abstract Collection<OmObservation> mergeObservation() throws OwsExceptionReport;
 
+/*
     public Collection<OmObservation> mergeObservation() throws OwsExceptionReport {
         List<OmObservation> observations = getObservation();
         // TODO merge all observations with the same observationContellation
@@ -98,7 +99,8 @@ public abstract class AbstractStreaming extends AbstractObservationValue<Value<O
         }
         return observations;
     }
-
+*/
+    
     public List<OmObservation> getObservation() throws OwsExceptionReport {
         List<OmObservation> observations = Lists.newArrayList();
         do {
@@ -106,7 +108,7 @@ public abstract class AbstractStreaming extends AbstractObservationValue<Value<O
         } while (hasNextValue());
         return observations;
     }
-
+    
     public void add(AdditionalRequestParams parameter, Object object) {
         additionalRequestParams.put(parameter, object);
     }

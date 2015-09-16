@@ -49,8 +49,6 @@ public class DefaultProfile implements Profile {
 
     private static final boolean DEFAULT_ENCODE_FEATUREOFINTEREST_IN_OBSERVATION = true;
 
-    private static final boolean DEFAULT_SHOW_METADATA_OF_EMPTY_OBSERVATIONS = false;
-
     private static final boolean DEFAULT_ALLOW_SUBSETTING_FOR_OM_20 = false;
 
     private static final boolean DEAFULT_MERGE_VALUES = false;
@@ -96,11 +94,6 @@ public class DefaultProfile implements Profile {
     @Override
     public String getEncodingNamespaceForFeatureOfInterest() {
         return DEFAULT_ENCODING_NAMESPACE_FOR_FEATUTREOFINTEREST_SOS_20;
-    }
-
-    @Override
-    public boolean isShowMetadataOfEmptyObservations() {
-        return DEFAULT_SHOW_METADATA_OF_EMPTY_OBSERVATIONS;
     }
 
     @Override

@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.n52.sos.ds.hibernate.cache.AbstractThreadableDatasourceCacheUpdate;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.util.TimeExtrema;
@@ -67,9 +66,7 @@ class ProcedureCacheUpdateTask extends AbstractThreadableDatasourceCacheUpdate {
             if (isSetTimeExtremaEmpty(pte) && seriesDAO != null) {
                 pte = seriesDAO.getProcedureTimeExtrema(getSession(), procedureId);
             }
-            if (isSetTimeExtremaEmpty(pte)) {
-                pte = new ProcedureDAO().getProcedureTimeExtrema(getSession(), procedureId);
-            }
+            // TODOHZG: no need to call ProcedureDAO.getProcedureTimeExtrema, the above should catch those
         if (pte != null && pte.isSetTimes()) {
             getCache().setMinPhenomenonTimeForProcedure(procedureId, pte.getMinTime());
             getCache().setMaxPhenomenonTimeForProcedure(procedureId, pte.getMaxTime());

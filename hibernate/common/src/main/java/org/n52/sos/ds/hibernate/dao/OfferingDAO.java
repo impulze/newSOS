@@ -28,7 +28,6 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +40,6 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterestType;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
@@ -286,126 +283,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
     }
 
     /**
-     * Get min time from observations for offering
-     *
-     * @param offering
-     *            Offering identifier
-     * @param session
-     *            Hibernate session Hibernate session
-     * @return min time for offering
-     * @throws CodedException
-     */
-    public DateTime getMinDate4Offering(final String offering, final Session session) throws OwsExceptionReport {
-        Object min = null;
-            Criteria criteria =
-                    DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
-            addOfferingRestricionForObservation(criteria, offering);
-            addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.PHENOMENON_TIME_START);
-            LOGGER.debug("QUERY Series-getMinDate4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
-            min = criteria.uniqueResult();
-        if (min != null) {
-            return new DateTime(min, DateTimeZone.UTC);
-        }
-        return null;
-    }
-
-    /**
-     * Get max time from observations for offering
-     *
-     * @param offering
-     *            Offering identifier
-     * @param session
-     *            Hibernate session Hibernate session
-     * @return max time for offering
-     * @throws CodedException
-     */
-    public DateTime getMaxDate4Offering(final String offering, final Session session) throws OwsExceptionReport {
-        Object maxStart = null;
-        Object maxEnd = null;
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria cstart = observationDAO.getDefaultObservationInfoCriteria(session);
-            Criteria cend = observationDAO.getDefaultObservationInfoCriteria(session);
-            addOfferingRestricionForObservation(cstart, offering);
-            addOfferingRestricionForObservation(cend, offering);
-            addMinMaxProjection(cstart, MinMax.MAX, AbstractObservation.PHENOMENON_TIME_START);
-            addMinMaxProjection(cend, MinMax.MAX, AbstractObservation.PHENOMENON_TIME_END);
-            LOGGER.debug("QUERY getMaxDate4Offering(offering) start: {}", HibernateHelper.getSqlString(cstart));
-            LOGGER.debug("QUERY getMaxDate4Offering(offering) end: {}", HibernateHelper.getSqlString(cend));
-            if (HibernateHelper.getSqlString(cstart).equals(HibernateHelper.getSqlString(cend))) {
-                maxStart = cstart.uniqueResult();
-                maxEnd = maxStart;
-                LOGGER.debug("Max time start and end query are identically, only one query is executed!");
-            } else {
-                maxStart = cstart.uniqueResult();
-                maxEnd = cend.uniqueResult();
-            }
-        if (maxStart == null && maxEnd == null) {
-            return null;
-        } else {
-            final DateTime start = new DateTime(maxStart, DateTimeZone.UTC);
-            if (maxEnd != null) {
-                final DateTime end = new DateTime(maxEnd, DateTimeZone.UTC);
-                if (end.isAfter(start)) {
-                    return end;
-                }
-            }
-            return start;
-        }
-    }
-
-    /**
-     * Get min result time from observations for offering
-     *
-     * @param offering
-     *            Offering identifier
-     * @param session
-     *            Hibernate session Hibernate session
-     *
-     * @return min result time for offering
-     * @throws CodedException
-     */
-    public DateTime getMinResultTime4Offering(final String offering, final Session session) throws OwsExceptionReport {
-        Object min = null;
-            Criteria criteria =
-                    DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
-            addOfferingRestricionForObservation(criteria, offering);
-            addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.RESULT_TIME);
-            LOGGER.debug("QUERY getMinResultTime4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
-            min = criteria.uniqueResult();
-        if (min != null) {
-            return new DateTime(min, DateTimeZone.UTC);
-        }
-        return null;
-    }
-
-    /**
-     * Get max result time from observations for offering
-     *
-     * @param offering
-     *            Offering identifier
-     * @param session
-     *            Hibernate session Hibernate session
-     *
-     * @return max result time for offering
-     * @throws CodedException
-     */
-    public DateTime getMaxResultTime4Offering(final String offering, final Session session) throws OwsExceptionReport {
-        Object maxStart = null;
-            Criteria criteria =
-                    DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
-            addOfferingRestricionForObservation(criteria, offering);
-            addMinMaxProjection(criteria, MinMax.MAX, AbstractObservation.RESULT_TIME);
-            LOGGER.debug("QUERY getMaxResultTime4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
-            maxStart = criteria.uniqueResult();
-
-        if (maxStart == null) {
-            return null;
-        } else {
-            return new DateTime(maxStart, DateTimeZone.UTC);
-        }
-    }
-
-    /**
      * Get temporal bounding box for each offering
      *
      * @param session
@@ -415,30 +292,19 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     public Map<String, TimePeriod> getTemporalBoundingBoxesForOfferings(final Session session) throws OwsExceptionReport {
         if (session != null) {
-            Criteria criteria =
-                    DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
-            criteria.createAlias(AbstractObservation.OFFERINGS, "off");
-            criteria.setProjection(Projections.projectionList()
-                    .add(Projections.min(AbstractObservation.PHENOMENON_TIME_START))
-                    .add(Projections.max(AbstractObservation.PHENOMENON_TIME_START))
-                    .add(Projections.max(AbstractObservation.PHENOMENON_TIME_END))
-                    .add(Projections.groupProperty("off." + Offering.IDENTIFIER)));
-            LOGGER.debug("QUERY getTemporalBoundingBoxesForOfferings(): {}", HibernateHelper.getSqlString(criteria));
-            final List<?> temporalBoundingBoxes = criteria.list();
-            if (!temporalBoundingBoxes.isEmpty()) {
-                final HashMap<String, TimePeriod> temporalBBoxMap =
-                        new HashMap<String, TimePeriod>(temporalBoundingBoxes.size());
-                for (final Object recordObj : temporalBoundingBoxes) {
-                    if (recordObj instanceof Object[]) {
-                        final Object[] record = (Object[]) recordObj;
-                        final TimePeriod value =
-                                createTimePeriod((Timestamp) record[0], (Timestamp) record[1], (Timestamp) record[2]);
-                        temporalBBoxMap.put((String) record[3], value);
-                    }
-                }
-                LOGGER.debug(temporalBoundingBoxes.toString());
-                return temporalBBoxMap;
+        	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+        	final String offeringIdentifier = sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName();
+        	final Map<String, OfferingTimeExtrema> offeringTimeExtremas = getOfferingTimeExtrema(Lists.newArrayList(offeringIdentifier), session);
+        	final HashMap<String, TimePeriod> temporalBBoxMap = new HashMap<String, TimePeriod>(offeringTimeExtremas.size());
+
+        	for (final Map.Entry<String, OfferingTimeExtrema> entry: offeringTimeExtremas.entrySet()) {
+        		final OfferingTimeExtrema extrema = entry.getValue();
+        		final TimePeriod value = new TimePeriod(extrema.getMinPhenomenonTime(), extrema.getMaxPhenomenonTime());
+
+        		temporalBBoxMap.put(entry.getKey(), value);
             }
+
+        	return temporalBBoxMap;
         }
         return new HashMap<String, TimePeriod>(0);
     }
@@ -502,14 +368,5 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
                 return list;
             }
         return Lists.newArrayList();
-    }
-
-    /**
-     * Add offering identifier restriction to Hibernate Criteria
-     * @param criteria Hibernate Criteria to add restriction
-     * @param offering Offering identifier
-     */
-    public void addOfferingRestricionForObservation(Criteria criteria, String offering) {
-        criteria.createCriteria(AbstractObservation.OFFERINGS).add(Restrictions.eq(Offering.IDENTIFIER, offering));
     }
 }

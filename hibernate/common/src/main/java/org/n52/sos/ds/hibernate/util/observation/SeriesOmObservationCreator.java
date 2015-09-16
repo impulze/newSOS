@@ -86,7 +86,6 @@ public class SeriesOmObservationCreator extends AbstractOmObservationCreator {
             OmObservableProperty obsProp = createObservableProperty(series.getObservableProperty());
             obsProp.setUnit(null);
             AbstractFeature feature = createFeatureOfInterest(series.getFeatureOfInterest().getIdentifier());
-
             final OmObservationConstellation obsConst = getObservationConstellation(procedure, obsProp, feature);
 
             final OmObservation sosObservation = new OmObservation();
@@ -95,7 +94,6 @@ public class SeriesOmObservationCreator extends AbstractOmObservationCreator {
             sosObservation.setTupleSeparator(getTupleSeparator());
             sosObservation.setDecimalSeparator(getDecimalSeparator());
             sosObservation.setObservationConstellation(obsConst);
-            checkForAdditionalObservationCreator(series, sosObservation);
             final NilTemplateValue value = new NilTemplateValue();
             value.setUnit(obsProp.getUnit());
             sosObservation.setValue(new SingleObservationValue(new TimeInstant(), value));

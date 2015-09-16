@@ -39,7 +39,6 @@ import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.sos.SosEnvelope;
-import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,11 +304,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public Set<String> getFeaturesOfInterestWithOffering() {
-        return CollectionHelper.unionOfListOfLists(getFeaturesOfInterestForOfferingMap().values());
-    }
-
-    @Override
     public void addAllowedObservationTypeForOffering(final String offering, final String allowedObservationType) {
         notNullOrEmpty(OFFERING, offering);
         notNullOrEmpty(ALLOWED_OBSERVATION_TYPE, allowedObservationType);
@@ -518,14 +512,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeFeatureOfInterestForOffering(final String offering, final String featureOfInterest) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
-        LOG.trace("Removing featureOfInterest {} from offering {}", featureOfInterest, offering);
-        getFeaturesOfInterestForOfferingMap().removeWithKey(offering, featureOfInterest);
-    }
-
-    @Override
     public void removeFeatureOfInterestForResultTemplate(final String resultTemplate, final String featureOfInterest) {
         notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
         notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
@@ -582,56 +568,10 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeOfferingForProcedure(final String procedure, final String offering) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing offering {} from procedure {}", offering, procedure);
-        getOfferingsForProceduresMap().removeWithKey(procedure, offering);
-    }
-
-    @Override
-    public void removeOfferingsForObservableProperty(final String observableProperty) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        LOG.trace("Removing offerings for observableProperty {}", observableProperty);
-        getOfferingsForObservablePropertiesMap().remove(observableProperty);
-    }
-
-    @Override
-    public void removeProcedureForFeatureOfInterest(final String featureOfInterest, final String procedure) {
-        notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing procedure {} from featureOfInterest {}", procedure, featureOfInterest);
-        getProceduresForFeaturesOfInterestMap().removeWithKey(featureOfInterest, procedure);
-    }
-
-    @Override
-    public void removeProceduresForObservableProperty(final String observableProperty) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        LOG.trace("Removing procedures for observableProperty {}", observableProperty);
-        getProceduresForObservablePropertiesMap().remove(observableProperty);
-    }
-
-    @Override
     public void removeProceduresForOffering(final String offering) {
         notNullOrEmpty(OFFERING, offering);
         LOG.trace("Removing procedures for offering {}", offering);
         getProceduresForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeRelatedFeatureForOffering(final String offering, final String relatedFeature) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(RELATED_FEATURE, relatedFeature);
-        LOG.trace("Removing relatedFeature {} from offering {}", relatedFeature, offering);
-        getRelatedFeaturesForOfferingsMap().removeWithKey(offering, relatedFeature);
-    }
-
-    @Override
-    public void removeResultTemplateForOffering(final String offering, final String resultTemplate) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
-        LOG.trace("Removing resultTemplate {} from offering {}", resultTemplate, offering);
-        getResultTemplatesForOfferingsMap().removeWithKey(offering, resultTemplate);
     }
 
     @Override
@@ -1038,14 +978,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
         notNullOrEmpty(PROCEDURE, procedure);
         LOG.trace("Adding hidden child procedure {} to offering {}", procedure, offering);
         getHiddenChildProceduresForOfferingsMap().add(offering, procedure);
-    }
-
-    @Override
-    public void removeHiddenChildProcedureForOffering(final String offering, final String procedure) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing hidden chil procedure {} from offering {}", procedure, offering);
-        getHiddenChildProceduresForOfferingsMap().removeWithKey(offering, procedure);
     }
 
     @Override

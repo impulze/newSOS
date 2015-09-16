@@ -30,7 +30,6 @@ package org.n52.sos.cache;
 
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.n52.sos.i18n.MultilingualString;
@@ -47,11 +46,6 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 4.0.0
  */
 public interface WritableContentCache extends ContentCache {
-    /**
-     * @return all features of interest associated with an offering
-     */
-    Set<String> getFeaturesOfInterestWithOffering();
-
     /**
      * Allow the specified observation type for the passed offering.
      *
@@ -467,16 +461,6 @@ public interface WritableContentCache extends ContentCache {
     void removeFeatureOfInterest(String featureOfInterest);
 
     /**
-     * Dissociate the specified feature with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     * @param featureOfInterest
-     *            the feature of interest
-     */
-    void removeFeatureOfInterestForOffering(String offering, String featureOfInterest);
-
-    /**
      * Dissociate the specified feature of interest with the specified result
      * template.
      *
@@ -574,80 +558,12 @@ public interface WritableContentCache extends ContentCache {
     void removeObservationTypeForOffering(String offering, String observationType);
 
     /**
-     * Dissociate the specified offering with the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     * @param offering
-     *            the offering
-     */
-    void removeOfferingForProcedure(String procedure, String offering);
-
-    /**
-     * Dissociate all offerings with the specified observable property.
-     *
-     * @param observableProperty
-     *            the observable property
-     */
-    void removeOfferingsForObservableProperty(String observableProperty);
-
-    /**
-     * Dissociate the specified procedure with the specified feature of
-     * interest.
-     *
-     * @param featureOfInterest
-     *            the feature of interest
-     * @param procedure
-     *            the procedure
-     */
-    void removeProcedureForFeatureOfInterest(String featureOfInterest, String procedure);
-
-    /**
-     * Dissociate the specified procedure with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     * @param procedure
-     *            the procedure
-     */
-    void removeHiddenChildProcedureForOffering(String offering, String procedure);
-
-    /**
-     * Dissociate all procedures with the specified observable property.
-     *
-     * @param observableProperty
-     *            the observable property
-     */
-    void removeProceduresForObservableProperty(String observableProperty);
-
-    /**
      * Dissociate all procedures with the specified offering.
      *
      * @param offering
      *            the offering
      */
     void removeProceduresForOffering(String offering);
-
-    /**
-     * Dissociate the specified related feature with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     * @param relatedFeature
-     *            the related feature
-     */
-    void removeRelatedFeatureForOffering(String offering, String relatedFeature);
-
-    /**
-     * Dissociate the specified result template with the specified result
-     * template.
-     *
-     * @param offering
-     *            the offering
-     * @param resultTemplate
-     *            the result template
-     */
-    void removeResultTemplateForOffering(String offering, String resultTemplate);
 
     /**
      * Dissociate the specified role with the specified related feature.

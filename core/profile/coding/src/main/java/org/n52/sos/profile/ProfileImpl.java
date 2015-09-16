@@ -60,8 +60,6 @@ public class ProfileImpl implements Profile {
 
     private String encodingNamespaceForFeatureOfInterestEncoding;
 
-    private boolean showMetadataOfEmptyObservations;
-
     private boolean listFeatureOfInterestsInOfferings;
 
     private boolean encodeChildProcedureDescriptions;
@@ -113,11 +111,6 @@ public class ProfileImpl implements Profile {
         return encodingNamespaceForFeatureOfInterestEncoding;
     }
 
-    @Override
-    public boolean isShowMetadataOfEmptyObservations() {
-        return showMetadataOfEmptyObservations;
-    }
-
     public void setIdentifier(String identifier) {
         if (identifier != null && !identifier.isEmpty()) {
             this.identifier = identifier;
@@ -150,10 +143,6 @@ public class ProfileImpl implements Profile {
             LOGGER.warn("The encodingNamespaceForFeatureOfInterestEncoding is null! Default encodingNamespaceForFeatureOfInterestEncoding is set!");
         }
 
-    }
-
-    public void setShowMetadataOfEmptyObservations(boolean showMetadataOfEmptyObservations) {
-        this.showMetadataOfEmptyObservations = showMetadataOfEmptyObservations;
     }
 
     @Override

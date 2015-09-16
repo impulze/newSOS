@@ -51,6 +51,8 @@ import org.n52.sos.response.GetObservationResponse;
 import org.n52.sos.service.Configurator;
 import org.n52.sos.service.profile.Profile;
 import org.n52.sos.util.CodingHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -105,7 +107,8 @@ public class SplitMergeObservations implements
         }
         return response;
     }
-    
+    static final Logger logger = LoggerFactory.getLogger(SplitMergeObservations.class);
+
     private AbstractServiceResponse mergeObservations(GetObservationRequest request, GetObservationResponse response) throws OwsExceptionReport {
         boolean checkForMergeObservationsInResponse = checkForMergeObservationsInResponse(request);
         request.setMergeObservationValues(checkForMergeObservationsInResponse);
@@ -124,10 +127,12 @@ public class SplitMergeObservations implements
         // FIXME Failed to set the observation type to sweArrayObservation for
         // the merged Observations
         // (proc, obsProp, foi)
+
         if (response.getObservationCollection() != null) {
             final List<OmObservation> mergedObservations = new LinkedList<OmObservation>();
             int obsIdCounter = 1;
             for (final OmObservation sosObservation : response.getObservationCollection()) {
+            	logger.info("this sos observatoin has value: " + sosObservation.getValue().getClass());
                 if (mergedObservations.isEmpty()) {
                     sosObservation.setObservationID(Integer.toString(obsIdCounter++));
                     mergedObservations.add(sosObservation);

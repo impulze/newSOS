@@ -174,6 +174,7 @@ public final class SweHelper {
                 TVPValue tvpValues = (TVPValue) multiValue.getValue();
                 for (TimeValuePair timeValuePair : tvpValues.getValue()) {
                     if (!dataArray.isSetElementTyp()) {
+                    	LOGGER.info("Creating element type: " + timeValuePair + " // " + observablePropertyIdentifier);
                         dataArray.setElementType(createElementType(timeValuePair,
                                 observablePropertyIdentifier));
                     }
@@ -214,6 +215,7 @@ public final class SweHelper {
     }
 
     private static SweField getFieldForValue(Value<?> iValue, String name) {
+    	LOGGER.info("Get Field " + iValue + " // " + iValue.getClass() + " // " + name);
         SweAbstractDataComponent value = getValue(iValue);
         value.setDefinition(name);
         return new SweField(name, value);

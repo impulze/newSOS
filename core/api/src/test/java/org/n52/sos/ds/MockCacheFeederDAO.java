@@ -29,7 +29,6 @@
 package org.n52.sos.ds;
 
 import org.n52.sos.cache.WritableContentCache;
-import org.n52.sos.ds.CacheFeederDAO;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 
 /**

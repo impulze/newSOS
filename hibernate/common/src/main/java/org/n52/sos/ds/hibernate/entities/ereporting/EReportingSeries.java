@@ -52,5 +52,4 @@ public class EReportingSeries extends Series implements HasEReportingSamplingPoi
     public boolean hasSamplingPoint() {
         return getSamplingPoint() != null;
     }
-
 }

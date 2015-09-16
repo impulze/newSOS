@@ -28,22 +28,7 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
-import org.n52.sos.aqd.AqdConstants;
-import org.n52.sos.aqd.AqdHelper;
-import org.n52.sos.aqd.ReportObligationType;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingAssessmentType;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingBlobObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingBooleanObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingCategoryObservation;
@@ -54,75 +39,11 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservationInfo;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingObservationTime;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSweDataArrayObservation;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingTextObservation;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
-import org.n52.sos.ds.hibernate.util.TimeCriterion;
-import org.n52.sos.exception.CodedException;
-import org.n52.sos.exception.ows.OptionNotSupportedException;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
-import org.n52.sos.request.GetObservationRequest;
 
 public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings,
-    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, temporalFilterDisjunctions, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationForSosIndeterminateTimeFilter(Series series,
-            List<String> offerings, SosIndeterminateTime sosIndeterminateTime, Session session) {
-        return getSeriesObservationCriteriaForSosIndeterminateTimeFilter(series, offerings, sosIndeterminateTime,
-                session).list();
-    }
-
-    @Override
-    public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, Session session) throws OwsExceptionReport {
-        return getSeriesObservationsFor(request, features, null, null, session);
-    }
-
-    @Override
-    public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) throws OwsExceptionReport {
-        return getSeriesObservationsFor(request, features, temporalFilterDisjunctions, null, session);
-    }
-
-    @Override
-    public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, SosIndeterminateTime sosIndeterminateTime, Session session)
-            throws OwsExceptionReport {
-        return getSeriesObservationsFor(request, features, null, sosIndeterminateTime, session);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
-            Collection<String> features, Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, SosIndeterminateTime sosIndeterminateTime,
-            Session session) throws HibernateException, OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(request, features, temporalFilterDisjunctions, sosIndeterminateTime, session)
-                .list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationsFor(Series series, GetObservationRequest request,
-            SosIndeterminateTime sosIndeterminateTime, Session session) throws OwsExceptionReport {
-        return getSeriesObservationCriteriaFor(series, request, sosIndeterminateTime, session).list();
-    }
-
+	/* TODOHZG: add this when necessary
     @Override
     protected void addSpecificRestrictions(Criteria c, GetObservationRequest request)
             throws CodedException {
@@ -149,6 +70,7 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
         detachedCriteria.setProjection(Projections.distinct(Projections.property(Series.ID)));
         c.add(Subqueries.propertyIn(SeriesObservation.SERIES, detachedCriteria));
     }
+    */
 
     @Override
     protected Class<?> getObservationClass() {

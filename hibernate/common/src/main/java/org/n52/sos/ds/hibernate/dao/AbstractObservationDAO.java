@@ -29,7 +29,6 @@
 package org.n52.sos.ds.hibernate.dao;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,29 +42,26 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.spatial.criterion.SpatialProjections;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
-import org.n52.sos.ds.hibernate.entities.interfaces.BlobObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.CategoryObservation;
 import org.n52.sos.ds.hibernate.entities.Codespace;
-import org.n52.sos.ds.hibernate.entities.interfaces.CountObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.interfaces.GeometryObservation;
-import org.n52.sos.ds.hibernate.entities.interfaces.NumericObservation;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.Observation;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
+import org.n52.sos.ds.hibernate.entities.Unit;
+import org.n52.sos.ds.hibernate.entities.interfaces.BlobObservation;
+import org.n52.sos.ds.hibernate.entities.interfaces.BooleanObservation;
+import org.n52.sos.ds.hibernate.entities.interfaces.CategoryObservation;
+import org.n52.sos.ds.hibernate.entities.interfaces.CountObservation;
+import org.n52.sos.ds.hibernate.entities.interfaces.GeometryObservation;
+import org.n52.sos.ds.hibernate.entities.interfaces.NumericObservation;
 import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
 import org.n52.sos.ds.hibernate.entities.interfaces.TextObservation;
-import org.n52.sos.ds.hibernate.entities.Unit;
-import org.n52.sos.ds.hibernate.entities.interfaces.BooleanObservation;
 import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.gml.time.TimePeriod;
@@ -83,14 +79,12 @@ import org.n52.sos.ogc.om.values.Value;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.ogc.sos.SosEnvelope;
-import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.GeometryHandler;
 import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -103,227 +97,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescriptionDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractObservationDAO.class);
-
-    /**
-     * Get Hibernate Criteria for querying observations with parameters
-     * featureOfInterst and procedure
-     *
-     * @param feature
-     *            FeatureOfInterest to query for
-     * @param procedure
-     *            Procedure to query for
-     * @param session
-     *            Hiberante Session
-     * @return Criteria to query observations
-     */
-    public abstract Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature,
-            String procedure, Session session);
-
-    /**
-     * Get Hibernate Criteria for querying observations with parameters
-     * featureOfInterst and offering
-     *
-     * @param feature
-     *            FeatureOfInterest to query for
-     * @param offering
-     *            Offering to query for
-     * @param session
-     *            Hiberante Session
-     * @return Criteria to query observations
-     */
-    public abstract Criteria getObservationInfoCriteriaForFeatureOfInterestAndOffering(String feature,
-            String offering, Session session);
-
-    /**
-     * Get Hibernate Criteria for observation with restriction procedure
-     *
-     * @param procedure
-     *            Procedure parameter
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Criteria to query observations
-     * @throws CodedException 
-     */
-    public abstract Criteria getObservationCriteriaForProcedure(String procedure, Session session) throws CodedException;
-
-    /**
-     * Get Hibernate Criteria for observation with restriction
-     * observableProperty
-     *
-     * @param observableProperty
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Criteria to query observations
-     * @throws CodedException 
-     */
-    public abstract Criteria getObservationCriteriaForObservableProperty(String observableProperty, Session session) throws CodedException;
-
-    /**
-     * Get Hibernate Criteria for observation with restriction featureOfInterest
-     *
-     * @param featureOfInterest
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Criteria to query observations
-     * @throws CodedException 
-     */
-    public abstract Criteria getObservationCriteriaForFeatureOfInterest(String featureOfInterest, Session session) throws CodedException;
-
-    /**
-     * Get Hibernate Criteria for observation with restrictions procedure and
-     * observableProperty
-     *
-     * @param procedure
-     * @param observableProperty
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Criteria to query observations
-     * @throws CodedException 
-     */
-    public abstract Criteria getObservationCriteriaFor(String procedure, String observableProperty, Session session) throws CodedException;
-
-    /**
-     * Get Hibernate Criteria for observation with restrictions procedure,
-     * observableProperty and featureOfInterest
-     *
-     * @param procedure
-     * @param observableProperty
-     * @param featureOfInterest
-     * @param session
-     *            Hibernate session
-     * @return Hibernate Criteria to query observations
-     * @throws CodedException 
-     */
-    public abstract Criteria getObservationCriteriaFor(String procedure, String observableProperty,
-            String featureOfInterest, Session session) throws CodedException;
-
-    /**
-     * Get all observation identifiers for a procedure.
-     *
-     * @param procedureIdentifier
-     * @param session
-     * @return Collection of observation identifiers
-     */
-    public abstract Collection<String> getObservationIdentifiers(String procedureIdentifier, Session session);
-
-    /**
-     * Query observation by identifier
-     *
-     * @param identifier
-     *            Observation identifier (gml:identifier)
-     * @param session
-     *            Hiberante session
-     * @return Observation
-     */
-    public AbstractObservation getObservationByIdentifier(String identifier, Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addObservationIdentifierToCriteria(criteria, identifier, session);
-        return (AbstractObservation) criteria.uniqueResult();
-    }
-
-    /**
-     * Check if there are numeric observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkNumericObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getNumericObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are boolean observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkBooleanObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getBooleanObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are count observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkCountObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getCountObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are category observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkCategoryObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getCategoryObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are text observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkTextObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getTextObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are blob observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkBlobObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getBlobObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are geometry observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkGeometryObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getGeometryObservationClass(), offeringIdentifier, session);
-    }
-
-    /**
-     * Check if there are geometry observations for the offering
-     *
-     * @param offeringIdentifier
-     *            Offering identifier
-     * @param session
-     *            Hibernate session
-     * @return If there are observations or not
-     */
-    public boolean checkSweDataArrayObservationsFor(String offeringIdentifier, Session session) {
-        return checkObservationFor(getSweDataArrayObservationClass(), offeringIdentifier, session);
-    }
 
     /**
      * Get Hibernate Criteria for result model
@@ -408,48 +181,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
     }
 
     /**
-     * Get default Hibernate Criteria to query observations, default flag ==
-     * <code>false</code>
-     *
-     * @param session
-     *            Hiberante session
-     * @return Default Criteria
-     */
-    public Criteria getDefaultObservationCriteria(Session session) {
-       return getDefaultCriteria(getObservationClass(), session);
-    }
-
-    /**
-     * Get default Hibernate Criteria to query observation info, default flag ==
-     * <code>false</code>
-     *
-     * @param session
-     *            Hiberante session
-     * @return Default Criteria
-     */
-    public Criteria getDefaultObservationInfoCriteria(Session session) {
-        return getDefaultCriteria(getObservationInfoClass(), session);
-    }
-    
-    /**
-     * Get default Hibernate Criteria to query observation time, default flag ==
-     * <code>false</code>
-     *
-     * @param session
-     *            Hiberante session
-     * @return Default Criteria
-     */
-    public Criteria getDefaultObservationTimeCriteria(Session session) {
-        return getDefaultCriteria(getObservationTimeClass(), session);
-    }
-    
-    @SuppressWarnings("rawtypes")
-    private Criteria getDefaultCriteria(Class clazz, Session session) {
-        return session.createCriteria(clazz).add(Restrictions.eq(AbstractObservation.DELETED, false))
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
-    /**
      * If the local codespace cache isn't null, use it when retrieving
      * codespaces.
      * 
@@ -494,20 +225,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
             }
             return hUnit;
         }
-    }
-
-    /**
-     * Add observation identifier (gml:identifier) to Hibernate Criteria
-     *
-     * @param criteria
-     *            Hibernate Criteria
-     * @param identifier
-     *            Observation identifier (gml:identifier)
-     * @param session
-     *            Hibernate session
-     */
-    protected void addObservationIdentifierToCriteria(Criteria criteria, String identifier, Session session) {
-        criteria.add(Restrictions.eq(AbstractObservation.IDENTIFIER, identifier));
     }
 
 //    /**
@@ -827,32 +544,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
     }
 
     /**
-     * Check if a Spatial Filtering Profile filter is requested and add to
-     * criteria
-     * 
-     * @param c
-     *            Criteria to add crtierion
-     * @param request
-     *            GetObservation request
-     * @param session
-     *            Hiberante Session
-     * @throws OwsExceptionReport
-     *             If Spatial Filteirng Profile is not supported or an error
-     *             occurs.
-     */
-    protected void checkAndAddSpatialFilteringProfileCriterion(Criteria c, GetObservationRequest request,
-            Session session) throws OwsExceptionReport {
-        if (request.hasSpatialFilteringProfileSpatialFilter()) {
-            c.add(SpatialRestrictions.filter(
-                    AbstractObservation.SAMPLING_GEOMETRY,
-                    request.getSpatialFilter().getOperator(),
-                    GeometryHandler.getInstance().switchCoordinateAxisFromToDatasourceIfNeeded(
-                            request.getSpatialFilter().getGeometry())));
-        }
-
-    }
-
-    /**
      * Get all observation identifiers
      *
      * @param session
@@ -878,6 +569,7 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
             Dialect dialect = ((SessionFactoryImplementor) session.getSessionFactory()).getDialect();
             if (GeometryHandler.getInstance().isSpatialDatasource()
                     && HibernateHelper.supportsFunction(dialect, HibernateConstants.FUNC_EXTENT)) {
+            	/* TODOHZG: do spatial projections
                 Criteria criteria = getDefaultObservationInfoCriteria(session);
                 criteria.setProjection(SpatialProjections.extent(AbstractObservationTime.SAMPLING_GEOMETRY));
                 criteria.createCriteria(AbstractObservation.OFFERINGS).add(
@@ -888,7 +580,9 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
                 if (geom != null) {
                     return new SosEnvelope(geom.getEnvelopeInternal(), GeometryHandler.getInstance().getStorageEPSG());
                 }
+                */
             } else {
+            	/* TODOHZG: spatial envelope for observation info
                 final Envelope envelope = new Envelope();
                 Criteria criteria = getDefaultObservationInfoCriteria(session);
                 criteria.createCriteria(AbstractObservation.OFFERINGS).add(
@@ -909,6 +603,7 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
                         return new SosEnvelope(envelope, GeometryHandler.getInstance().getStorageEPSG());
                     }
                 }
+                */
             }
         } catch (final HibernateException he) {
             throw new NoApplicableCodeException().causedBy(he).withMessage(

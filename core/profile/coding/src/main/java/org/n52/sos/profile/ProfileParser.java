@@ -65,7 +65,6 @@ public class ProfileParser {
         parseNoDataPlaceholder(profile, sosProfile.getNoDataPlaceholder());
         profile.setReturnLatestValueIfTemporalFilterIsMissingInGetObservation(sosProfile
                 .getReturnLatestValueIfTemporalFilterIsMissingInGetObservation());
-        profile.setShowMetadataOfEmptyObservations(sosProfile.getShowMetadataOfEmptyObservations());
         if (sosProfile.getDefaultObservationTypesForEncodingArray() != null) {
             parseDefaultObservationTypesForEncoding(profile, sosProfile.getDefaultObservationTypesForEncodingArray());
         }

@@ -34,6 +34,8 @@ import org.n52.sos.ogc.om.AbstractStreaming;
 import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
@@ -42,7 +44,7 @@ import com.google.common.collect.Lists;
  * 
  */
 public class GetObservationResponse extends AbstractObservationResponse implements StreamingDataResponse{
-    
+    static final Logger LOG = LoggerFactory.getLogger(GetObservationResponse.class);
     /*
      * TODO uncomment when WaterML support is activated public
      * Collection<SosObservation> mergeObservations(boolean
@@ -74,6 +76,7 @@ public class GetObservationResponse extends AbstractObservationResponse implemen
     public boolean hasStreamingData() {
         OmObservation observation = getFirstObservation();
         if (observation != null) {
+        	LOG.info("asking if we have streaming data " + (observation.getValue() instanceof AbstractStreaming));
             return observation.getValue() instanceof AbstractStreaming;
         }
         return false;
@@ -85,6 +88,7 @@ public class GetObservationResponse extends AbstractObservationResponse implemen
         if (hasStreamingData()) {
             for (OmObservation observation : getObservationCollection()) {
                 AbstractStreaming values = (AbstractStreaming) observation.getValue();
+                LOG.info("asking " + values.getClass() + " if it has more values");
                 if (values.hasNextValue()) {
                     if (isSetMergeObservation()) { 
                         observations.addAll(values.mergeObservation());

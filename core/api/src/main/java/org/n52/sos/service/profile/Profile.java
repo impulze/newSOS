@@ -47,8 +47,6 @@ public interface Profile {
 
     String getEncodingNamespaceForFeatureOfInterest();
 
-    boolean isShowMetadataOfEmptyObservations();
-
     boolean isAllowSubsettingForSOS20OM20();
 
     boolean isMergeValues();
