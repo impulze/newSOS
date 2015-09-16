@@ -35,36 +35,21 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
-import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.concrete.UnsupportedOperatorException;
 import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
 import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
 import org.n52.sos.ogc.gml.time.Time;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sensorML.SensorML20Constants;
 import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
-import org.n52.sos.util.DateTimeHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -81,8 +66,6 @@ import de.hzg.measurement.Sensor;
 public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implements HibernateSqlQueryConstants {
     //public class ProcedureDAO extends TimeCreator implements HibernateSqlQueryConstants {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDAO.class);
-
     public List<Procedure> createProceduresWithSensors(List<Sensor> sensors, Session session) {
     	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
     	final List<Procedure> procedures = Lists.newArrayListWithCapacity(sensors.size());
@@ -93,6 +76,7 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     		// TODOHZG: set description and format
     		procedure.setDeleted(false);
     		procedure.setIdentifier(sosConfiguration.getProcedureIdentifierPrefix() + sensor.getName());
+    		procedure.setProcedureDescriptionFormat(new ProcedureDescriptionFormatDAO().createProcedureDescriptionFormat());
 
     		procedures.add(procedure);
     	}
@@ -238,10 +222,10 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     
     private List<Object[]> getFeatureProcedureResult(Session session) {
     	// TODOHZG: for all series get FeatureOfInterest and Procedure
-    	final List<EReportingSeries> allSeries = new EReportingSeriesDAO().getAllSeries(session);
+    	final List<Series> allSeries = new EReportingSeriesDAO().getAllSeries(session);
     	final List<Object[]> foisAndProcedures = Lists.newArrayList();
 
-    	for (final EReportingSeries series: allSeries) {
+    	for (final Series series: allSeries) {
     		final Object[] pair = new Object[] { series.getFeatureOfInterest().getIdentifier(), series.getProcedure().getIdentifier() };
 
     		foisAndProcedures.add(pair);
@@ -304,159 +288,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
 		}
 		
 		return (TProcedure)createProceduresWithSensors(Lists.newArrayList(sensor), session).get(0);
-    }
-
-    public TimeExtrema getProcedureTimeExtremaFromNamedQuery(Session session, String procedureIdentifier) {
-        Object[] result = null;
-
-        return parseProcedureTimeExtremaResult(result);
-    }
-    
-    private TimeExtrema parseProcedureTimeExtremaResult(Object[] result) {
-        TimeExtrema pte = new TimeExtrema();
-        if (result != null) {
-            pte.setMinTime(DateTimeHelper.makeDateTime(result[1]));
-            DateTime maxPhenStart = DateTimeHelper.makeDateTime(result[2]);
-            DateTime maxPhenEnd = DateTimeHelper.makeDateTime(result[3]);
-            pte.setMaxTime(DateTimeHelper.max(maxPhenStart, maxPhenEnd));
-        }
-        return pte;
-    }
-
-    /**
-     * Query procedure time extrema for the provided procedure identifier
-     *
-     * @param session
-     * @param procedureIdentifier
-     * @return ProcedureTimeExtrema
-     * @throws CodedException
-     */
-    public TimeExtrema getProcedureTimeExtrema(final Session session, String procedureIdentifier)
-            throws OwsExceptionReport {
-        Object[] result;
-        AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-        Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-        if (observationDAO instanceof AbstractSeriesObservationDAO) {
-            criteria.createAlias(SeriesObservationInfo.SERIES, "s");
-            criteria.createAlias("s." + Series.PROCEDURE, "p");
-        } else {
-            criteria.createAlias(ObservationInfo.PROCEDURE, "p");
-        }
-        criteria.add(Restrictions.eq("p." + Procedure.IDENTIFIER, procedureIdentifier));
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.groupProperty("p." + Procedure.IDENTIFIER));
-        projectionList.add(Projections.min(AbstractObservation.PHENOMENON_TIME_START));
-        projectionList.add(Projections.max(AbstractObservation.PHENOMENON_TIME_START));
-        projectionList.add(Projections.max(AbstractObservation.PHENOMENON_TIME_END));
-        criteria.setProjection(projectionList);
-
-        LOGGER.debug("QUERY getProcedureTimeExtrema(procedureIdentifier): {}", HibernateHelper.getSqlString(criteria));
-        result = (Object[]) criteria.uniqueResult();
-        
-        return parseProcedureTimeExtremaResult(result);
-    }
-
-    /**
-     * Get min time from observations for procedure
-     *
-     * @param procedure
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @return min time for procedure
-     * @throws CodedException
-     */
-    public DateTime getMinDate4Procedure(final String procedure, final Session session) throws OwsExceptionReport {
-        Object min = null;
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                addProcedureRestrictionForSeries(criteria, procedure);
-            } else {
-                addProcedureRestrictionForObservation(criteria, procedure);
-            }
-            addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.PHENOMENON_TIME_START);
-            LOGGER.debug("QUERY getMinDate4Procedure(procedure): {}", HibernateHelper.getSqlString(criteria));
-            min = criteria.uniqueResult();
-        if (min != null) {
-            return new DateTime(min, DateTimeZone.UTC);
-        }
-        return null;
-    }
-
-    /**
-     * Get max time from observations for procedure
-     *
-     * @param procedure
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @return max time for procedure
-     * @throws CodedException
-     */
-    public DateTime getMaxDate4Procedure(final String procedure, final Session session) throws OwsExceptionReport {
-        Object maxStart = null;
-        Object maxEnd = null;
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria cstart = observationDAO.getDefaultObservationInfoCriteria(session);
-            Criteria cend = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                addProcedureRestrictionForSeries(cstart, procedure);
-                addProcedureRestrictionForSeries(cend, procedure);
-            } else {
-                addProcedureRestrictionForObservation(cstart, procedure);
-                addProcedureRestrictionForObservation(cend, procedure);
-            }
-            addMinMaxProjection(cstart, MinMax.MAX, AbstractObservation.PHENOMENON_TIME_START);
-            addMinMaxProjection(cend, MinMax.MAX, AbstractObservation.PHENOMENON_TIME_END);
-            LOGGER.debug("QUERY getMaxDate4Procedure(procedure) start: {}", HibernateHelper.getSqlString(cstart));
-            LOGGER.debug("QUERY getMaxDate4Procedure(procedure) end: {}", HibernateHelper.getSqlString(cend));
-            if (HibernateHelper.getSqlString(cstart).endsWith(HibernateHelper.getSqlString(cend))) {
-                maxStart = cstart.uniqueResult();
-                maxEnd = maxStart;
-                LOGGER.debug("Max time start and end query are identically, only one query is executed!");
-            } else {
-                maxStart = cstart.uniqueResult();
-                maxEnd = cend.uniqueResult();
-            }
-        if (maxStart == null && maxEnd == null) {
-            return null;
-        } else {
-            final DateTime start = new DateTime(maxStart, DateTimeZone.UTC);
-            if (maxEnd != null) {
-                final DateTime end = new DateTime(maxEnd, DateTimeZone.UTC);
-                if (end.isAfter(start)) {
-                    return end;
-                }
-            }
-            return start;
-        }
-    }
-
-    /**
-     * Add procedure identifier restriction to Hibernate Criteria for series
-     *
-     * @param criteria
-     *            Hibernate Criteria for series to add restriction
-     * @param procedure
-     *            Procedure identifier
-     */
-    private void addProcedureRestrictionForSeries(Criteria criteria, String procedure) {
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-        seriesCriteria.createCriteria(SeriesObservationInfo.PROCEDURE).add(
-                Restrictions.eq(Procedure.IDENTIFIER, procedure));
-    }
-
-    /**
-     * Add procedure identifier restriction to Hibernate Criteria
-     *
-     * @param criteria
-     *            Hibernate Criteria to add restriction
-     * @param procedure
-     *            Procedure identifier
-     */
-    private void addProcedureRestrictionForObservation(Criteria criteria, String procedure) {
-        criteria.createCriteria(ObservationInfo.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedure));
     }
 
     public Map<String,String> getProcedureFormatMap(Session session) {

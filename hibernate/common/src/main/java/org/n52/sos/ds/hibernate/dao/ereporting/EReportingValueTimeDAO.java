@@ -28,23 +28,15 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
-import org.hibernate.Criteria;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesValueTimeDAO;
-import org.n52.sos.ds.hibernate.entities.ereporting.values.EReportingValueTime;
-import org.n52.sos.exception.CodedException;
-import org.n52.sos.request.GetObservationRequest;
 
-public class EReportingValueTimeDAO extends AbstractSeriesValueTimeDAO {
-
-        @Override
-        protected Class<?> getSeriesValueTimeClass() {
-            return EReportingValueTime.class;
-        }
-    
+public class EReportingValueTimeDAO extends AbstractSeriesValueTimeDAO { 
+        /* TODOHZG: implement this once this DAO is used
         @Override
         protected void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException {
             // add quality restrictions
             EReportingDaoHelper.addValidityAndVerificationRestrictions(c, request);
         }
+        */
 
 }

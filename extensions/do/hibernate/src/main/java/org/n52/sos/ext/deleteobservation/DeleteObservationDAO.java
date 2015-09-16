@@ -28,26 +28,9 @@
  */
 package org.n52.sos.ext.deleteobservation;
 
-import java.util.Collections;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.n52.sos.convert.ConverterException;
 import org.n52.sos.ds.HibernateDatasourceConstants;
-import org.n52.sos.ds.hibernate.HibernateSessionHolder;
-import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.series.SeriesDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
-import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
-import org.n52.sos.exception.ows.InvalidParameterValueException;
-import org.n52.sos.exception.ows.NoApplicableCodeException;
-import org.n52.sos.ogc.om.OmObservation;
+import org.n52.sos.exception.ows.OperationNotSupportedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.request.AbstractObservationRequest;
-import org.n52.sos.request.GetObservationRequest;
 
 /**
  * @author <a href="mailto:e.h.juerrens@52north.org">Eike Hinderk
@@ -56,86 +39,14 @@ import org.n52.sos.request.GetObservationRequest;
  * @since 1.0.0
  */
 public class DeleteObservationDAO extends DeleteObservationAbstractDAO {
-
-    private HibernateSessionHolder hibernateSessionHolder = new HibernateSessionHolder();
-
     @Override
     public synchronized DeleteObservationResponse deleteObservation(DeleteObservationRequest request)
             throws OwsExceptionReport {
-        DeleteObservationResponse response = new DeleteObservationResponse();
-        response.setVersion(request.getVersion());
-        response.setService(request.getService());
-        Session session = null;
-        Transaction transaction = null;
-        try {
-            session = hibernateSessionHolder.getSession();
-            transaction = session.beginTransaction();
-            String id = request.getObservationIdentifier();
-            AbstractObservation observation = null;
-            try {
-                observation =
-                        DaoFactory.getInstance().getObservationDAO().getObservationByIdentifier(id, session);
-            } catch (HibernateException he) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw new InvalidParameterValueException(DeleteObservationConstants.PARAMETER_NAME, request.getObservationIdentifier());
-            }
-            OmObservation so = null;
-            if (observation != null) {
-                so =
-                        HibernateObservationUtilities
-                                .createSosObservationsFromObservations(Collections.singleton(observation), getRequest(request), null, session).iterator().next();
-                observation.setDeleted(true);
-                session.saveOrUpdate(observation);
-                checkSeriesForFirstLatest(observation, session);
-                session.flush();
-            } else {
-                throw new InvalidParameterValueException(DeleteObservationConstants.PARAMETER_NAME, request.getObservationIdentifier());
-            }
-            transaction.commit();
-            response.setObservationId(request.getObservationIdentifier());
-            response.setDeletedObservation(so);
-        } catch (HibernateException he) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new NoApplicableCodeException().causedBy(he).withMessage(
-                    "Error while updating deleted observation flag data!");
-        } catch (ConverterException ce) {
-            throw new NoApplicableCodeException().causedBy(ce).withMessage(
-                    "Error while updating deleted observation flag data!");
-        } finally {
-            hibernateSessionHolder.returnSession(session);
-        }
-        return response;
+    	throw new OperationNotSupportedException(request.getOperationName());
     }
-
-    private AbstractObservationRequest getRequest(
-			DeleteObservationRequest request) {
-		// TODO Auto-generated method stub
-		return (AbstractObservationRequest) new GetObservationRequest().setService(request.getService()).setVersion(request.getVersion());
-	}
 
 	@Override
     public String getDatasourceDaoIdentifier() {
         return HibernateDatasourceConstants.ORM_DATASOURCE_DAO_IDENTIFIER;
     }
-
-	/**
-	 * Check if {@link Series} should be updated
-	 * 
-	 * @param observation
-	 *            Deleted observation
-	 * @param session
-	 *            Hibernate session
-	 */
-	private void checkSeriesForFirstLatest(AbstractObservation observation, Session session) {
-		if (observation instanceof SeriesObservation) {
-			Series series = ((SeriesObservation)observation).getSeries();
-			if (series.getFirstTimeStamp().equals(observation.getPhenomenonTimeStart()) || series.getLastTimeStamp().equals(observation.getPhenomenonTimeEnd())) {
-				new SeriesDAO().updateSeriesAfterObservationDeletion(series, (SeriesObservation)observation, session);
-			}
-		}
-	}
 }

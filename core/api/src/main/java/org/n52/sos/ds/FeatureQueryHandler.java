@@ -148,21 +148,6 @@ public interface FeatureQueryHandler extends DatasourceDaoIdentifier {
      * @param connection
      *            Data source connection
      * @param responseSrid
-     * @return Envelope of requested FOI identifiers
-     * 
-     * @throws OwsExceptionReport
-     */
-    @Deprecated
-    SosEnvelope getEnvelopeForFeatureIDs(Collection<String> featureIDs, Object connection) throws OwsExceptionReport;
-
-    /**
-     * Query the envelope for feature ids
-     * 
-     * @param featureIDs
-     *            FOI identifiers
-     * @param connection
-     *            Data source connection
-     * @param responseSrid
      *            response srid for feature geometry, if negative not
      *            transformation
      * @return Envelope of requested FOI identifiers

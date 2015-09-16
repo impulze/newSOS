@@ -89,7 +89,7 @@ import com.google.common.collect.Sets;
  * 
  */
 public class OmEncoderv20 extends AbstractOmEncoderv20 {
-
+	static Logger LOG = LoggerFactory.getLogger(OmEncoderv20.class);
     /**
      * logger, used for logging while initializing the constants from config
      * file
@@ -200,15 +200,19 @@ public class OmEncoderv20 extends AbstractOmEncoderv20 {
 
     @Override
     protected XmlObject createResult(OmObservation sosObservation) throws OwsExceptionReport {
+    	LOG.info("createResult with: " + sosObservation.getClass());
         // TODO if OM_SWEArrayObservation and get ResultEncoding and
         // ResultStructure exists,
         if (sosObservation.getValue() instanceof AbstractObservationValue) {
+        	LOG.info("setting values for abstractobservationvalue");
             ((AbstractObservationValue<?>)sosObservation.getValue()).setValuesForResultEncoding(sosObservation);
             return encodeResult(sosObservation.getValue());
         } else {
             if (sosObservation.getValue() instanceof SingleObservationValue) {
+            	LOG.info("creating result from single");
                 return createSingleObservationToResult(sosObservation);
             } else if (sosObservation.getValue() instanceof MultiObservationValues) {
+            	LOG.info("creating result from multi");
                 return createMultiObservationValueToResult(sosObservation);
             }
         }
@@ -219,6 +223,7 @@ public class OmEncoderv20 extends AbstractOmEncoderv20 {
 
     @Override
     protected XmlObject encodeResult(ObservationValue<?> observationValue) throws OwsExceptionReport {
+    	LOG.info("encoding result for " + observationValue.getClass());
         if (observationValue instanceof SingleObservationValue) {
             return createSingleObservationToResult((SingleObservationValue<?>)observationValue);
         } else if (observationValue instanceof MultiObservationValues) {

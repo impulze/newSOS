@@ -52,7 +52,7 @@ public class Series implements Serializable, HasProcedure, HasObservableProperty
     
     public static String LAST_TIME_STAMP = "lastTimeStamp";
 
-    private long seriesId;
+    private ValueFK valueFK;
 
     private FeatureOfInterest featureOfInterest;
 
@@ -80,8 +80,8 @@ public class Series implements Serializable, HasProcedure, HasObservableProperty
      * 
      * @return Series id
      */
-    public long getSeriesId() {
-        return seriesId;
+    public ValueFK getValueFK() {
+        return valueFK;
     }
 
     /**
@@ -90,8 +90,8 @@ public class Series implements Serializable, HasProcedure, HasObservableProperty
      * @param seriesId
      *            Series id
      */
-    public void setSeriesId(final long seriesId) {
-        this.seriesId = seriesId;
+    public void setValueFK(ValueFK valueFK) {
+        this.valueFK = valueFK;
     }
 
     @Override

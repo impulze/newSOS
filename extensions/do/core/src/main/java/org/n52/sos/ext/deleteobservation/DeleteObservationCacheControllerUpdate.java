@@ -30,14 +30,9 @@ package org.n52.sos.ext.deleteobservation;
 
 import static org.n52.sos.util.ConfiguringSingletonServiceLoader.loadAndConfigure;
 
-import java.util.List;
-
 import org.n52.sos.cache.ContentCacheUpdate;
 import org.n52.sos.exception.ows.concrete.NoImplementationFoundException;
 import org.n52.sos.ogc.om.OmObservation;
-import org.n52.sos.ogc.ows.CompositeOwsException;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
-import org.n52.sos.util.CollectionHelper;
 
 /**
  * @author Christian Autermann <c.autermann@52north.org>
@@ -45,12 +40,9 @@ import org.n52.sos.util.CollectionHelper;
  * @since 1.0.0
  */
 public class DeleteObservationCacheControllerUpdate extends ContentCacheUpdate {
-    private final OmObservation o;
-
     private DeleteObservationCacheFeederDAO cacheFeederDAO;
 
     public DeleteObservationCacheControllerUpdate(OmObservation o) {
-        this.o = o;
     }
 
     protected DeleteObservationCacheFeederDAO getDao() throws NoImplementationFoundException {
@@ -65,17 +57,5 @@ public class DeleteObservationCacheControllerUpdate extends ContentCacheUpdate {
 
     @Override
     public void execute() {
-        try {
-            List<OwsExceptionReport> errors = CollectionHelper.synchronizedList();
-            getDao().setErrors(errors);
-            getDao().setCache(getCache());
-            getDao().setDeletedObservation(o);
-            getDao().execute();
-            if (!errors.isEmpty()) {
-                throw new CompositeOwsException(errors);
-            }
-        } catch (OwsExceptionReport e) {
-            fail(e);
-        }
     }
 }

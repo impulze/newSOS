@@ -30,8 +30,6 @@ package org.n52.sos.ds.hibernate.dao;
 
 import java.sql.Timestamp;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Projections;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ogc.gml.time.TimePeriod;
@@ -69,27 +67,5 @@ public abstract class TimeCreator {
             }
         }
         return new TimePeriod(start, end);
-    }
-
-    /**
-     * Add min/max projection to criteria
-     * 
-     * @param criteria
-     *            Hibernate Criteria to add projection
-     * @param minMax
-     *            Min/Max identifier
-     * @param property
-     *            Property to apply projection to
-     */
-    public void addMinMaxProjection(Criteria criteria, MinMax minMax, String property) {
-        // TODO move this to a better location, maybe with Java 8 in an own Interface with Multiple Inheritance
-        switch (minMax) {
-        case MIN:
-            criteria.setProjection(Projections.min(property));
-            break;
-        case MAX:
-            criteria.setProjection(Projections.max(property));
-            break;
-        }
     }
 }

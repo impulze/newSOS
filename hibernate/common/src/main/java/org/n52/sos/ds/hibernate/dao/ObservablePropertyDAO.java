@@ -28,20 +28,25 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.service.SosContextListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import de.hzg.common.SOSConfiguration;
 import de.hzg.measurement.ObservedPropertyInstance;
+import de.hzg.values.CalculatedData;
+import de.hzg.values.RawData;
 
 /**
  * Hibernate data access class for observable properties
@@ -69,6 +74,74 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
     	obsProp.setIdentifier(sosConfiguration.getObservablePropertyIdentifierPrefix() + instance.getName());
 
     	return obsProp;
+    }
+
+    public class ObservedPropertyInstanceTimeExtrema {
+    	public Date minPhenomenonStart;
+    	public Date maxPhenomenonEnd;
+    };
+
+    public ObservedPropertyInstanceTimeExtrema getValuesExtrema(List<ObservedPropertyInstance> instances, Session session) {
+    	final List<Integer> rawInstanceIds = Lists.newArrayList();
+    	final List<Integer> calcInstanceIds = Lists.newArrayList();
+
+    	for (final ObservedPropertyInstance instance: instances) {
+    		if (instance.getIsRaw()) {
+    			rawInstanceIds.add(instance.getId());
+    		} else {
+    			calcInstanceIds.add(instance.getId());
+    		}
+    	}
+
+    	final Criteria rawCriteria = session.createCriteria(RawData.class)
+    			.add(Restrictions.in("observedPropertyInstance", rawInstanceIds))
+    			.setProjection(Projections.projectionList()
+    					.add(Projections.min("date"))
+    					.add(Projections.max("date")));
+    	@SuppressWarnings("unchecked")
+		final List<Date[]> rawResults = rawCriteria.list();
+
+    	final Criteria calcCriteria = session.createCriteria(CalculatedData.class)
+    			.add(Restrictions.in("observedPropertyInstance", calcInstanceIds))
+    			.setProjection(Projections.projectionList()
+    					.add(Projections.min("date"))
+    					.add(Projections.max("date")));
+    	@SuppressWarnings("unchecked")
+		final List<Date[]> calcResults = calcCriteria.list();
+
+		final ObservedPropertyInstanceTimeExtrema obite = new ObservedPropertyInstanceTimeExtrema();
+
+		obite.minPhenomenonStart = obite.maxPhenomenonEnd = null;
+
+		if (!rawResults.isEmpty()) {
+			for (final Date[] result: rawResults) {
+				if (obite.minPhenomenonStart == null || result[0].before(obite.minPhenomenonStart)) {
+					obite.minPhenomenonStart = result[0];
+				}
+
+				if (obite.maxPhenomenonEnd == null || result[1].after(obite.maxPhenomenonEnd)) {
+					obite.maxPhenomenonEnd = result[1];
+				}
+			}
+		}
+
+		if (!calcResults.isEmpty()) {
+			for (final Date[] result: calcResults) {
+				if (obite.minPhenomenonStart == null || result[0].before(obite.minPhenomenonStart)) {
+					obite.minPhenomenonStart = result[0];
+				}
+
+				if (obite.maxPhenomenonEnd == null || result[1].after(obite.maxPhenomenonEnd)) {
+					obite.maxPhenomenonEnd = result[1];
+				}
+			}
+		}
+
+		if (obite.minPhenomenonStart == null || obite.maxPhenomenonEnd == null) {
+			return null;
+		}
+
+		return obite;
     }
 
     /**

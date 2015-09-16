@@ -28,25 +28,13 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingQuality;
-import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.n52.sos.ds.hibernate.entities.series.ValueFK;
 
 public class EReportingQualityDAO {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EReportingQualityDAO.class);
-    
-    public EReportingQuality getEReportingQuality(long series, int year, String primaryObservation, Session session) {
-        Criteria c = session.createCriteria(EReportingQuality.class);
-        c.add(Restrictions.eq(EReportingQuality.SERIES, series));
-        c.add(Restrictions.eq(EReportingQuality.YEAR, year));
-        c.add(Restrictions.ilike(EReportingQuality.PRIMARY_OBSERVATION, primaryObservation));
-        LOGGER.debug("QUERY getEReportingQuality(series, year, primaryObservation): {}",
-                HibernateHelper.getSqlString(c));
-        return (EReportingQuality)c.uniqueResult();
+    public EReportingQuality getEReportingQuality(ValueFK valueFK, int year, String primaryObservation, Session session) {
+    	// TODOHZG: return quality, is this fixed?
+    	return null;
     }
 }

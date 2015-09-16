@@ -265,7 +265,7 @@ public abstract class EReportingValue extends SeriesValue implements EReportingV
             if (ReportObligationType.E1A.equals(flow) || ReportObligationType.E1B.equals(flow)) {
                 int year = DateTimeHelper.makeDateTime(getPhenomenonTimeStart()).getYear();
                 EReportingQuality eReportingQuality =
-                        new EReportingQualityDAO().getEReportingQuality(getSeries().getSeriesId(), year,
+                        new EReportingQualityDAO().getEReportingQuality(getSeries().getValueFK(), year,
                                 getPrimaryObservation(), session);
                 if (eReportingQuality != null) {
                     observation.setResultQuality(EReportingHelper.getGmdDomainConsistency(eReportingQuality, true));

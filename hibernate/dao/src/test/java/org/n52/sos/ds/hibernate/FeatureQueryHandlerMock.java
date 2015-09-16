@@ -56,12 +56,6 @@ public class FeatureQueryHandlerMock extends AbstractFeatureQueryHandler {
         return Collections.emptyList();
     }
 
-	@Override
-    public SosEnvelope getEnvelopeForFeatureIDs(Collection<String> featureIDs, Object connection) throws
-            OwsExceptionReport {
-        return new SosEnvelope(null, getStorageEPSG());
-    }
-
     @Override
     public AbstractFeature getFeatureByID(String featureID, Object connection, String version)
             throws OwsExceptionReport {

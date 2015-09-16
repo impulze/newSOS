@@ -39,17 +39,10 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
-import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.TFeatureOfInterest;
-import org.n52.sos.ds.hibernate.entities.series.Series;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
@@ -101,42 +94,6 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
     }
 
     /**
-     * Get featureOfInterest identifiers for observation constellation
-     *
-     * @param observationConstellation
-     *            Observation constellation
-     * @param session
-     *            Hibernate session Hibernate session
-     * @return FeatureOfInterest identifiers for observation constellation
-     * @throws CodedException
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getFeatureOfInterestIdentifiersForObservationConstellation(
-            final ObservationConstellation observationConstellation, final Session session) throws OwsExceptionReport {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.add(Restrictions.eq(Series.PROCEDURE, observationConstellation.getProcedure())).add(
-                        Restrictions.eq(Series.OBSERVABLE_PROPERTY, observationConstellation.getObservableProperty()));
-                seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            } else {
-                criteria.add(Restrictions.eq(ObservationConstellation.PROCEDURE, observationConstellation.getProcedure()))
-                        .add(Restrictions.eq(ObservationConstellation.OBSERVABLE_PROPERTY,
-                                observationConstellation.getObservableProperty()));
-                criteria.createCriteria(ObservationInfo.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            }
-            criteria.createCriteria(AbstractObservation.OFFERINGS).add(
-                    Restrictions.eq(Offering.ID, observationConstellation.getOffering().getOfferingId()));
-            LOGGER.debug(
-                    "QUERY getFeatureOfInterestIdentifiersForObservationConstellation(observationConstellation): {}",
-                    HibernateHelper.getSqlString(criteria));
-            return criteria.list();
-    }
-
-    /**
      * Get featureOfInterest identifiers for an offering identifier
      *
      * @param offeringIdentifiers
@@ -146,24 +103,15 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      * @return FeatureOfInterest identifiers for offering
      * @throws CodedException
      */
-    @SuppressWarnings({ "unchecked" })
     public List<String> getFeatureOfInterestIdentifiersForOffering(final String offeringIdentifiers,
             final Session session) throws OwsExceptionReport {
-            AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-            Criteria c = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
-                Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
-                seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
+    	final Offering offering = new OfferingDAO().getOfferingForIdentifier(offeringIdentifiers, session);
 
-            } else {
-                c.createCriteria(AbstractObservation.FEATURE_OF_INTEREST).setProjection(
-                        Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));
-            }
-            new OfferingDAO().addOfferingRestricionForObservation(c, offeringIdentifiers);
-            LOGGER.debug("QUERY getFeatureOfInterestIdentifiersForOffering(offeringIdentifiers): {}",
-                    HibernateHelper.getSqlString(c));
-            return c.list();
+    	if (offering != null) {
+    		return Lists.newArrayList(new FeatureOfInterestDAO().createFeatureOfInterest(session).getIdentifier());
+    	}
+
+    	return Lists.newArrayList();
     }
 
     /**

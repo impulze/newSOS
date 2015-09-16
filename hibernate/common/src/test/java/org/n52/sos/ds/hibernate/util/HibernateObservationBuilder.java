@@ -35,10 +35,9 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
-
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
+import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.BooleanObservation;
 import org.n52.sos.ds.hibernate.entities.Codespace;
@@ -95,7 +94,7 @@ public class HibernateObservationBuilder {
             Date validTimeStart, Date validTimeEnd) throws OwsExceptionReport {
         AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
         AbstractObservation observation = observationDAO.createObservationFromValue(new BooleanValue(true), session);
-        if (observationDAO instanceof SeriesObservationDAO) {
+        if (observationDAO instanceof AbstractSeriesObservationDAO) {
             SeriesBooleanObservation seriesBooleanObservation = (SeriesBooleanObservation)observation;
             seriesBooleanObservation.setSeries(getSeries());
             seriesBooleanObservation.setValue(true);

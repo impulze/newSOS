@@ -52,14 +52,6 @@ public final class CacheHelper {
         return offering;
     }
 
-    public static String removePrefixAndGetOfferingIdentifier(String offering) {
-        if (ServiceConfiguration.getInstance().isUseDefaultPrefixes()) {
-            return offering.replace(ServiceConfiguration.getInstance().getDefaultOfferingPrefix(),
-                    Constants.EMPTY_STRING);
-        }
-        return offering;
-    }
-
     public static String addPrefixOrGetProcedureIdentifier(String procedure) {
         if (ServiceConfiguration.getInstance().isUseDefaultPrefixes()) {
             return ServiceConfiguration.getInstance().getDefaultProcedurePrefix() + procedure;
@@ -67,25 +59,9 @@ public final class CacheHelper {
         return procedure;
     }
 
-    public static String removePrefixAndGetProcedureIdentifier(String procedure) {
-        if (ServiceConfiguration.getInstance().isUseDefaultPrefixes()) {
-            return procedure.replace(ServiceConfiguration.getInstance().getDefaultProcedurePrefix(),
-                    Constants.EMPTY_STRING);
-        }
-        return procedure;
-    }
-
     public static String addPrefixOrGetFeatureIdentifier(String feature) {
         if (ServiceConfiguration.getInstance().isUseDefaultPrefixes()) {
             return ServiceConfiguration.getInstance().getDefaultFeaturePrefix() + feature;
-        }
-        return feature;
-    }
-
-    public static String removePrefixAndGetFeatureIdentifier(String feature) {
-        if (ServiceConfiguration.getInstance().isUseDefaultPrefixes()) {
-            return feature.replace(ServiceConfiguration.getInstance().getDefaultFeaturePrefix(),
-                    Constants.EMPTY_STRING);
         }
         return feature;
     }

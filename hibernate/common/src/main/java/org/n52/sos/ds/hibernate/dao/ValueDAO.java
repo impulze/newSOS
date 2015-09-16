@@ -49,7 +49,6 @@ import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.entities.values.ObservationValue;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TimeCriterion;
-import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.CollectionHelper;
@@ -229,7 +228,7 @@ public class ValueDAO extends AbstractValueDAO {
             logArgs += ", filterCriterion";
             //c.add(temporalFilterCriterion);
         }
-        addSpecificRestrictions(c, request);
+
         LOGGER.debug("QUERY getStreamingValuesFor({}): {}", logArgs, HibernateHelper.getSqlString(c));
         return c.setReadOnly(true);
     }
@@ -275,10 +274,4 @@ public class ValueDAO extends AbstractValueDAO {
         }
         return null;
     }
-
-    @Override
-    protected void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException {
-        // nothing  to add
-    }
-
 }

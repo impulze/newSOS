@@ -30,17 +30,22 @@ package org.n52.sos.ds.hibernate.values.series;
 
 import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO.ObservedPropertyInstanceTimeExtrema;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesValueDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesValueTimeDAO;
-import org.n52.sos.ds.hibernate.util.ObservationTimeExtrema;
+import org.n52.sos.ds.hibernate.entities.series.ValueFK;
 import org.n52.sos.ds.hibernate.values.AbstractHibernateStreamingValue;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
+import org.n52.sos.util.DateTimeHelper;
 import org.n52.sos.util.GmlHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Abstract Hibernate series streaming value class for the series concept
@@ -59,7 +64,7 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
 
     protected final AbstractSeriesValueTimeDAO seriesValueTimeDAO;
 
-    protected long series;
+    protected ValueFK valueFK;
 
     /**
      * constructor
@@ -70,9 +75,9 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
      *            Datasource series id
      * @throws CodedException
      */
-    public HibernateSeriesStreamingValue(GetObservationRequest request, long series) throws CodedException {
+    public HibernateSeriesStreamingValue(GetObservationRequest request, ValueFK valueFK) throws CodedException {
         super(request);
-        this.series = series;
+        this.valueFK = valueFK;
         this.seriesValueDAO = (AbstractSeriesValueDAO) DaoFactory.getInstance().getValueDAO();
         this.seriesValueTimeDAO = (AbstractSeriesValueTimeDAO) DaoFactory.getInstance().getValueTimeDAO();
     }
@@ -82,17 +87,12 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
         Session s = null;
         try {
             s = sessionHolder.getSession();
-            ObservationTimeExtrema timeExtrema =
-                    seriesValueTimeDAO.getTimeExtremaForSeries(request, series, temporalFilterDisjunctions, s);
-            if (timeExtrema.isSetPhenomenonTime()) {
-                setPhenomenonTime(GmlHelper.createTime(timeExtrema.getMinPhenTime(), timeExtrema.getMaxPhenTime()));
-            }
-            if (timeExtrema.isSetResultTime()) {
-                setResultTime(new TimeInstant(timeExtrema.getMaxResultTime()));
-            }
-            if (timeExtrema.isSetValidTime()) {
-                setValidTime(GmlHelper.createTime(timeExtrema.getMinValidTime(), timeExtrema.getMaxValidTime()));
-            }
+            final ObservedPropertyInstanceTimeExtrema opite = new ObservablePropertyDAO().getValuesExtrema(Lists.newArrayList(valueFK.getObservedPropertyInstance()), session);
+
+            // TODOHZG: which times to set?
+            setPhenomenonTime(GmlHelper.createTime(DateTimeHelper.makeDateTime(opite.minPhenomenonStart), DateTimeHelper.makeDateTime(opite.maxPhenomenonEnd)));
+            LOGGER.info("i've set phen time: " + getPhenomenonTime());
+            setResultTime(new TimeInstant(opite.maxPhenomenonEnd));
         } catch (OwsExceptionReport owse) {
             LOGGER.error("Error while querying times", owse);
         } finally {
@@ -105,7 +105,7 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
         Session s = null;
         try {
            s = sessionHolder.getSession();
-            setUnit(seriesValueDAO.getUnit(request, series, s));
+            setUnit(seriesValueDAO.getUnit(request, valueFK, s));
         } catch (OwsExceptionReport owse) {
             LOGGER.error("Error while querying unit", owse);
         } finally {

@@ -28,12 +28,8 @@
  */
 package org.n52.sos.ds.hibernate.dao.ereporting;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.dao.series.SeriesIdentifiers;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
-import org.n52.sos.ds.hibernate.entities.series.Series;
 
 public class EReportingSeriesIdentifiers extends SeriesIdentifiers {
     private EReportingSamplingPoint samplingPoint;
@@ -55,34 +51,5 @@ public class EReportingSeriesIdentifiers extends SeriesIdentifiers {
 
     public boolean isSetSamplingPoint() {
         return getSamplingPoint() != null;
-    }
-
-    @Override
-    public void addIdentifierRestrictionsToCritera(Criteria c) {
-        super.addIdentifierRestrictionsToCritera(c);
-        if (isSetSamplingPoint()) {
-            addSamplingPointToCriteria(c, getSamplingPoint());
-        }
-    }
-
-    @Override
-    public void addValuesToSeries(Series series) {
-        super.addValuesToSeries(series);
-        if (isSetSamplingPoint() && series instanceof EReportingSeries) {
-            ((EReportingSeries) series).setSamplingPoint(getSamplingPoint());
-        }
-    }
-
-    /**
-     * Add SamplingPoint restriction to Hibernate Criteria
-     * 
-     * @param c
-     *            Hibernate Criteria to add restriction
-     * @param samplingPoint
-     *            SamplingPoint to add
-     */
-    private void addSamplingPointToCriteria(Criteria c, EReportingSamplingPoint samplingPoint) {
-        c.add(Restrictions.eq(EReportingSeries.SAMPLING_POINT, samplingPoint));
-
     }
 }

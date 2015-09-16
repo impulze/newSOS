@@ -43,6 +43,8 @@ import org.n52.sos.ogc.om.values.NilTemplateValue;
 import org.n52.sos.ogc.om.values.TVPValue;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -315,6 +317,10 @@ public class OmObservation extends AbstractFeature implements Serializable {
      *            the values to set
      */
     public void setValue(final ObservationValue<?> value) {
+    	LOG.info("Setting observation value " + value.getClass() + " // " + value);
+    	for (final StackTraceElement st: Thread.currentThread().getStackTrace()) {
+    		LOG.info(st.toString());
+    	}
         this.value = value;
     }
 
@@ -376,11 +382,14 @@ public class OmObservation extends AbstractFeature implements Serializable {
      * @param observationValue
      *            Observation to merge
      */
+    static Logger LOG = LoggerFactory.getLogger(OmObservation.class);
     private void mergeValues(final ObservationValue<?> observationValue) {
         TVPValue tvpValue;
         if (getValue() instanceof SingleObservationValue) {
+        	LOG.info("converting to multi " + value.getClass() + " // " + value);
             tvpValue = convertSingleValueToMultiValue((SingleObservationValue<?>) value);
         } else {
+        	LOG.info("already am multi " + value.getValue().getClass());
             tvpValue = (TVPValue) ((MultiObservationValues<?>) value).getValue();
         }
         if (observationValue instanceof SingleObservationValue) {

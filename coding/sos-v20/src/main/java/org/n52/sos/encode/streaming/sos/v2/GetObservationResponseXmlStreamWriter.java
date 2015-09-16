@@ -44,7 +44,6 @@ import org.n52.sos.encode.streaming.StreamingDataEncoder;
 import org.n52.sos.encode.streaming.StreamingEncoder;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.om.OmObservation;
-import org.n52.sos.ogc.om.StreamingObservation;
 import org.n52.sos.ogc.om.StreamingValue;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos2Constants;
@@ -153,25 +152,7 @@ public class GetObservationResponseXmlStreamWriter extends XmlStreamWriter<GetOb
             response.setMergeObservations(encoder.shouldObservationsWithSameXBeMerged());
         }
         for (OmObservation o : response.getObservationCollection()) {
-            if (o.getValue() instanceof StreamingObservation) {
-                StreamingObservation streamingObservation = (StreamingObservation) o.getValue();
-                if (streamingObservation.hasNextValue()) {
-                    if (response.isSetMergeObservation()) {
-                        for (OmObservation obs : streamingObservation.mergeObservation()) {
-                            writeObservationData(obs, encoder, encodingValues);
-                            writeNewLine();
-                        }
-                    } else {
-                        do {
-                            writeObservationData(streamingObservation.nextSingleObservation(), encoder, encodingValues);
-                            writeNewLine();
-                        } while (streamingObservation.hasNextValue());
-                    }
-                } else if (streamingObservation.getValue() != null) {
-                    writeObservationData(streamingObservation.getValue().getValue(), encoder, encodingValues);
-                    writeNewLine();
-                }
-            } else if (o.getValue() instanceof StreamingValue) {
+            if (o.getValue() instanceof StreamingValue) {
                 StreamingValue<?> streamingValue = (StreamingValue<?>) o.getValue();
                 if (streamingValue.hasNextValue()) {
                     if (response.isSetMergeObservation()) {

@@ -29,7 +29,6 @@
 package org.n52.sos.cache;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +39,6 @@ import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.sos.SosEnvelope;
-import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,13 +64,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
             return new TimePeriod(instant, instant);
         } else {
             return (TimePeriod) time;
-        }
-    }
-
-    @Override
-    public void removeResultTemplates(final Collection<String> resultTemplates) {
-        for (final String resultTemplate : resultTemplates) {
-            removeResultTemplate(resultTemplate);
         }
     }
 
@@ -121,14 +112,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void addFeaturesOfInterest(final Collection<String> featuresOfInterest) {
-        noNullValues(FEATURES_OF_INTEREST, featuresOfInterest);
-        for (final String featureOfInterest : featuresOfInterest) {
-            addFeatureOfInterest(featureOfInterest);
-        }
-    }
-
-    @Override
     public void addProcedures(final Collection<String> procedures) {
         noNullValues(PROCEDURES, procedures);
         for (final String procedure : procedures) {
@@ -149,28 +132,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
         for (final String featureOfInterest : featuresOfInterest) {
             removeFeatureOfInterest(featureOfInterest);
         }
-    }
-
-    @Override
-    public void removeProcedure(final String procedure) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing Procedure {}", procedure);
-        getProceduresSet().remove(procedure);
-    }
-
-    @Override
-    public void removeProcedures(final Collection<String> procedures) {
-        noNullValues(PROCEDURES, procedures);
-        for (final String procedure : procedures) {
-            removeProcedure(procedure);
-        }
-    }
-
-    @Override
-    public void removeResultTemplate(final String resultTemplate) {
-        notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
-        LOG.trace("Removing SosResultTemplate {}", resultTemplate);
-        getResultTemplatesSet().remove(resultTemplate);
     }
 
     @Override
@@ -261,13 +222,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void setFeaturesOfInterest(final Collection<String> featuresOfInterest) {
-        LOG.trace("Setting FeaturesOfInterest");
-        getFeaturesOfInterestSet().clear();
-        addFeaturesOfInterest(featuresOfInterest);
-    }
-
-    @Override
     public void setPhenomenonTime(final DateTime minEventTime, final DateTime maxEventTime) {
         setMinPhenomenonTime(minEventTime);
         setMaxPhenomenonTime(maxEventTime);
@@ -353,11 +307,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     public void setEnvelopeForOffering(final String offering, final SosEnvelope envelope) {
         LOG.trace("Setting Envelope for Offering {} to {}", offering, envelope);
         getEnvelopeForOfferingsMap().put(offering, copyOf(envelope));
-    }
-
-    @Override
-    public Set<String> getFeaturesOfInterestWithOffering() {
-        return CollectionHelper.unionOfListOfLists(getFeaturesOfInterestForOfferingMap().values());
     }
 
     @Override
@@ -554,13 +503,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeEnvelopeForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing envelope for offering {}", offering);
-        getEnvelopeForOfferingsMap().remove(offering);
-    }
-
-    @Override
     public void removeEpsgCode(final Integer epsgCode) {
         notNull(EPSG_CODE, epsgCode);
         LOG.trace("Removing epsgCode {}", epsgCode);
@@ -576,68 +518,11 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeFeatureOfInterestForOffering(final String offering, final String featureOfInterest) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
-        LOG.trace("Removing featureOfInterest {} from offering {}", featureOfInterest, offering);
-        getFeaturesOfInterestForOfferingMap().removeWithKey(offering, featureOfInterest);
-    }
-
-    @Override
     public void removeFeatureOfInterestForResultTemplate(final String resultTemplate, final String featureOfInterest) {
         notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
         notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
         LOG.trace("Removing featureOfInterest {} from resultTemplate {}", featureOfInterest, resultTemplate);
         getFeaturesOfInterestForResultTemplatesMap().removeWithKey(resultTemplate, featureOfInterest);
-    }
-
-    @Override
-    public void removeFeaturesOfInterestForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing featuresOfInterest for offering {}", offering);
-        getFeaturesOfInterestForOfferingMap().remove(offering);
-    }
-
-    @Override
-    public void removeFeaturesOfInterestForResultTemplate(final String resultTemplate) {
-        notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
-        LOG.trace("Removing featuresOfInterest for resultTemplate {}", resultTemplate);
-        getFeaturesOfInterestForResultTemplatesMap().remove(resultTemplate);
-    }
-
-    @Override
-    public void removeMaxPhenomenonTimeForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing maxEventTime for offering {}", offering);
-        getMaxPhenomenonTimeForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeMinPhenomenonTimeForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing minEventTime for offering {}", offering);
-        getMinPhenomenonTimeForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeMaxPhenomenonTimeForProcedure(final String procedure) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing maxEventTime for procedure {}", procedure);
-        getMaxPhenomenonTimeForProceduresMap().remove(procedure);
-    }
-
-    @Override
-    public void removeMinPhenomenonTimeForProcedure(final String procedure) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing minEventTime for procedure {}", procedure);
-        getMinPhenomenonTimeForProceduresMap().remove(procedure);
-    }
-
-    @Override
-    public void removeNameForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing name for offering {}", offering);
-        getNameForOfferingsMap().remove(offering);
     }
 
     @Override
@@ -648,24 +533,10 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeObservablePropertiesForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing observableProperties for offering {}", offering);
-        getObservablePropertiesForOfferingsMap().remove(offering);
-    }
-
-    @Override
     public void removeObservablePropertiesForProcedure(final String procedure) {
         notNullOrEmpty(PROCEDURE, procedure);
         LOG.trace("Removing observableProperties for procedure {}", procedure);
         getObservablePropertiesForProceduresMap().remove(procedure);
-    }
-
-    @Override
-    public void removeObservablePropertiesForResultTemplate(final String resultTemplate) {
-        notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
-        LOG.trace("Removing observableProperties for resultTemplate {}", resultTemplate);
-        getObservablePropertiesForResultTemplatesMap().remove(resultTemplate);
     }
 
     @Override
@@ -687,14 +558,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeObservablePropertyForProcedure(final String procedure, final String observableProperty) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        LOG.trace("Removing observableProperty {} from procedure {}", observableProperty, procedure);
-        getObservablePropertiesForProceduresMap().removeWithKey(procedure, observableProperty);
-    }
-
-    @Override
     public void removeObservablePropertyForResultTemplate(final String resultTemplate, final String observableProperty) {
         notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
         notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
@@ -711,115 +574,10 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeObservationTypesForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing observationTypes for offering {}", offering);
-        getObservationTypesForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeOfferingForObservableProperty(final String observableProperty, final String offering) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing offering {} from observableProperty {}", offering, observableProperty);
-        getOfferingsForObservablePropertiesMap().removeWithKey(observableProperty, offering);
-    }
-
-    @Override
-    public void removeOfferingForProcedure(final String procedure, final String offering) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing offering {} from procedure {}", offering, procedure);
-        getOfferingsForProceduresMap().removeWithKey(procedure, offering);
-    }
-
-    @Override
-    public void removeOfferingsForObservableProperty(final String observableProperty) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        LOG.trace("Removing offerings for observableProperty {}", observableProperty);
-        getOfferingsForObservablePropertiesMap().remove(observableProperty);
-    }
-
-    @Override
-    public void removeOfferingsForProcedure(final String procedure) {
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing offering for procedure {}", procedure);
-        getOfferingsForProceduresMap().remove(procedure);
-    }
-
-    @Override
-    public void removeProcedureForFeatureOfInterest(final String featureOfInterest, final String procedure) {
-        notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing procedure {} from featureOfInterest {}", procedure, featureOfInterest);
-        getProceduresForFeaturesOfInterestMap().removeWithKey(featureOfInterest, procedure);
-    }
-
-    @Override
-    public void removeProcedureForObservableProperty(final String observableProperty, final String procedure) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing procedure {} from observableProperty {}", procedure, observableProperty);
-        getProceduresForObservablePropertiesMap().removeWithKey(observableProperty, procedure);
-    }
-
-    @Override
-    public void removeProcedureForOffering(final String offering, final String procedure) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing procedure {} from offering {}", procedure, offering);
-        getProceduresForOfferingsMap().removeWithKey(offering, procedure);
-    }
-
-    @Override
-    public void removeProceduresForFeatureOfInterest(final String featureOfInterest) {
-        notNullOrEmpty(FEATURE_OF_INTEREST, featureOfInterest);
-        LOG.trace("Removing procedures for featureOfInterest {}", featureOfInterest);
-        getProceduresForFeaturesOfInterestMap().remove(featureOfInterest);
-    }
-
-    @Override
-    public void removeProceduresForObservableProperty(final String observableProperty) {
-        notNullOrEmpty(OBSERVABLE_PROPERTY, observableProperty);
-        LOG.trace("Removing procedures for observableProperty {}", observableProperty);
-        getProceduresForObservablePropertiesMap().remove(observableProperty);
-    }
-
-    @Override
     public void removeProceduresForOffering(final String offering) {
         notNullOrEmpty(OFFERING, offering);
         LOG.trace("Removing procedures for offering {}", offering);
         getProceduresForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeRelatedFeatureForOffering(final String offering, final String relatedFeature) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(RELATED_FEATURE, relatedFeature);
-        LOG.trace("Removing relatedFeature {} from offering {}", relatedFeature, offering);
-        getRelatedFeaturesForOfferingsMap().removeWithKey(offering, relatedFeature);
-    }
-
-    @Override
-    public void removeRelatedFeaturesForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing RelatedFeatures for offering {}", offering);
-        getRelatedFeaturesForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeResultTemplateForOffering(final String offering, final String resultTemplate) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(RESULT_TEMPLATE, resultTemplate);
-        LOG.trace("Removing resultTemplate {} from offering {}", resultTemplate, offering);
-        getResultTemplatesForOfferingsMap().removeWithKey(offering, resultTemplate);
-    }
-
-    @Override
-    public void removeResultTemplatesForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing ResultTemplates for offering {}", offering);
-        getResultTemplatesForOfferingsMap().remove(offering);
     }
 
     @Override
@@ -835,17 +593,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
         notNullOrEmpty(RELATED_FEATURE, relatedFeature);
         LOG.trace("Removing roles for relatedFeature {}", relatedFeature);
         getRolesForRelatedFeaturesMap().remove(relatedFeature);
-    }
-
-    @Override
-    public void removeRolesForRelatedFeatureNotIn(final Collection<String> relatedFeatures) {
-        notNull(RELATED_FEATURES, relatedFeatures);
-        final Iterator<String> iter = getRolesForRelatedFeaturesMap().keySet().iterator();
-        while (iter.hasNext()) {
-            if (!relatedFeatures.contains(iter.next())) {
-                iter.remove();
-            }
-        }
     }
 
     @Override
@@ -1024,78 +771,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void recalculateGlobalEnvelope() {
-        LOG.trace("Recalculating global spatial envelope based on offerings");
-        SosEnvelope globalEnvelope = null;
-        if (!getOfferings().isEmpty()) {
-            for (final String offering : getOfferings()) {
-                final SosEnvelope e = getEnvelopeForOffering(offering);
-                if (e != null) {
-                    if (globalEnvelope == null) {
-                        if (e.isSetEnvelope()) {
-                            globalEnvelope = new SosEnvelope(new Envelope(e.getEnvelope()), e.getSrid());
-                            LOG.trace("First envelope '{}' used as starting point", globalEnvelope);
-                        }
-                    } else {
-                        globalEnvelope.getEnvelope().expandToInclude(e.getEnvelope());
-                        LOG.trace("Envelope expanded to include '{}' resulting in '{}'", e, globalEnvelope);
-                    }
-                }
-            }
-            if (globalEnvelope == null) {
-                LOG.error("Global envelope could not be resetted");
-            }
-        } else {
-            globalEnvelope = new SosEnvelope(null, getDefaultEPSGCode());
-        }
-        setGlobalEnvelope(globalEnvelope);
-        LOG.trace("Spatial envelope finally set to '{}'", getGlobalEnvelope());
-    }
-
-    @Override
-    public void recalculatePhenomenonTime() {
-        LOG.trace("Recalculating global phenomenon time based on offerings");
-        DateTime globalMax = null, globalMin = null;
-        if (!getOfferings().isEmpty()) {
-            for (final String offering : getOfferings()) {
-                if (hasMaxPhenomenonTimeForOffering(offering)) {
-                    final DateTime offeringMax = getMaxPhenomenonTimeForOffering(offering);
-                    if (globalMax == null || offeringMax.isAfter(globalMax)) {
-                        globalMax = offeringMax;
-                    }
-                }
-                if (hasMinPhenomenonTimeForOffering(offering)) {
-                    final DateTime offeringMin = getMinPhenomenonTimeForOffering(offering);
-                    if (globalMin == null || offeringMin.isBefore(globalMin)) {
-                        globalMin = offeringMin;
-                    }
-                }
-            }
-            if (globalMin == null || globalMax == null) {
-                LOG.error("Error in cache! Reset of global temporal bounding box failed. Max: '{}'; Min: '{}'",
-                        globalMax, globalMin);
-            }
-        }
-        setPhenomenonTime(globalMin, globalMax);
-        LOG.trace("Global temporal bounding box reset done. Min: '{}'; Max: '{}'", getMinPhenomenonTime(),
-                getMaxPhenomenonTime());
-    }
-
-    @Override
-    public void removeMaxResultTimeForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing maxResultTime for offering {}", offering);
-        getMaxResultTimeForOfferingsMap().remove(offering);
-    }
-
-    @Override
-    public void removeMinResultTimeForOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing minResultTime for offering {}", offering);
-        getMinResultTimeForOfferingsMap().remove(offering);
-    }
-
-    @Override
     public void setResultTime(final DateTime min, final DateTime max) {
         setMinResultTime(min);
         setMaxResultTime(max);
@@ -1114,31 +789,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
         if (!hasMaxResultTime() || getMaxResultTime().isBefore(tp.getEnd())) {
             setMaxResultTime(tp.getEnd());
         }
-    }
-
-    @Override
-    public void recalculateResultTime() {
-        LOG.trace("Recalculating global result time based on offerings");
-        DateTime globalMax = null, globalMin = null;
-        if (!getOfferings().isEmpty()) {
-            for (final String offering : getOfferings()) {
-                if (hasMaxResultTimeForOffering(offering)) {
-                    final DateTime offeringMax = getMaxResultTimeForOffering(offering);
-                    if (globalMax == null || offeringMax.isAfter(globalMax)) {
-                        globalMax = offeringMax;
-                    }
-                }
-                if (hasMinResultTimeForOffering(offering)) {
-                    final DateTime offeringMin = getMinResultTimeForOffering(offering);
-                    if (globalMin == null || offeringMin.isBefore(globalMin)) {
-                        globalMin = offeringMin;
-                    }
-                }
-            }
-        }
-        setResultTime(globalMin, globalMax);
-        LOG.trace("Global result time bounding box reset done. Min: '{}'); Max: '{}'", getMinResultTime(),
-                getMaxResultTime());
     }
 
     @Override
@@ -1335,34 +985,11 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     }
 
     @Override
-    public void removeOffering(final String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing Offering {}", offering);
-        getOfferingsSet().remove(offering);
-    }
-
-    @Override
-    public void removeOfferings(final Collection<String> offerings) {
-        noNullValues(OFFERINGS, offerings);
-        for (final String offering : offerings) {
-            removeOffering(offering);
-        }
-    }
-
-    @Override
     public void addHiddenChildProcedureForOffering(final String offering, final String procedure) {
         notNullOrEmpty(OFFERING, offering);
         notNullOrEmpty(PROCEDURE, procedure);
         LOG.trace("Adding hidden child procedure {} to offering {}", procedure, offering);
         getHiddenChildProceduresForOfferingsMap().add(offering, procedure);
-    }
-
-    @Override
-    public void removeHiddenChildProcedureForOffering(final String offering, final String procedure) {
-        notNullOrEmpty(OFFERING, offering);
-        notNullOrEmpty(PROCEDURE, procedure);
-        LOG.trace("Removing hidden chil procedure {} from offering {}", procedure, offering);
-        getHiddenChildProceduresForOfferingsMap().removeWithKey(offering, procedure);
     }
 
     @Override
@@ -1376,13 +1003,6 @@ public class WritableCache extends ReadableCache implements WritableContentCache
     public void clearHiddenChildProceduresForOfferings() {
         LOG.trace("Clearing hidden child procedures for offerings");
         getHiddenChildProceduresForOfferingsMap().clear();
-    }
-
-    @Override
-    public void removeSpatialFilteringProfileEnvelopeForOffering(String offering) {
-        notNullOrEmpty(OFFERING, offering);
-        LOG.trace("Removing Spatial Filtering Profile envelope for offering {}", offering);
-        getSpatialFilteringProfileEnvelopeForOfferingsMap().remove(offering);
     }
 
     @Override

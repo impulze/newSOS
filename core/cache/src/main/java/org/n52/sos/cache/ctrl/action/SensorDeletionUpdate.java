@@ -28,16 +28,9 @@
  */
 package org.n52.sos.cache.ctrl.action;
 
-import java.util.Set;
-
-import org.n52.sos.cache.WritableContentCache;
-import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.DeleteSensorRequest;
-import org.n52.sos.util.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 /**
  * When executing this &auml;ction (see {@link Action}), the following relations
@@ -54,6 +47,7 @@ import com.google.common.collect.Sets;
 public class SensorDeletionUpdate extends CacheFeederDAOCacheUpdate {
     private static final Logger LOGGER = LoggerFactory.getLogger(SensorDeletionUpdate.class);
 
+    @SuppressWarnings("unused")
     private final DeleteSensorRequest request;
 
     public SensorDeletionUpdate(DeleteSensorRequest response) {
@@ -67,73 +61,5 @@ public class SensorDeletionUpdate extends CacheFeederDAOCacheUpdate {
 
     @Override
     public void execute() {
-        final WritableContentCache cache = getCache();
-        final String procedure = request.getProcedureIdentifier();
-
-        cache.removeProcedure(procedure);
-
-        cache.removeMinPhenomenonTimeForProcedure(procedure);
-        cache.removeMaxPhenomenonTimeForProcedure(procedure);
-
-        for (String feature : cache.getFeaturesOfInterest()) {
-            cache.removeProcedureForFeatureOfInterest(feature, procedure);
-            if (cache.getProceduresForFeatureOfInterest(feature).isEmpty()) {
-                cache.removeProceduresForFeatureOfInterest(feature);
-            }
-        }
-
-        Set<String> offeringsNeedingReload = Sets.newHashSet();
-        for (String offering : cache.getOfferingsForProcedure(procedure)) {
-            cache.removeProcedureForOffering(offering, procedure);
-
-            if (cache.getHiddenChildProceduresForOffering(offering).contains(procedure)) {
-                //offering is a parent offering, don't delete it but we need to reload all its cache data
-                offeringsNeedingReload.add(offering);
-            } else {
-                //offering is not a parent offering, destroy it
-                cache.removeMaxPhenomenonTimeForOffering(offering);
-                cache.removeMinPhenomenonTimeForOffering(offering);
-                cache.removeMaxResultTimeForOffering(offering);
-                cache.removeMinResultTimeForOffering(offering);
-                cache.removeNameForOffering(offering);
-                cache.removeFeaturesOfInterestForOffering(offering);
-                cache.removeRelatedFeaturesForOffering(offering);
-                cache.removeObservationTypesForOffering(offering);
-                cache.removeEnvelopeForOffering(offering);
-                cache.removeSpatialFilteringProfileEnvelopeForOffering(offering);
-                for (String observableProperty : cache.getObservablePropertiesForOffering(offering)) {
-                    cache.removeOfferingForObservableProperty(observableProperty, offering);
-                }
-                cache.removeObservablePropertiesForOffering(offering);
-                Set<String> resultTemplatesToRemove = cache.getResultTemplatesForOffering(offering);
-                cache.removeResultTemplatesForOffering(offering);
-                cache.removeResultTemplates(resultTemplatesToRemove);
-                for (String resultTemplate : resultTemplatesToRemove) {
-                    cache.removeFeaturesOfInterestForResultTemplate(resultTemplate);
-                    cache.removeObservablePropertiesForResultTemplate(resultTemplate);
-                }
-                cache.removeOffering(offering);
-            }
-        }
-
-        try {
-            getDao().updateCacheOfferings(cache, offeringsNeedingReload);
-        } catch (OwsExceptionReport ex) {
-            fail(ex);
-        }
-        
-        cache.removeRolesForRelatedFeatureNotIn(cache.getRelatedFeatures());
-        cache.setFeaturesOfInterest(cache.getFeaturesOfInterestWithOffering());
-
-        // observable property relations
-        for (String observableProperty : cache.getObservablePropertiesForProcedure(procedure)) {
-            cache.removeProcedureForObservableProperty(observableProperty, procedure);
-            cache.removeObservablePropertyForProcedure(procedure, observableProperty);
-        }
-        // At the latest
-        cache.removeOfferingsForProcedure(procedure);
-        cache.recalculatePhenomenonTime();
-        cache.recalculateResultTime();
-        cache.recalculateGlobalEnvelope();
     }
 }
