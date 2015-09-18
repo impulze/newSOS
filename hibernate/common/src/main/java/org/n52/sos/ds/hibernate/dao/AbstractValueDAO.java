@@ -32,7 +32,6 @@ import java.sql.Timestamp;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projection;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -40,7 +39,6 @@ import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.exception.CodedException;
-import org.n52.sos.ogc.filter.TemporalFilter;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
@@ -142,34 +140,6 @@ public abstract class AbstractValueDAO extends TimeCreator {
             return AbstractValue.PHENOMENON_TIME_END;
         }
         return null;
-    }
-
-    /**
-     * Add chunk information to {@link Criteria}
-     * 
-     * @param c
-     *            {@link Criteria} to add information
-     * @param chunkSize
-     *            Chunk size
-     * @param currentRow
-     *            Start row
-     * @param request 
-     */
-    protected void addChunkValuesToCriteria(Criteria c, int chunkSize, int currentRow, GetObservationRequest request) {
-        c.addOrder(Order.asc(getOrderColumn(request)));
-        if (chunkSize > 0) {
-            c.setMaxResults(chunkSize).setFirstResult(currentRow);
-        }
-    }
-    
-    private String getOrderColumn(GetObservationRequest request) {
-        if (request.isSetTemporalFilter()) {
-            TemporalFilter filter = request.getTemporalFilters().iterator().next();
-            if (filter.getValueReference().contains(AbstractValue.RESULT_TIME)) {
-               return AbstractValue.RESULT_TIME;
-            }
-        }
-        return AbstractValue.PHENOMENON_TIME_START;
     }
 
     protected abstract void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException;

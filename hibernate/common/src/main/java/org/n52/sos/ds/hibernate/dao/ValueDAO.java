@@ -38,6 +38,7 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
@@ -96,29 +97,6 @@ public class ValueDAO extends AbstractValueDAO {
     }
 
     /**
-     * Query streaming value for parameter as {@link ScrollableResults}
-     * 
-     * @param request
-     *            {@link GetObservationRequest}
-     * @param procedure
-     *            Datasource procedure id
-     * @param observableProperty
-     *            Datasource procedure id
-     * @param featureOfInterest
-     *            Datasource procedure id
-     * @param session
-     *            Hibernate Session
-     * @return Resulting {@link ScrollableResults}
-     * @throws OwsExceptionReport
-     *             If an error occurs when querying the {@link AbstractValue}s
-     */
-    public ScrollableResults getStreamingValuesFor(GetObservationRequest request, long procedure,
-            long observableProperty, long featureOfInterest, Session session) throws OwsExceptionReport {
-        return getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest, null, session).scroll(
-                ScrollMode.FORWARD_ONLY);
-    }
-
-    /**
      * Query streaming value for parameter as chunk {@link List}
      * 
      * @param request
@@ -148,38 +126,11 @@ public class ValueDAO extends AbstractValueDAO {
         Criteria c =
                 getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest,
                         temporalFilterDisjunctions, session);
-        addChunkValuesToCriteria(c, chunkSize, currentRow, request);
-        LOGGER.debug("QUERY getStreamingValuesFor(): {}", HibernateHelper.getSqlString(c));
-        return (List<AbstractValue>) c.list();
-    }
-
-    /**
-     * Query streaming value for parameter as chunk {@link List}
-     * 
-     * @param request
-     *            {@link GetObservationRequest}
-     * @param procedure
-     *            Datasource procedure id
-     * @param observableProperty
-     *            Datasource procedure id
-     * @param featureOfInterest
-     *            Datasource procedure id
-     * @param chunkSize
-     *            Chunk size
-     * @param currentRow
-     *            Start row
-     * @param session
-     *            Hibernate Session
-     * @return Resulting chunk {@link List}
-     * @throws OwsExceptionReport
-     *             If an error occurs when querying the {@link AbstractValue}s
-     */
-    @SuppressWarnings("unchecked")
-    public List<AbstractValue> getStreamingValuesFor(GetObservationRequest request, long procedure,
-            long observableProperty, long featureOfInterest, int chunkSize, int currentRow, Session session)
-            throws OwsExceptionReport {
-        Criteria c = getValueCriteriaFor(request, procedure, observableProperty, featureOfInterest, null, session);
-        addChunkValuesToCriteria(c, chunkSize, currentRow, request);
+        // TODOHZG: always order by date
+        c.addOrder(Order.asc("date"));
+        if (chunkSize > 0) {
+            c.setMaxResults(chunkSize).setFirstResult(currentRow);
+        }
         LOGGER.debug("QUERY getStreamingValuesFor(): {}", HibernateHelper.getSqlString(c));
         return (List<AbstractValue>) c.list();
     }

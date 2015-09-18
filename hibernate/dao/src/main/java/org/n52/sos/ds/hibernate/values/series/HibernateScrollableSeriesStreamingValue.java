@@ -130,15 +130,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
             session = sessionHolder.getSession();
         }
         try {
-            // query with temporal filter
-            if (temporalFilterDisjunctions != null) {
                 setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK,
                         temporalFilterDisjunctions, session));
-            }
-            // query without temporal or indeterminate filters
-            else {
-                setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK, session));
-            }
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);
             throw new NoApplicableCodeException().causedBy(he).withMessage("Error while querying observation data!")

@@ -151,19 +151,10 @@ public class HibernateChunkStreamingValue extends HibernateStreamingValue {
             session = sessionHolder.getSession();
         }
         try {
-            // query with temporal filter
             Collection<AbstractValue> valuesResult = null;
-            if (temporalFilterDisjunctions != null) {
                 valuesResult =
                         valueDAO.getStreamingValuesFor(request, procedure, observableProperty, featureOfInterest,
                                 temporalFilterDisjunctions, chunkSize, currentRow, session);
-            }
-            // query without temporal or indeterminate filters
-            else {
-                valuesResult =
-                        valueDAO.getStreamingValuesFor(request, procedure, observableProperty, featureOfInterest,
-                                chunkSize, currentRow, session);
-            }
             currentRow += chunkSize;
             setObservationValuesResult(valuesResult);
         } catch (final HibernateException he) {
