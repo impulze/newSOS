@@ -30,6 +30,7 @@ package org.n52.sos.ds.hibernate.values.series;
 
 import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesValueDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesValueTimeDAO;
 import org.n52.sos.ds.hibernate.util.ObservationTimeExtrema;
@@ -59,7 +60,7 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
 
     protected final AbstractSeriesValueTimeDAO seriesValueTimeDAO;
 
-    protected long series;
+    protected ObservationValueFK valueFK;
 
     /**
      * constructor
@@ -70,9 +71,9 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
      *            Datasource series id
      * @throws CodedException
      */
-    public HibernateSeriesStreamingValue(GetObservationRequest request, long series) throws CodedException {
+    public HibernateSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
         super(request);
-        this.series = series;
+        this.valueFK = valueFK;
         this.seriesValueDAO = (AbstractSeriesValueDAO) DaoFactory.getInstance().getValueDAO();
         this.seriesValueTimeDAO = (AbstractSeriesValueTimeDAO) DaoFactory.getInstance().getValueTimeDAO();
     }
@@ -83,7 +84,7 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
         try {
             s = sessionHolder.getSession();
             ObservationTimeExtrema timeExtrema =
-                    seriesValueTimeDAO.getTimeExtremaForSeries(request, series, temporalFilterCriterion, s);
+                    seriesValueTimeDAO.getTimeExtremaForSeries(request, valueFK, temporalFilterCriterion, s);
             if (timeExtrema.isSetPhenomenonTime()) {
                 setPhenomenonTime(GmlHelper.createTime(timeExtrema.getMinPhenTime(), timeExtrema.getMaxPhenTime()));
             }
@@ -105,7 +106,7 @@ public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStr
         Session s = null;
         try {
            s = sessionHolder.getSession();
-            setUnit(seriesValueDAO.getUnit(request, series, s));
+            setUnit(seriesValueDAO.getUnit(request, valueFK, s));
         } catch (OwsExceptionReport owse) {
             LOGGER.error("Error while querying unit", owse);
         } finally {

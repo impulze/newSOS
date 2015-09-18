@@ -35,6 +35,7 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.dao.AbstractValueTimeDAO;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.series.Series;
@@ -83,9 +84,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs
      */
-    public ObservationTimeExtrema getTimeExtremaForSeries(GetObservationRequest request, long series,
+    public ObservationTimeExtrema getTimeExtremaForSeries(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        Criteria c = getSeriesValueCriteriaFor(request, series, temporalFilterCriterion, null, session);
+        Criteria c = getSeriesValueCriteriaFor(request, valueFK, temporalFilterCriterion, null, session);
         addMinMaxTimeProjection(c);
         LOGGER.debug("QUERY getTimeExtremaForSeries(request, series, temporalFilter): {}",
                 HibernateHelper.getSqlString(c));
@@ -106,9 +107,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs
      */
-    public ObservationTimeExtrema getTimeExtremaForSeries(GetObservationRequest request, long series, Session session)
+    public ObservationTimeExtrema getTimeExtremaForSeries(GetObservationRequest request, ObservationValueFK valueFK, Session session)
             throws OwsExceptionReport {
-        return getTimeExtremaForSeries(request, series, null, session);
+        return getTimeExtremaForSeries(request, valueFK, null, session);
     }
 
     /**
@@ -126,9 +127,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs when executing the query
      */
-    public SeriesValueTime getMinSeriesValueFor(GetObservationRequest request, long series,
+    public SeriesValueTime getMinSeriesValueFor(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterCriterion,
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, valueFK, temporalFilterCriterion,
                 SosIndeterminateTime.first, session).uniqueResult();
     }
 
@@ -147,9 +148,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs when executing the query
      */
-    public SeriesValueTime getMaxSeriesValueFor(GetObservationRequest request, long series,
+    public SeriesValueTime getMaxSeriesValueFor(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, temporalFilterCriterion,
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, valueFK, temporalFilterCriterion,
                 SosIndeterminateTime.latest, session).uniqueResult();
     }
 
@@ -168,9 +169,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs when executing the query
      */
-    public SeriesValueTime getMinSeriesValueFor(GetObservationRequest request, long series, Session session)
+    public SeriesValueTime getMinSeriesValueFor(GetObservationRequest request, ObservationValueFK valueFK, Session session)
             throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, null, SosIndeterminateTime.first, session)
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, valueFK, null, SosIndeterminateTime.first, session)
                 .uniqueResult();
     }
 
@@ -189,9 +190,9 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      * @throws OwsExceptionReport
      *             If an error occurs when executing the query
      */
-    public SeriesValueTime getMaxSeriesValueFor(GetObservationRequest request, long series, Session session)
+    public SeriesValueTime getMaxSeriesValueFor(GetObservationRequest request, ObservationValueFK valueFK, Session session)
             throws OwsExceptionReport {
-        return (SeriesValueTime) getSeriesValueCriteriaFor(request, series, null, SosIndeterminateTime.latest, session)
+        return (SeriesValueTime) getSeriesValueCriteriaFor(request, valueFK, null, SosIndeterminateTime.latest, session)
                 .uniqueResult();
     }
 
@@ -252,13 +253,13 @@ public abstract class AbstractSeriesValueTimeDAO extends AbstractValueTimeDAO {
      *             If an error occurs when adding Spatial Filtering Profile
      *             restrictions
      */
-    private Criteria getSeriesValueCriteriaFor(GetObservationRequest request, long series,
+    private Criteria getSeriesValueCriteriaFor(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, SosIndeterminateTime sosIndeterminateTime, Session session)
             throws OwsExceptionReport {
         final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValueTime.SERIES, "s");
         checkAndAddSpatialFilteringProfileCriterion(c, request, session);
 
-        c.add(Restrictions.eq("s." + Series.ID, series));
+        c.add(Restrictions.eq("s." + Series.ID, valueFK.getSeriesID()));
 
         if (CollectionHelper.isNotEmpty(request.getOfferings())) {
             c.createCriteria(SeriesValueTime.OFFERINGS).add(
