@@ -85,26 +85,6 @@ public class ObservationDAO extends AbstractObservationDAO {
 
     public static final String SQL_QUERY_GET_FIRST_OBSERVATION_TIME = "getFirstObservationTime";
 
-    @Override
-    public Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature, String procedure,
-            Session session) {
-        Criteria criteria = getDefaultObservationInfoCriteria(session);
-        criteria.createCriteria(AbstractObservation.FEATURE_OF_INTEREST)
-                .add(eq(FeatureOfInterest.IDENTIFIER, feature));
-        criteria.createCriteria(AbstractObservation.PROCEDURE).add(eq(Procedure.IDENTIFIER, procedure));
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationInfoCriteriaForFeatureOfInterestAndOffering(String feature, String offering,
-            Session session) {
-        Criteria criteria = getDefaultObservationInfoCriteria(session);
-        criteria.createCriteria(AbstractObservation.FEATURE_OF_INTEREST)
-                .add(eq(FeatureOfInterest.IDENTIFIER, feature));
-        criteria.createCriteria(AbstractObservation.OFFERINGS).add(eq(Offering.IDENTIFIER, offering));
-        return criteria;
-    }
-
     /**
      * Add observableProperty restriction to Hibernate Criteria for Observation
      * 
@@ -145,44 +125,6 @@ public class ObservationDAO extends AbstractObservationDAO {
                 eq(FeatureOfInterest.IDENTIFIER, featureOfInterest));
     }
 
-    @Override
-    public Criteria getObservationCriteriaForProcedure(String procedure, Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addProcedureRestrictionToObservationCriteria(criteria, procedure);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaForObservableProperty(String observableProperty, Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addObservablePropertyRestrictionToObservationCriteria(criteria, observableProperty);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaForFeatureOfInterest(String featureOfInterest, Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addFeatureOfInterestRestrictionToObservationCriteria(criteria, featureOfInterest);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaFor(String procedure, String observableProperty, Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addProcedureRestrictionToObservationCriteria(criteria, procedure);
-        addObservablePropertyRestrictionToObservationCriteria(criteria, observableProperty);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaFor(String procedure, String observableProperty, String featureOfInterest,
-            Session session) {
-        Criteria criteria = getDefaultObservationCriteria(session);
-        addProcedureRestrictionToObservationCriteria(criteria, procedure);
-        addObservablePropertyRestrictionToObservationCriteria(criteria, observableProperty);
-        addFeatureOfInterestRestrictionToObservationCriteria(criteria, featureOfInterest);
-        return criteria;
-    }
     @SuppressWarnings("unchecked")
     public Collection<String> getObservationIdentifiers(String procedureIdentifier, Session session) {
         Criteria criteria =

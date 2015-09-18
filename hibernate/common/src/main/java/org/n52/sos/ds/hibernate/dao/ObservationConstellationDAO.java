@@ -140,7 +140,7 @@ public class ObservationConstellationDAO {
      */
     public List<ObservationConstellation> getObservationConstellations(Session session) {
     	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
-    	final List<ObservedPropertyInstance> instances = new ObservablePropertyDAO().getObservedPropertyInstances(session);
+    	final List<ObservedPropertyInstance> instances = new ObservablePropertyDAO().getObservedPropertyInstances(null, session);
     	final List<ObservationConstellation> obsConsts = Lists.newArrayList();
 
     	for (final ObservedPropertyInstance instance: instances) {

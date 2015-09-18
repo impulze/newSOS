@@ -46,8 +46,6 @@ import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
-import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
@@ -55,7 +53,6 @@ import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
-import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationTime;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ds.hibernate.util.TimeCriterion;
@@ -72,92 +69,6 @@ import com.vividsolutions.jts.geom.Geometry;
 public abstract class AbstractSeriesObservationDAO extends AbstractObservationDAO {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSeriesObservationDAO.class);
-
-    @Override
-    public Criteria getObservationInfoCriteriaForFeatureOfInterestAndProcedure(String feature, String procedure,
-            Session session) {
-        Criteria criteria = getDefaultObservationInfoCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-        seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).add(eq(FeatureOfInterest.IDENTIFIER, feature));
-        seriesCriteria.createCriteria(AbstractObservation.PROCEDURE).add(eq(Procedure.IDENTIFIER, procedure));
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationInfoCriteriaForFeatureOfInterestAndOffering(String feature, String offering,
-            Session session) {
-        Criteria criteria = getDefaultObservationInfoCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-        seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).add(eq(FeatureOfInterest.IDENTIFIER, feature));
-        criteria.createCriteria(AbstractObservation.OFFERINGS).add(eq(Offering.IDENTIFIER, offering));
-        return criteria;
-    }
-
-
-    @Override
-    public Criteria getObservationCriteriaForProcedure(String procedure, Session session) throws CodedException {
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Criteria criteria = getDefaultObservationCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservation.SERIES);
-        seriesDAO.addProcedureToCriteria(seriesCriteria, procedure);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaForObservableProperty(String observableProperty, Session session) throws CodedException {
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Criteria criteria = getDefaultObservationCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservation.SERIES);
-        seriesDAO.addObservablePropertyToCriteria(seriesCriteria, observableProperty);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaForFeatureOfInterest(String featureOfInterest, Session session) throws CodedException {
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Criteria criteria = getDefaultObservationCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservation.SERIES);
-        seriesDAO.addFeatureOfInterestToCriteria(seriesCriteria, featureOfInterest);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaFor(String procedure, String observableProperty, Session session) throws CodedException {
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Criteria criteria = getDefaultObservationCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservation.SERIES);
-        seriesDAO.addProcedureToCriteria(seriesCriteria, procedure);
-        seriesDAO.addObservablePropertyToCriteria(seriesCriteria, observableProperty);
-        return criteria;
-    }
-
-    @Override
-    public Criteria getObservationCriteriaFor(String procedure, String observableProperty, String featureOfInterest,
-            Session session) throws CodedException {
-        AbstractSeriesDAO seriesDAO = DaoFactory.getInstance().getSeriesDAO();
-        Criteria criteria = getDefaultObservationCriteria(session);
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservation.SERIES);
-        seriesDAO.addFeatureOfInterestToCriteria(seriesCriteria, featureOfInterest);
-        seriesDAO.addProcedureToCriteria(seriesCriteria, procedure);
-        seriesDAO.addObservablePropertyToCriteria(seriesCriteria, observableProperty);
-        return criteria;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Collection<String> getObservationIdentifiers(String procedureIdentifier, Session session) {
-        Criteria criteria =
-                getDefaultObservationInfoCriteria(session)
-                        .setProjection(Projections.distinct(Projections.property(SeriesObservationInfo.IDENTIFIER)))
-                        .add(Restrictions.isNotNull(SeriesObservationInfo.IDENTIFIER))
-                        .add(Restrictions.eq(SeriesObservationInfo.DELETED, false));
-        Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
-        seriesCriteria.createCriteria(Series.PROCEDURE)
-                .add(Restrictions.eq(Procedure.IDENTIFIER, procedureIdentifier));
-        LOGGER.debug("QUERY getObservationIdentifiers(procedureIdentifier): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -597,43 +508,4 @@ public abstract class AbstractSeriesObservationDAO extends AbstractObservationDA
         LOGGER.debug("QUERY getSeriesObservationFor(series, offerings): {}", HibernateHelper.getSqlString(criteria));
         return criteria;
     }
-    
-	/**
-	 * Get the first not deleted observation for the {@link Series}
-	 * 
-	 * @param series
-	 *            Series to get observation for
-	 * @param session
-	 *            Hibernate session
-	 * @return First not deleted observation
-	 */
-	public SeriesObservation getFirstObservationFor(Series series, Session session) {
-		Criteria c = getDefaultObservationCriteria(session);
-		c.add(Restrictions.eq(SeriesObservation.SERIES, series));
-		c.addOrder(Order.asc(AbstractObservation.PHENOMENON_TIME_START));
-		c.setMaxResults(1);
-		 LOGGER.debug("QUERY getFirstObservationFor(series): {}",
-	                HibernateHelper.getSqlString(c));
-		return (SeriesObservation)c.uniqueResult();
-	}
-
-	/**
-	 * Get the last not deleted observation for the {@link Series}
-	 * 
-	 * @param series
-	 *            Series to get observation for
-	 * @param session
-	 *            Hibernate session
-	 * @return Last not deleted observation
-	 */
-	public SeriesObservation getLastObservationFor(Series series, Session session) {
-		Criteria c = getDefaultObservationCriteria(session);
-		c.add(Restrictions.eq(SeriesObservation.SERIES, series));
-		c.addOrder(Order.desc(AbstractObservation.PHENOMENON_TIME_END));
-		c.setMaxResults(1);
-		 LOGGER.debug("QUERY getLastObservationFor(series): {}",
-	                HibernateHelper.getSqlString(c));
-		return (SeriesObservation)c.uniqueResult();
-	} 
-
 }

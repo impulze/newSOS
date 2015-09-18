@@ -48,7 +48,6 @@ import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
-import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
@@ -98,6 +97,16 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     	}
 
     	return procedures;
+    }
+
+    public Procedure createProcedureWithSensor(Sensor sensor, Session session) {
+    	final List<Procedure> procedures = createProceduresWithSensors(Lists.newArrayList(sensor), session);
+
+    	if (CollectionHelper.isNotEmpty(procedures)) {
+    		return procedures.get(0);
+    	}
+
+    	return null;
     }
 
     /**
@@ -238,10 +247,10 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     
     private List<Object[]> getFeatureProcedureResult(Session session) {
     	// TODOHZG: for all series get FeatureOfInterest and Procedure
-    	final List<EReportingSeries> allSeries = new EReportingSeriesDAO().getAllSeries(session);
+    	final List<Series> allSeries = new EReportingSeriesDAO().getSeries(null, null, null, session);
     	final List<Object[]> foisAndProcedures = Lists.newArrayList();
 
-    	for (final EReportingSeries series: allSeries) {
+    	for (final Series series: allSeries) {
     		final Object[] pair = new Object[] { series.getFeatureOfInterest().getIdentifier(), series.getProcedure().getIdentifier() };
 
     		foisAndProcedures.add(pair);

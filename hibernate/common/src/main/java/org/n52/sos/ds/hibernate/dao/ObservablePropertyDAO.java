@@ -35,10 +35,13 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.service.SosContextListener;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import de.hzg.common.SOSConfiguration;
 import de.hzg.measurement.ObservedPropertyInstance;
@@ -53,8 +56,25 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservablePropertyDAO.class);
 
-    public List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
+    public List<ObservedPropertyInstance> getObservedPropertyInstances(Iterable<String> identifiers, Session session) {
     	final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
+
+    	if (identifiers != null && !Iterables.isEmpty(identifiers)) {
+    		final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    		final Iterable<String> names = Iterables.transform(identifiers, new Function<String, String>() {
+				public String apply(String identifier) {
+					if (identifier.startsWith(sosConfiguration.getObservablePropertyIdentifierPrefix())) {
+						return identifier.substring(sosConfiguration.getObservablePropertyIdentifierPrefix().length());
+					}
+
+					return identifier;
+				}
+    			
+    		});
+
+    		criteria.add(Restrictions.in("name", Lists.newArrayList(names)));
+    	}
+
     	@SuppressWarnings("unchecked")
 		final List<ObservedPropertyInstance> instances = criteria.list();
 

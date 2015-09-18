@@ -35,12 +35,9 @@ import java.util.TreeSet;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.ObservationConstellationDAO;
-import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Procedure;
-import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.OGCConstants;
 import org.n52.sos.ogc.om.OmConstants;
@@ -178,7 +175,8 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
                 new ObservationConstellationDAO().getObservationConstellations(procedure, observableProperty, session);
         if (CollectionHelper.isNotEmpty(observationConstellations)) {
             ObservationConstellation oc = observationConstellations.iterator().next();
-            String unit = queryUnit(oc, session);
+            // TODOHZG: get unit from an example
+            String unit = null;
             if (oc.isSetObservationType()) {
                 final String observationType = oc.getObservationType().getObservationType();
                 if (OmConstants.OBS_TYPE_MEASUREMENT.equals(observationType)) {
@@ -215,24 +213,6 @@ public abstract class AbstractHibernateProcedureDescriptionGeneratorSml extends
                     logTypeNotSupported(OmConstants.OBS_TYPE_SWE_ARRAY_OBSERVATION);
                 }
             }
-        }
-        return null;
-    }
-
-    private String queryUnit(ObservationConstellation oc, Session session) throws OwsExceptionReport {
-            List<Series> series = DaoFactory.getInstance().getSeriesDAO().getSeries(Lists.newArrayList(oc.getProcedure().getIdentifier()), Lists.newArrayList(oc.getObservableProperty().getIdentifier()), Lists.<String>newArrayList(), session);
-            if (series.iterator().hasNext()) {
-                Series next = series.iterator().next();
-                if (next.isSetUnit() ) {
-                    return next.getUnit().getUnit();
-                }
-            }
-
-        AbstractObservation exampleObservation =
-                getExampleObservation(oc.getProcedure().getIdentifier(), oc.getObservableProperty().getIdentifier(),
-                        session);
-        if (exampleObservation != null && exampleObservation.isSetUnit()) {
-            return exampleObservation.getUnit().getUnit();
         }
         return null;
     }
