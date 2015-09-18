@@ -44,6 +44,7 @@ import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationDAO;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
@@ -448,7 +449,9 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
                     HibernateObservationUtilities
                             .createSosObservationFromSeries(series, request, session);
             OmObservation observationTemplate = createSosObservationFromSeries.iterator().next();
-            HibernateSeriesStreamingValue streamingValue = getSeriesStreamingValue(request, series.getSeriesId());
+            final ObservationValueFK valueFK = new ObservationValueFK();
+            valueFK.setSeriesID(series.getSeriesId());
+            HibernateSeriesStreamingValue streamingValue = getSeriesStreamingValue(request, valueFK);
             streamingValue.setResponseFormat(request.getResponseFormat());
             streamingValue.setTemporalFilterDisjunctions(temporalFilterDisjunctions);
             streamingValue.setObservationTemplate(observationTemplate);
@@ -470,11 +473,11 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
      * @return Streaming observation value
      * @throws CodedException 
      */
-    private HibernateSeriesStreamingValue getSeriesStreamingValue(GetObservationRequest request, long seriesId) throws CodedException {
+    private HibernateSeriesStreamingValue getSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
         if (HibernateStreamingConfiguration.getInstance().isChunkDatasourceStreaming()) {
-            return new HibernateChunkSeriesStreamingValue(request, seriesId);
+            return new HibernateChunkSeriesStreamingValue(request, valueFK);
         } else {
-            return new HibernateScrollableSeriesStreamingValue(request, seriesId);
+            return new HibernateScrollableSeriesStreamingValue(request, valueFK);
         }
     }
 

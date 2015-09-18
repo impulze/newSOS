@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.hibernate.HibernateException;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.values.HibernateStreamingConfiguration;
 import org.n52.sos.exception.CodedException;
@@ -73,8 +74,8 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
      *            Datasource series id
      * @throws CodedException
      */
-    public HibernateChunkSeriesStreamingValue(GetObservationRequest request, long series) throws CodedException {
-        super(request, series);
+    public HibernateChunkSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
+        super(request, valueFK);
         this.chunkSize = HibernateStreamingConfiguration.getInstance().getChunkSize();
     }
 
@@ -156,13 +157,13 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
             Collection<AbstractValue> seriesValuesResult = null;
             if (temporalFilterDisjunctions != null) {
                 seriesValuesResult =
-                        seriesValueDAO.getStreamingSeriesValuesFor(request, series, temporalFilterDisjunctions,
+                        seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK, temporalFilterDisjunctions,
                                 chunkSize, currentRow, session);
             }
             // query without temporal or indeterminate filters
             else {
                 seriesValuesResult =
-                        seriesValueDAO.getStreamingSeriesValuesFor(request, series, chunkSize, currentRow, session);
+                        seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK, chunkSize, currentRow, session);
             }
             currentRow += chunkSize;
             checkMaxNumberOfReturnedValues(seriesValuesResult.size());

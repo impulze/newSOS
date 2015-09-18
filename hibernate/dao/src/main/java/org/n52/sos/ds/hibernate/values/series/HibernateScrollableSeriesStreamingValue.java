@@ -30,6 +30,7 @@ package org.n52.sos.ds.hibernate.values.series;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ScrollableResults;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
@@ -61,8 +62,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
      *            Datasource series id
      * @throws CodedException 
      */
-    public HibernateScrollableSeriesStreamingValue(GetObservationRequest request, long series) throws CodedException {
-        super(request, series);
+    public HibernateScrollableSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
+        super(request, valueFK);
     }
 
     @Override
@@ -131,12 +132,12 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
         try {
             // query with temporal filter
             if (temporalFilterDisjunctions != null) {
-                setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, series,
+                setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK,
                         temporalFilterDisjunctions, session));
             }
             // query without temporal or indeterminate filters
             else {
-                setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, series, session));
+                setScrollableResult(seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK, session));
             }
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);
