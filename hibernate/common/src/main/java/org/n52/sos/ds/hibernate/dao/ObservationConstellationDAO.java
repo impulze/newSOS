@@ -333,7 +333,7 @@ public class ObservationConstellationDAO {
             }
         } else {
             throw new InvalidParameterValueException()
-                    .at(Sos2Constants.InsertObservationParams.observation)
+                    .at(Sos2Constants.GetObservationParams.observation)
                     .withMessage(
                             "The requested observation constellation (procedure=%s, observedProperty=%s and offering=%s) is invalid!",
                             procedure, observableProperty, sosObservationConstellation.getOfferings());
@@ -410,31 +410,6 @@ public class ObservationConstellationDAO {
             return criteria.list();
         }
         return Lists.newLinkedList();
-    }
-
-    /**
-     * Update ObservationConstellation for procedure and set deleted flag
-     * 
-     * @param procedure
-     *            Procedure for which the ObservationConstellations should be
-     *            changed
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate session
-     */
-    public void updateObservatioConstellationSetAsDeletedForProcedure(String procedure, boolean deleteFlag,
-            Session session) {
-        @SuppressWarnings("unchecked")
-        List<ObservationConstellation> hObservationConstellations =
-                session.createCriteria(ObservationConstellation.class)
-                        .createCriteria(ObservationConstellation.PROCEDURE)
-                        .add(Restrictions.eq(Procedure.IDENTIFIER, procedure)).list();
-        for (ObservationConstellation hObservationConstellation : hObservationConstellations) {
-            hObservationConstellation.setDeleted(deleteFlag);
-            session.saveOrUpdate(hObservationConstellation);
-            session.flush();
-        }
     }
 
     /**

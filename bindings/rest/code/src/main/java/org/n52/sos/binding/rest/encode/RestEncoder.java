@@ -46,12 +46,8 @@ import org.n52.sos.binding.rest.resources.capabilities.CapabilitiesGetResponse;
 import org.n52.sos.binding.rest.resources.features.FeatureByIdResponse;
 import org.n52.sos.binding.rest.resources.features.FeaturesGetEncoder;
 import org.n52.sos.binding.rest.resources.features.FeaturesResponse;
-import org.n52.sos.binding.rest.resources.observations.ObservationsDeleteEncoder;
-import org.n52.sos.binding.rest.resources.observations.ObservationsDeleteRespone;
 import org.n52.sos.binding.rest.resources.observations.ObservationsGetByIdResponse;
 import org.n52.sos.binding.rest.resources.observations.ObservationsGetEncoder;
-import org.n52.sos.binding.rest.resources.observations.ObservationsPostEncoder;
-import org.n52.sos.binding.rest.resources.observations.ObservationsPostResponse;
 import org.n52.sos.binding.rest.resources.observations.ObservationsSearchResponse;
 import org.n52.sos.binding.rest.resources.offerings.OfferingByIdResponse;
 import org.n52.sos.binding.rest.resources.offerings.OfferingsGetEncoder;
@@ -59,10 +55,6 @@ import org.n52.sos.binding.rest.resources.offerings.OfferingsResponse;
 import org.n52.sos.binding.rest.resources.sensors.GetSensorByIdResponse;
 import org.n52.sos.binding.rest.resources.sensors.SensorsGetEncoder;
 import org.n52.sos.binding.rest.resources.sensors.SensorsGetResponse;
-import org.n52.sos.binding.rest.resources.sensors.SensorsPostEncoder;
-import org.n52.sos.binding.rest.resources.sensors.SensorsPostResponse;
-import org.n52.sos.binding.rest.resources.sensors.SensorsPutEncoder;
-import org.n52.sos.binding.rest.resources.sensors.SensorsPutResponse;
 import org.n52.sos.encode.Encoder;
 import org.n52.sos.encode.EncoderKey;
 import org.n52.sos.exception.ows.concrete.NoEncoderForResponseException;
@@ -128,18 +120,6 @@ public class RestEncoder implements Encoder<ServiceResponse, RestResponse> {
             {
                 return new CapabilitiesGetEncoder();
             } 
-            else if (restResponse instanceof ObservationsPostResponse) 
-            {
-                return new ObservationsPostEncoder();
-            } 
-            else if (restResponse instanceof SensorsPostResponse)
-            {
-                return new SensorsPostEncoder();
-            } 
-            else if (restResponse instanceof SensorsPutResponse) 
-            {
-                return new SensorsPutEncoder();
-            } 
             else if (isOfferingsGetResponse(restResponse))
             {
                 return new OfferingsGetEncoder();
@@ -148,10 +128,6 @@ public class RestEncoder implements Encoder<ServiceResponse, RestResponse> {
             {
                 return new FeaturesGetEncoder();
             } 
-            else if (restResponse instanceof ObservationsDeleteRespone)
-            {
-                return new ObservationsDeleteEncoder();
-            }
             else if (restResponse instanceof OptionsRestResponse)
             {
                 return new OptionsRestEncoder();

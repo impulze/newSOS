@@ -65,8 +65,6 @@ public abstract class ASensorsEncoder extends ResourceEncoder {
         xb_abstractProcessType.set(sensorsResponse.getSensorDescriptionXB());
         // sensor links
         addSelfLink(sensorsResponse, xb_SensorRest);
-        addDeleteLink(sensorsResponse, xb_SensorRest);
-        addUpdateLink(sensorsResponse, xb_SensorRest);
         // add restful links
         String procedureId = sensorsResponse.getProcedureIdentifier();
         // rel:features-get
@@ -154,24 +152,6 @@ public abstract class ASensorsEncoder extends ResourceEncoder {
         return bindingConstants.getHttpGetParameterNameProcedure().concat("=").concat(procedureId);
     }
     
-    private void addDeleteLink(SensorResponse sensorsPostResponse,
-            SensorType xb_SensorRest)
-    {
-        setValuesOfLinkToUniqueResource(xb_SensorRest.addNewLink(),
-                sensorsPostResponse.getProcedureIdentifier(),
-                bindingConstants.getResourceRelationSensorDelete(),
-                bindingConstants.getResourceSensors());
-    }
-
-    private void addUpdateLink(SensorResponse sensorsPostResponse,
-            SensorType xb_SensorRest)
-    {
-        setValuesOfLinkToUniqueResource(xb_SensorRest.addNewLink(),
-                sensorsPostResponse.getProcedureIdentifier(),
-                bindingConstants.getResourceRelationSensorUpdate(),
-                bindingConstants.getResourceSensors());
-    }
-
     private void addSelfLink(SensorResponse sensorsPostResponse,
             SensorType xb_SensorRest)
     {

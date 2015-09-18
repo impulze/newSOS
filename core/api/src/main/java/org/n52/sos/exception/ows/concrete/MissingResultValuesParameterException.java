@@ -40,6 +40,6 @@ public class MissingResultValuesParameterException extends MissingParameterValue
     private static final long serialVersionUID = -1427286098612596147L;
 
     public MissingResultValuesParameterException() {
-        super(Sos2Constants.InsertResultParams.resultValues);
+        super(Sos2Constants.GetResultParams.resultValues);
     }
 }

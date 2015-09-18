@@ -71,8 +71,6 @@ public abstract class AObservationsEncoder extends ResourceEncoder {
         {
             // rel:self
             addSelfLink(observationId, xb_restObservation);
-            // rel:delete-observation
-            addDeleteLink(observationId, xb_restObservation);
         }
         // ref:features
         addFeatureLink(xb_observation,xb_restObservation,inDocumentReferenceToFeatureId);
@@ -107,15 +105,6 @@ public abstract class AObservationsEncoder extends ResourceEncoder {
             // XXX continue implementation here! How to parse it correct and generic?
         }
         throw new RuntimeException("NOT_YET_IMPLEMENTED");
-    }
-
-    private void addDeleteLink(String observationId,
-            ObservationType xb_restObservation)
-    {
-        setValuesOfLinkToUniqueResource(xb_restObservation.addNewLink(),
-                observationId,
-                bindingConstants.getResourceRelationObservationDelete(),
-                bindingConstants.getResourceObservations());
     }
 
     private void addSelfLink(String observationId,

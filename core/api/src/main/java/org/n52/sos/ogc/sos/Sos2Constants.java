@@ -67,15 +67,6 @@ public interface Sos2Constants extends SosConstants{
 
     String SCHEMA_LOCATION_URL_SOS_GET_RESULT_TEMPLATE = "http://schemas.opengis.net/sos/2.0/sosGetResultTemplate.xsd";
 
-    String SCHEMA_LOCATION_URL_SOS_INSERT_OBSERVATION = "http://schemas.opengis.net/sos/2.0/sosInsertObservation.xsd";
-
-    String SCHEMA_LOCATION_URL_SOS_INSERT_RESULT = "http://schemas.opengis.net/sos/2.0/sosInsertResult.xsd";
-
-    String SCHEMA_LOCATION_URL_SOS_INSERT_RESULT_TEMPLATE =
-            "http://schemas.opengis.net/sos/2.0/sosInsertResultTemplate.xsd";
-
-    String SCHEMA_LOCATION_URL_SOS_INSERT_SENSOR = "http://schemas.opengis.net/sos/2.0/sosInsertSensor.xsd";
-
     String SCHEMA_LOCATION_URL_SOS_INSERTION_CAPABILITIES =
             "http://schemas.opengis.net/sos/2.0/sosInsertionCapabilities.xsd#InsertionCapabilities";
 
@@ -97,18 +88,6 @@ public interface Sos2Constants extends SosConstants{
 
     SchemaLocation SOS_GET_RESULT_TEMPLATE_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
             SCHEMA_LOCATION_URL_SOS_GET_RESULT_TEMPLATE);
-
-    SchemaLocation SOS_INSERT_OBSERVATION_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
-            SCHEMA_LOCATION_URL_SOS_INSERT_OBSERVATION);
-
-    SchemaLocation SOS_INSERT_RESULT_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
-            SCHEMA_LOCATION_URL_SOS_INSERT_RESULT);
-
-    SchemaLocation SOS_INSERT_RESULT_TEMPLATE_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
-            SCHEMA_LOCATION_URL_SOS_INSERT_RESULT_TEMPLATE);
-
-    SchemaLocation SOS_INSERT_SNSOR_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
-            SCHEMA_LOCATION_URL_SOS_INSERT_SENSOR);
 
     SchemaLocation SOS_INSERTION_CAPABILITIES_SCHEMA_LOCATION = new SchemaLocation(NS_SOS_20,
             SCHEMA_LOCATION_URL_SOS_INSERTION_CAPABILITIES);
@@ -142,18 +121,6 @@ public interface Sos2Constants extends SosConstants{
     String EN_GET_RESULT_TEMPLATE = "GetResultTemplate";
 
     String EN_GET_RESULT_TEMPLATE_RESPONSE = "GetResultTemplateResponse";
-
-    String EN_INSERT_OBSERVATION = "InsertObservation";
-
-    String EN_INSERT_OBSERVATION_RESPONSE = "InsertObservationResponse";
-
-    String EN_INSERT_RESULT = "InsertResult";
-
-    String EN_INSERT_RESULT_RESPONSE = "InsertResultResponse";
-
-    String EN_INSERT_RESULT_TEMPLATE = "InsertResultTemplate";
-
-    String EN_INSERT_RESULT_TEMPLATE_RESPONSE = "InsertResultTemplateResponse";
 
     String EN_OBSERVATION_OFFERING = "ObservationOffering";
 
@@ -198,20 +165,6 @@ public interface Sos2Constants extends SosConstants{
     QName QN_GET_RESULT_TEMPLATE_RESPONSE = new QName(NS_SOS_20, EN_GET_RESULT_TEMPLATE_RESPONSE,
             SosConstants.NS_SOS_PREFIX);
 
-    QName QN_INSERT_OBSERVATION = new QName(NS_SOS_20, EN_INSERT_OBSERVATION, SosConstants.NS_SOS_PREFIX);
-
-    QName QN_INSERT_OBSERVATION_RESPONSE = new QName(NS_SOS_20, EN_INSERT_OBSERVATION_RESPONSE,
-            SosConstants.NS_SOS_PREFIX);
-
-    QName QN_INSERT_RESULT = new QName(NS_SOS_20, EN_INSERT_RESULT, SosConstants.NS_SOS_PREFIX);
-
-    QName QN_INSERT_RESULT_RESPONSE = new QName(NS_SOS_20, EN_INSERT_RESULT_RESPONSE, SosConstants.NS_SOS_PREFIX);
-
-    QName QN_INSERT_RESULT_TEMPLATE = new QName(NS_SOS_20, EN_INSERT_RESULT_TEMPLATE, SosConstants.NS_SOS_PREFIX);
-
-    QName QN_INSERT_RESULT_TEMPLATE_RESPONSE = new QName(NS_SOS_20, EN_INSERT_RESULT_TEMPLATE_RESPONSE,
-            SosConstants.NS_SOS_PREFIX);
-
     QName QN_OBSERVATION_OFFERING = new QName(NS_SOS_20, EN_OBSERVATION_OFFERING, SosConstants.NS_SOS_PREFIX);
 
     QName QN_SOS_INSERTION_METADATA = new QName(NS_SOS_20, EN_SOS_INSERTION_METADATA, SosConstants.NS_SOS_PREFIX);
@@ -249,7 +202,7 @@ public interface Sos2Constants extends SosConstants{
      * versions
      */
     enum Operations {
-        InsertSensor, DeleteSensor, InsertResult, InsertResultTemplate, GetResultTemplate, UpdateSensorDescription;
+        GetResultTemplate;
     }
 
     /**
@@ -264,21 +217,10 @@ public interface Sos2Constants extends SosConstants{
      * enum with parameter names for getObservation request
      */
     enum GetObservationParams {
-        temporalFilter, spatialFilter, namespaces;
-    }
-
-    /**
-     * enum with parameter names for SOS 2.0 insertObservation request not
-     * supported by all versions
-     */
-    enum InsertObservationParams {
+        temporalFilter, spatialFilter, namespaces,
         offering, observation, observationType, observedProperty, procedure, featureOfInterest, parameter;
     }
 
-    /**
-     * enum with parameter names for SOS 2.0 getObservation request not
-     * supported by all versions
-     */
     enum DescribeSensorParams {
         procedureDescriptionFormat, validTime;
     }
@@ -299,33 +241,7 @@ public interface Sos2Constants extends SosConstants{
         offering, observedProperty;
     }
 
-    enum InsertResultTemplateParams {
-        offering, observedProperty, procedure, observationType, resultStructure, resultEncoding, proposedTemplate, identifier;
-    }
-
     enum GetResultParams {
-        offering, observedProperty, featureOfInterest, temporalFilter, spatialFilter;
-    }
-
-    enum InsertResultParams {
-        template, resultValues
-    }
-
-    /**
-     * enum with parameter names for registerSensor request
-     */
-    enum InsertSensorParams {
-        service, version, procedureDescriptionFormat, procedureDescription, observableProperty, metadata, featureOfInterestType, observationType, procedureIdentifier, offeringIdentifier;
-    }
-
-    enum DeleteSensorParams {
-        service, version, procedure;
-    }
-
-    /**
-     * enum with parameter names for registerSensor request
-     */
-    enum UpdateSensorDescriptionParams {
-        service, version, procedure, procedureDescriptionFormat, description, validTime;
+        offering, observedProperty, featureOfInterest, temporalFilter, resultValues, spatialFilter;
     }
 }

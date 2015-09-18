@@ -263,8 +263,6 @@ INSERT INTO "observation_encodings" VALUES('http://www.opengis.net/om/2.0','SOS'
 INSERT INTO "observation_encodings" VALUES('http://www.opengis.net/waterml/2.0','SOS','2.0.0',1);
 INSERT INTO "observation_encodings" VALUES('text/xml; subtype="om/1.0.0"','SOS','1.0.0',1);
 
-INSERT INTO "operations" VALUES('DeleteObservation','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('DeleteSensor','SOS','2.0.0',1);
 INSERT INTO "operations" VALUES('DescribeSensor','SOS','1.0.0',1);
 INSERT INTO "operations" VALUES('DescribeSensor','SOS','2.0.0',1);
 INSERT INTO "operations" VALUES('GetCapabilities','SOS','1.0.0',1);
@@ -278,8 +276,3 @@ INSERT INTO "operations" VALUES('GetObservationById','SOS','1.0.0',1);
 INSERT INTO "operations" VALUES('GetObservationById','SOS','2.0.0',1);
 INSERT INTO "operations" VALUES('GetResult','SOS','2.0.0',1);
 INSERT INTO "operations" VALUES('GetResultTemplate','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('InsertObservation','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('InsertResult','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('InsertResultTemplate','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('InsertSensor','SOS','2.0.0',1);
-INSERT INTO "operations" VALUES('UpdateSensorDescription','SOS','2.0.0',1);

@@ -82,8 +82,6 @@ import org.n52.sos.request.GetFeatureOfInterestRequest;
 import org.n52.sos.request.GetObservationByIdRequest;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.request.GetResultRequest;
-import org.n52.sos.request.InsertObservationRequest;
-import org.n52.sos.request.InsertResultTemplateRequest;
 import org.n52.sos.request.SrsNameRequest;
 import org.n52.sos.response.AbstractServiceResponse;
 import org.n52.sos.response.DescribeSensorResponse;
@@ -92,8 +90,6 @@ import org.n52.sos.response.GetFeatureOfInterestResponse;
 import org.n52.sos.response.GetObservationByIdResponse;
 import org.n52.sos.response.GetObservationResponse;
 import org.n52.sos.response.GetResultResponse;
-import org.n52.sos.response.InsertObservationResponse;
-import org.n52.sos.response.InsertResultTemplateResponse;
 import org.n52.sos.service.ProcedureDescriptionSettings;
 import org.n52.sos.service.ServiceConfiguration;
 import org.n52.sos.util.CollectionHelper;
@@ -140,8 +136,6 @@ public class CoordianteTransformator implements
         requestResponseMap.put(new GetObservationRequest(), new GetObservationResponse());
         requestResponseMap.put(new GetObservationByIdRequest(), new GetObservationByIdResponse());
         requestResponseMap.put(new GetFeatureOfInterestRequest(), new GetFeatureOfInterestResponse());
-        requestResponseMap.put(new InsertObservationRequest(), new InsertObservationResponse());
-        requestResponseMap.put(new InsertResultTemplateRequest(), new InsertResultTemplateResponse());
         requestResponseMap.put(new GetResultRequest(), new GetResultResponse());
         requestResponseMap.put(new DescribeSensorRequest(), new DescribeSensorResponse());
         Set<RequestResponseModifierKeyType> keys = Sets.newHashSet();
@@ -171,10 +165,6 @@ public class CoordianteTransformator implements
             return modifyGetObservationRequest((GetObservationRequest) request);
         } else if (request instanceof GetResultRequest) {
             return modifyGetResultRequest((GetResultRequest) request);
-        } else if (request instanceof InsertObservationRequest) {
-            return modifyInsertObservationRequest((InsertObservationRequest) request);
-        } else if (request instanceof InsertResultTemplateRequest) {
-            return modifyInsertResultTemplateRequest((InsertResultTemplateRequest) request);
         }
         return request;
     }
@@ -244,41 +234,6 @@ public class CoordianteTransformator implements
     private AbstractServiceRequest<?> modifyGetResultRequest(GetResultRequest request) throws OwsExceptionReport {
         if (request.isSetSpatialFilter()) {
             preProcessSpatialFilter(request.getSpatialFilter());
-        }
-        return request;
-    }
-
-    /**
-     * Modify the InsertObservation request
-     * 
-     * @param request
-     *            the InsertObservation request
-     * @return Modified the InsertObservation request
-     * @throws OwsExceptionReport
-     *             If the transformation fails
-     */
-    private AbstractServiceRequest<?> modifyInsertObservationRequest(InsertObservationRequest request)
-            throws OwsExceptionReport {
-        if (request.isSetObservation()) {
-            checkRequestedObservations(request.getObservations());
-        }
-        return request;
-    }
-
-    /**
-     * Modify the InsertResultTemplate request
-     * 
-     * @param request
-     *            the InsertResultTemplate request
-     * @return Modified the InsertResultTemplate request
-     * @throws OwsExceptionReport
-     *             If the transformation fails
-     */
-    private AbstractServiceRequest<?> modifyInsertResultTemplateRequest(InsertResultTemplateRequest request)
-            throws OwsExceptionReport {
-        if (request.getObservationTemplate().getFeatureOfInterest() instanceof SamplingFeature) {
-            checkResponseGeometryOfSamplingFeature((SamplingFeature) request.getObservationTemplate()
-                    .getFeatureOfInterest(), getGeomtryHandler().getStorageEPSG());
         }
         return request;
     }
@@ -738,31 +693,6 @@ public class CoordianteTransformator implements
     }
 
     /**
-     * Check all geometries in the requested {@link OmObservation}s and
-     * transform to storage EPSG code if necessary
-     * 
-     * @param observations
-     *            Requested {@link OmObservation}s
-     * @throws OwsExceptionReport
-     *             If the transformation fails
-     */
-    private void checkRequestedObservations(List<OmObservation> observations) throws OwsExceptionReport {
-        if (CollectionHelper.isNotEmpty(observations)) {
-            int storageCRS = getGeomtryHandler().getStorageEPSG();
-            for (OmObservation omObservation : observations) {
-                if (omObservation.getObservationConstellation().getFeatureOfInterest() instanceof SamplingFeature) {
-                    SamplingFeature samplingFeature =
-                            (SamplingFeature) omObservation.getObservationConstellation().getFeatureOfInterest();
-                    checkRequestedGeometryOfSamplingFeature(samplingFeature);
-                }
-                if (omObservation.isSetParameter()) {
-                    checkOmParameterForGeometry(omObservation.getParameter(), storageCRS);
-                }
-            }
-        }
-    }
-
-    /**
      * Check all geometries in the response {@link OmObservation}s and transform
      * to requested or default response EPSG code if necessary
      * 
@@ -787,21 +717,6 @@ public class CoordianteTransformator implements
                             targetCRS);
                 }
             }
-        }
-    }
-
-    /**
-     * Check and transform the {@link SamplingFeature} geometry to storage EPSG
-     * code if necessary
-     * 
-     * @param samplingFeature
-     *            the {@link SamplingFeature}
-     * @throws OwsExceptionReport
-     *             If the transformation fails
-     */
-    private void checkRequestedGeometryOfSamplingFeature(SamplingFeature samplingFeature) throws OwsExceptionReport {
-        if (samplingFeature.isSetGeometry()) {
-            samplingFeature.setGeometry(getGeomtryHandler().transformToStorageEpsg(samplingFeature.getGeometry()));
         }
     }
 

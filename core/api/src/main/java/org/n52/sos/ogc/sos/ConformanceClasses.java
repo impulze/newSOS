@@ -47,19 +47,9 @@ public interface ConformanceClasses {
 
     String SOS_V2_OBSERVATION_BY_ID_RETRIEVAL = "http://www.opengis.net/spec/SOS/2.0/conf/obsByIdRetrieval";
 
-    String SOS_V2_SENSOR_INSERTION = "http://www.opengis.net/spec/SOS/2.0/conf/sensorInsertion";
-
-    String SOS_V2_SENSOR_DELETION = "http://www.opengis.net/spec/SOS/2.0/conf/sensorDeletion";
-
-    String SOS_V2_UPDATE_SENSOR_DESCRIPTION = "http://www.opengis.net/spec/SOS/2.0/conf/updateSensorDescription";
-
     String SOS_V2_INSERTION_CAPABILITIES = "http://www.opengis.net/spec/SOS/2.0/conf/insertionCap";
 
-    String SOS_V2_OBSERVATION_INSERTION = "http://www.opengis.net/spec/SOS/2.0/conf/obsInsertion";
-
     String SOS_V2_RESULT_RETRIEVAL = "http://www.opengis.net/spec/SOS/2.0/conf/resultRetrieval";
-
-    String SOS_V2_RESULT_INSERTION = "http://www.opengis.net/spec/SOS/2.0/conf/resultInsertion";
 
     String SOS_V2_SPATIAL_FILTERING_PROFILE = "http://www.opengis.net/spec/SOS/2.0/conf/spatialFilteringProfile";
 

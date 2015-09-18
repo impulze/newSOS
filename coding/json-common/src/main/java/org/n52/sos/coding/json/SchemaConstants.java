@@ -41,33 +41,19 @@ public interface SchemaConstants {
     String SCHEMA_URI = SchemaVersion.DRAFTV4.getLocation().toASCIIString();
 
     interface Request {
-        String INSERT_OBSERVATION = "http://www.52north.org/schema/json/sos/request/InsertObservation#";
-
         String GET_OBSERVATION = "http://www.52north.org/schema/json/sos/request/GetObservation#";
 
         String GET_OBSERVATION_BY_ID = "http://www.52north.org/schema/json/sos/request/GetObservationById#";
 
         String BULK_REQUEST = "http://www.52north.org/schema/json/sos/request/Batch#";
 
-        String INSERT_SENSOR = "http://www.52north.org/schema/json/sos/request/InsertSensor#";
-
-        String INSERT_RESULT_TEMPLATE = "http://www.52north.org/schema/json/sos/request/InsertResultTemplate#";
-
         String GET_DATA_AVAILABILITY = "http://www.52north.org/schema/json/sos/request/GetDataAvailability#";
 
-        String DELETE_OBSERVATION = "http://www.52north.org/schema/json/sos/request/DeleteObservation#";
-
-        String UPDATE_SENSOR_DESCRIPTION = "http://www.52north.org/schema/json/sos/request/UpdateSensorDescription#";
-
         String GET_CAPABILITIES = "http://www.52north.org/schema/json/sos/request/GetCapabilities#";
-
-        String DELETE_SENSOR = "http://www.52north.org/schema/json/sos/request/DeleteSensor#";
 
         String DESCRIBE_SENSOR = "http://www.52north.org/schema/json/sos/request/DescribeSensor#";
 
         String GET_FEATURE_OF_INTEREST = "http://www.52north.org/schema/json/sos/request/GetFeatureOfInterest#";
-
-        String INSERT_RESULT = "http://www.52north.org/schema/json/sos/request/InsertResult#";
 
         String GET_RESULT = "http://www.52north.org/schema/json/sos/request/GetResult#";
 

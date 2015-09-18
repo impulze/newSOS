@@ -48,7 +48,6 @@ import org.n52.sos.ds.hibernate.entities.Observation;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
 import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
-import org.n52.sos.ds.hibernate.entities.ResultTemplate;
 import org.n52.sos.ds.hibernate.entities.TFeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.TObservableProperty;
 import org.n52.sos.ds.hibernate.entities.TOffering;
@@ -164,7 +163,6 @@ public class HibernateTestDataHandler {
             createBooleanObservations();
             createCategoryObservations();
             createTextObservations();
-            createResultTemplates();
             createSpecialObservations();
             createNumericObservations(6);
             createNumericObservations(7);
@@ -504,26 +502,6 @@ public class HibernateTestDataHandler {
 
             session.save(observation);
         }
-    }
-
-    private void createResultTemplates() {
-
-        ResultTemplate template = new ResultTemplate();
-        template.setProcedure(getProcedure(PROCEDURE_IDS[5]));
-        template.setObservableProperty(getObservableProperty(OBSERVABLE_PROPERTY_IDS[5]));
-        template.setOffering(getOffering(OFFERING_IDS[5]));
-        template.setFeatureOfInterest(getFeatureOfInterest(FEATURE_IDS[5]));
-        template.setIdentifier(PROCEDURE_IDS[5] + "/template/1");
-        template.setResultStructure("<swe:DataRecord xmlns:swe=\"http://www.opengis.net/swe/2.0\" "
-                + "xmlns:xlink=\"http://www.w3.org/1999/xlink\">" + "<swe:field name=\"phenomenonTime\">"
-                + "<swe:Time definition=\"http://www.opengis.net/def/property/OGC/0/PhenomenonTime\">"
-                + "<swe:uom xlink:href=\"http://www.opengis.net/def/uom/ISO-8601/0/Gregorian\"/>" + "</swe:Time>"
-                + "</swe:field>" + "<swe:field name=\"" + OBSERVABLE_PROPERTY_IDS[5] + "\">"
-                + "<swe:Quantity definition=\"" + OBSERVABLE_PROPERTY_IDS[5] + "\">"
-                + "<swe:uom code=\"test_unit_6\"/>" + "</swe:Quantity>" + "</swe:field>" + "</swe:DataRecord>");
-        template.setResultEncoding("<swe:TextEncoding xmlns:swe=\"http://www.opengis.net/swe/2.0\""
-                + " tokenSeparator=\"#\" blockSeparator=\"@\"/>");
-        session.save(template);
     }
 
     private void createSpecialObservations() {

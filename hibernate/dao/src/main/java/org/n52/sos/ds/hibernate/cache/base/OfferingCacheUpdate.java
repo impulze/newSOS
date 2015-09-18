@@ -88,11 +88,6 @@ public class OfferingCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<O
         super(threads, THREAD_GROUP_NAME);
     }
 
-    public OfferingCacheUpdate(int threads, Collection<String> offeringIdsToUpdate) {
-        super(threads, THREAD_GROUP_NAME);
-        this.offeringsIdToUpdate = offeringIdsToUpdate;
-    }
-
     private Collection<Offering> getOfferingsToUpdate() {
         if (offeringsToUpdate == null) {
             offeringsToUpdate = offeringDAO.getOfferingObjectsForCacheUpdate(offeringsIdToUpdate, getSession());

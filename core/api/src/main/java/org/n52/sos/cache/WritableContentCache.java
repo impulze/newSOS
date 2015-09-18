@@ -148,14 +148,6 @@ public interface WritableContentCache extends ContentCache {
     void addFeatureOfInterestForResultTemplate(String resultTemplate, String featureOfInterest);
 
     /**
-     * Add the specified feature of interest.
-     *
-     * @param featureOfInterest
-     *            the feature of interest
-     */
-    void addFeaturesOfInterest(Collection<String> featureOfInterest);
-
-    /**
      * Associate the specified features of interest with the specified result
      * template.
      *
@@ -451,22 +443,6 @@ public interface WritableContentCache extends ContentCache {
     void removeCompositePhenomenonsForOffering(String offering);
 
     /**
-     * Remove the envelope for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeEnvelopeForOffering(String offering);
-
-    /**
-     * Remove the Spatial Filtering Profile envelope for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeSpatialFilteringProfileEnvelopeForOffering(String offering);
-
-    /**
      * Remove the specified epsg code.
      *
      * @param epsgCode
@@ -520,78 +496,6 @@ public interface WritableContentCache extends ContentCache {
     void removeFeaturesOfInterest(Collection<String> featuresOfInterest);
 
     /**
-     * Dissociate all features of interest with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeFeaturesOfInterestForOffering(String offering);
-
-    /**
-     * Dissociate all features of interest with the specified result template.
-     *
-     * @param resultTemplate
-     *            the result template
-     */
-    void removeFeaturesOfInterestForResultTemplate(String resultTemplate);
-
-    /**
-     * Remove the maximal phenomenon time for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeMaxPhenomenonTimeForOffering(String offering);
-
-    /**
-     * Remove the minimal phenomenon time for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeMinPhenomenonTimeForOffering(String offering);
-
-    /**
-     * Remove the maximal phenomenon time for the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     */
-    void removeMaxPhenomenonTimeForProcedure(String procedure);
-
-    /**
-     * Remove the minimal phenomenon time for the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     */
-    void removeMinPhenomenonTimeForProcedure(String procedure);
-
-    /**
-     * Remove the maximal result time for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeMaxResultTimeForOffering(String offering);
-
-    /**
-     * Remove the minimal result time for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeMinResultTimeForOffering(String offering);
-
-    /**
-     * Remove the name for the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeNameForOffering(String offering);
-
-    /**
      * Dissociate all observable properties with the specified composite
      * phenomenon.
      *
@@ -601,28 +505,12 @@ public interface WritableContentCache extends ContentCache {
     void removeObservablePropertiesForCompositePhenomenon(String compositePhenomenon);
 
     /**
-     * Dissociate all observable properties with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeObservablePropertiesForOffering(String offering);
-
-    /**
      * Dissociate all observable properties with the specified procedure.
      *
      * @param procedure
      *            the procedure
      */
     void removeObservablePropertiesForProcedure(String procedure);
-
-    /**
-     * Dissociate all observable properties with the specified result template.
-     *
-     * @param resultTemplate
-     *            the result template
-     */
-    void removeObservablePropertiesForResultTemplate(String resultTemplate);
 
     /**
      * Dissociate the specified observable property with the specified composite
@@ -644,17 +532,6 @@ public interface WritableContentCache extends ContentCache {
      *            the observable property
      */
     void removeObservablePropertyForOffering(String offering, String observableProperty);
-
-    /**
-     * Dissociate the specified observable property with the specified
-     * procedure.
-     *
-     * @param procedure
-     *            the procedure
-     * @param observableProperty
-     *            the observable property
-     */
-    void removeObservablePropertyForProcedure(String procedure, String observableProperty);
 
     /**
      * Dissociate the specified observable property with the specified result
@@ -697,24 +574,6 @@ public interface WritableContentCache extends ContentCache {
     void removeObservationTypeForOffering(String offering, String observationType);
 
     /**
-     * Dissociate all observation types with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeObservationTypesForOffering(String offering);
-
-    /**
-     * Dissociate the specified offering with the specified observable property.
-     *
-     * @param observableProperty
-     *            the observable property
-     * @param offering
-     *            the offering
-     */
-    void removeOfferingForObservableProperty(String observableProperty, String offering);
-
-    /**
      * Dissociate the specified offering with the specified procedure.
      *
      * @param procedure
@@ -733,22 +592,6 @@ public interface WritableContentCache extends ContentCache {
     void removeOfferingsForObservableProperty(String observableProperty);
 
     /**
-     * Dissociate all offerings with the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     */
-    void removeOfferingsForProcedure(String procedure);
-
-    /**
-     * Remove the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     */
-    void removeProcedure(String procedure);
-
-    /**
      * Dissociate the specified procedure with the specified feature of
      * interest.
      *
@@ -760,27 +603,6 @@ public interface WritableContentCache extends ContentCache {
     void removeProcedureForFeatureOfInterest(String featureOfInterest, String procedure);
 
     /**
-     * Dissociate the specified procedure with the specified observable
-     * property.
-     *
-     * @param observableProperty
-     *            the observable property
-     * @param procedure
-     *            the procedure
-     */
-    void removeProcedureForObservableProperty(String observableProperty, String procedure);
-
-    /**
-     * Dissociate the specified procedure with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     * @param procedure
-     *            the procedure
-     */
-    void removeProcedureForOffering(String offering, String procedure);
-
-    /**
      * Dissociate the specified procedure with the specified offering.
      *
      * @param offering
@@ -789,22 +611,6 @@ public interface WritableContentCache extends ContentCache {
      *            the procedure
      */
     void removeHiddenChildProcedureForOffering(String offering, String procedure);
-
-    /**
-     * Remove the specified procedure.
-     *
-     * @param procedure
-     *            the procedure
-     */
-    void removeProcedures(Collection<String> procedure);
-
-    /**
-     * Dissociate all procedures with the specified feature of interest.
-     *
-     * @param featureOfInterest
-     *            the feature of interest
-     */
-    void removeProceduresForFeatureOfInterest(String featureOfInterest);
 
     /**
      * Dissociate all procedures with the specified observable property.
@@ -833,22 +639,6 @@ public interface WritableContentCache extends ContentCache {
     void removeRelatedFeatureForOffering(String offering, String relatedFeature);
 
     /**
-     * Dissociate all related features with the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeRelatedFeaturesForOffering(String offering);
-
-    /**
-     * Remove the specified result template.
-     *
-     * @param resultTemplate
-     *            the result template
-     */
-    void removeResultTemplate(String resultTemplate);
-
-    /**
      * Dissociate the specified result template with the specified result
      * template.
      *
@@ -858,22 +648,6 @@ public interface WritableContentCache extends ContentCache {
      *            the result template
      */
     void removeResultTemplateForOffering(String offering, String resultTemplate);
-
-    /**
-     * Remove the specified result templates.
-     *
-     * @param resultTemplates
-     *            the result templates
-     */
-    void removeResultTemplates(Collection<String> resultTemplates);
-
-    /**
-     * Dissociate all result templates with the specified result template.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeResultTemplatesForOffering(String offering);
 
     /**
      * Dissociate the specified role with the specified related feature.
@@ -892,15 +666,6 @@ public interface WritableContentCache extends ContentCache {
      *            the related feature
      */
     void removeRolesForRelatedFeature(String relatedFeature);
-
-    /**
-     * Dissociate all roles with the specified related feature that are not
-     * contained in the specified collection.
-     *
-     * @param features
-     *            the related features for which the roles should kept
-     */
-    void removeRolesForRelatedFeatureNotIn(Collection<String> features);
     
     void removeFeatureOfInterestIdentifierForHumanReadableName(String humanReadableName);
     
@@ -999,16 +764,6 @@ public interface WritableContentCache extends ContentCache {
     void updateSpatialFilteringProfileEnvelopeForOffering(String offering, Envelope envelope);
 
     /**
-     * Sets the new global phenomenon envelope.
-     *
-     * @param min
-     *            the minimal phenomenon time
-     * @param max
-     *            the maximal phenomenon time
-     */
-    void setPhenomenonTime(DateTime min, DateTime max);
-
-    /**
      * Update the global phenomenon time by extending the global envelope to
      * include the specified {@code ITime}.
      *
@@ -1018,22 +773,6 @@ public interface WritableContentCache extends ContentCache {
     void updatePhenomenonTime(Time eventTime);
 
     /**
-     * Recalculates the global phenomenon time envelope based on the current
-     * offering phenomenon time envelopes.
-     */
-    void recalculatePhenomenonTime();
-
-    /**
-     * Sets the new global result envelope.
-     *
-     * @param min
-     *            the minimal result time
-     * @param max
-     *            the maximal result time
-     */
-    void setResultTime(DateTime min, DateTime max);
-
-    /**
      * Update the global result time by extending the global envelope to include
      * the specified {@code ITime}.
      *
@@ -1041,20 +780,6 @@ public interface WritableContentCache extends ContentCache {
      *            the time to include
      */
     void updateResultTime(Time eventTime);
-
-    /**
-     * Recalculates the global result time envelope based on the current
-     * offering result time envelopes.
-     */
-    void recalculateResultTime();
-
-    /**
-     * Sets the features of interest.
-     *
-     * @param featuresOfInterest
-     *            the features of interest
-     */
-    void setFeaturesOfInterest(Collection<String> featuresOfInterest);
 
     /**
      * Sets the features of interest for the specified offering.
@@ -1081,12 +806,6 @@ public interface WritableContentCache extends ContentCache {
      *            the envelope
      */
     void updateGlobalEnvelope(Envelope e);
-
-    /**
-     * Recalculates the global spatial envelope based on the current offering
-     * spatial envelopes.
-     */
-    void recalculateGlobalEnvelope();
 
     /**
      * Sets the global maximal phenomenon time.
@@ -1543,22 +1262,6 @@ public interface WritableContentCache extends ContentCache {
      *            the offerings
      */
     void addOfferings(Collection<String> offerings);
-
-    /**
-     * Remove the specified offering.
-     *
-     * @param offering
-     *            the offering
-     */
-    void removeOffering(String offering);
-
-    /**
-     * Remove the specified offerings.
-     *
-     * @param offerings
-     *            the offerings
-     */
-    void removeOfferings(Collection<String> offerings);
 
     /**
      * Add the specified language.

@@ -7,13 +7,6 @@ org.n52.sos.encode.exi.impl.GetDataAvailabilityResponseEncoder
 org.n52.sos.encode.exi.impl.GetObservationByIdResponseEncoder
 org.n52.sos.encode.exi.impl.GetResultTemplateResponseEncoder
 org.n52.sos.encode.exi.impl.GetResultResponseEncoder
-org.n52.sos.encode.exi.impl.DeleteSensorResponseEncoder
-org.n52.sos.encode.exi.impl.UpdateSensorResponseEncoder
-org.n52.sos.encode.exi.impl.InsertSensorResponseEncoder
-org.n52.sos.encode.exi.impl.InsertObservationResponseEncoder
-org.n52.sos.encode.exi.impl.InsertResultTemplateResponseEncoder
-org.n52.sos.encode.exi.impl.InsertResultTemplateResponseEncoder
-org.n52.sos.encode.exi.impl.InsertResultResponseEncoder
 org.n52.sos.encode.exi.impl.v1.GetObservationResponseEncoder
 org.n52.sos.encode.exi.impl.v1.GetFeatureOfInterestResponseEncoder
 org.n52.sos.encode.exi.impl.v1.DescribeSensorResponseEncoder

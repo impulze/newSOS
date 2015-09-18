@@ -347,32 +347,6 @@ public abstract class AbstractSeriesDAO {
     }
     
     /**
-     * Update Series for procedure by setting deleted flag and return changed
-     * series
-     * 
-     * @param procedure
-     *            Procedure for which the series should be changed
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate session
-     * @return Updated Series
-     */
-    @SuppressWarnings("unchecked")
-    public List<Series> updateSeriesSetAsDeletedForProcedureAndGetSeries(String procedure, boolean deleteFlag,
-            Session session) {
-        Criteria criteria = getDefaultAllSeriesCriteria(session);
-        addProcedureToCriteria(criteria, procedure);
-        List<Series> hSeries = criteria.list();
-        for (Series series : hSeries) {
-            series.setDeleted(deleteFlag);
-            session.saveOrUpdate(series);
-            session.flush();
-        }
-        return hSeries;
-    }
-    
-    /**
      * Update series values which will be used by the Timeseries API.
      * Can be later used by the SOS.
      * 

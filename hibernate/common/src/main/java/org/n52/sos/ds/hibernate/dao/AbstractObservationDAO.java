@@ -67,7 +67,6 @@ import org.n52.sos.ds.hibernate.entities.Unit;
 import org.n52.sos.ds.hibernate.entities.interfaces.BooleanObservation;
 import org.n52.sos.ds.hibernate.util.HibernateConstants;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.ScrollableIterable;
 import org.n52.sos.ds.hibernate.util.SpatialRestrictions;
 import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
 import org.n52.sos.exception.CodedException;
@@ -1080,31 +1079,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
         if (validTime != null) {
             observation.setValidTimeStart(validTime.getStart().toDate());
             observation.setValidTimeEnd(validTime.getEnd().toDate());
-        }
-    }
-
-    /**
-     * Update observations, set deleted flag
-     *
-     * @param scroll
-     *            Observations to update
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate session
-     */
-    protected void updateObservation(ScrollableIterable<AbstractObservation> scroll, boolean deleteFlag,
-            Session session) {
-        if (scroll != null) {
-            try {
-                for (AbstractObservation o : scroll) {
-                    o.setDeleted(deleteFlag);
-                    session.update(o);
-                    session.flush();
-                }
-            } finally {
-                scroll.close();
-            }
         }
     }
 

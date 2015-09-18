@@ -37,7 +37,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.n52.sos.decode.kvp.v2.DeleteSensorKvpDecoderv20;
+import org.n52.sos.decode.kvp.v2.DescribeSensorKvpDecoderv20;
 import org.n52.sos.ogc.ows.OWSConstants.RequestParams;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos1Constants;
@@ -48,7 +48,7 @@ import org.n52.sos.request.DescribeSensorRequest;
  * @author Shane StClair <shane@axiomalaska.com>
  * @since 4.0.0
  */
-public class DescribeSensorKvpDecoderv100Test extends DeleteSensorKvpDecoderv20 {
+public class DescribeSensorKvpDecoderv100Test extends DescribeSensorKvpDecoderv20 {
     private static final String PROCEDURE = "testprocedure";
 
     private static final String OUTPUT_FORMAT = "text/xml;subtype=\"some/fake/subtype\"";

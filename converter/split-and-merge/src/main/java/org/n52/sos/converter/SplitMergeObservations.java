@@ -46,10 +46,8 @@ import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.request.AbstractServiceRequest;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.request.InsertObservationRequest;
 import org.n52.sos.response.AbstractServiceResponse;
 import org.n52.sos.response.GetObservationResponse;
-import org.n52.sos.response.InsertObservationResponse;
 import org.n52.sos.service.Configurator;
 import org.n52.sos.service.profile.Profile;
 import org.n52.sos.util.CodingHelper;
@@ -73,7 +71,6 @@ public class SplitMergeObservations implements
         Map<AbstractServiceRequest<?>, AbstractServiceResponse> requestResponseMap = Maps.newHashMap();
 
         requestResponseMap.put(new GetObservationRequest(), new GetObservationResponse());
-        requestResponseMap.put(new InsertObservationRequest(), new InsertObservationResponse());
         Set<RequestResponseModifierKeyType> keys = Sets.newHashSet();
         for (String service : services) {
             for (String version : versions) {
@@ -94,9 +91,6 @@ public class SplitMergeObservations implements
 
     @Override
     public AbstractServiceRequest<?> modifyRequest(AbstractServiceRequest<?> request) throws OwsExceptionReport {
-        if (request instanceof InsertObservationRequest) {
-            // TODO
-        }
         return request;
     }
 

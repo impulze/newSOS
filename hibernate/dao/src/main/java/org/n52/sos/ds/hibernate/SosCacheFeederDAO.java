@@ -30,7 +30,6 @@ package org.n52.sos.ds.hibernate;
 
 import static org.n52.sos.ds.hibernate.CacheFeederSettingDefinitionProvider.CACHE_THREAD_COUNT;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -43,7 +42,6 @@ import org.n52.sos.config.annotation.Setting;
 import org.n52.sos.ds.CacheFeederDAO;
 import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.cache.InitialCacheUpdate;
-import org.n52.sos.ds.hibernate.cache.base.OfferingCacheUpdate;
 import org.n52.sos.exception.ConfigurationException;
 import org.n52.sos.ogc.ows.CompositeOwsException;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
@@ -101,38 +99,6 @@ public class SosCacheFeederDAO extends HibernateSessionHolder implements CacheFe
         } finally {
             returnSession(session);
         }
-        if (!errors.isEmpty()) {
-            throw new CompositeOwsException(errors);
-        }
-    }
-
-    @Override
-    public void updateCacheOfferings(WritableContentCache cache, Collection<String> offeringsNeedingUpdate)
-            throws OwsExceptionReport {
-        checkCacheNotNull(cache);
-        if (CollectionHelper.isEmpty(offeringsNeedingUpdate)) {
-            return;
-        }
-        List<OwsExceptionReport> errors = CollectionHelper.synchronizedList();
-        Session session = getSession();
-        OfferingCacheUpdate update = new OfferingCacheUpdate(getCacheThreadCount(), offeringsNeedingUpdate);
-        update.setCache(cache);
-        update.setErrors(errors);
-        update.setSession(session);
-        
-        LOGGER.info("Starting offering cache update for {} offering(s)", offeringsNeedingUpdate.size());
-        long cacheUpdateStartTime = System.currentTimeMillis();
-
-        try {
-            update.execute();
-        } catch (HibernateException he) {
-            LOGGER.error("Error while updating ContentCache!", he);
-        } finally {
-            returnSession(session);
-        }
-
-        logCacheLoadTime(cacheUpdateStartTime);
-
         if (!errors.isEmpty()) {
             throw new CompositeOwsException(errors);
         }

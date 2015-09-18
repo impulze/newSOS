@@ -159,7 +159,7 @@ public interface SosConstants {
      * specification
      */
     enum Operations {
-        GetCapabilities, GetObservation, GetObservationById, DescribeSensor, InsertObservation, GetResult, GetFeatureOfInterest;
+        GetCapabilities, GetObservation, GetObservationById, DescribeSensor, GetResult, GetFeatureOfInterest;
     }
 
     enum Filter {

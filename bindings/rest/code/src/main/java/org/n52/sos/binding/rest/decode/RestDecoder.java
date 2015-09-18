@@ -76,15 +76,11 @@ public class RestDecoder implements Decoder<RestRequest, HttpServletRequest> {
 //            union(
 //    		decoderKeysForElements(Constants.getInstance().getEncodingNamespace(), HttpServletRequest.class),
 //    		CodingHelper.xmlDecoderKeysForOperation(SOS, Sos2Constants.SERVICEVERSION,
-//    				Sos2Constants.Operations.DeleteSensor,
-//    				Sos2Constants.Operations.InsertSensor,
-//    				Sos2Constants.Operations.UpdateSensorDescription,
 //    				SosConstants.Operations.DescribeSensor,
 //    				SosConstants.Operations.GetCapabilities,
 //    				SosConstants.Operations.GetFeatureOfInterest,
 //    				SosConstants.Operations.GetObservation,
-//    				SosConstants.Operations.GetObservationById,
-//    				DeleteObservationConstants.Operations.DeleteObservation));
+//    				SosConstants.Operations.GetObservationById));
 
     /**
      * constructor called by the service loader of the SOS instance

@@ -42,7 +42,6 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.swe.SweDataArray;
 import org.n52.sos.request.AbstractServiceRequest;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.request.InsertObservationRequest;
 import org.n52.sos.response.AbstractServiceResponse;
 import org.n52.sos.response.GetObservationResponse;
 
@@ -74,9 +73,6 @@ public class AqdSplitMergeObservations implements
 
     @Override
     public AbstractServiceRequest<?> modifyRequest(AbstractServiceRequest<?> request) throws OwsExceptionReport {
-        if (request instanceof InsertObservationRequest) {
-            // TODO
-        }
         return request;
     }
 

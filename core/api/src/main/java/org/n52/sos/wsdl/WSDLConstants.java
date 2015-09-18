@@ -191,8 +191,6 @@ public interface WSDLConstants {
     URI SWES_EXCEPTION_ACTION = URI.create(SosSoapConstants.RESP_ACTION_SWES);
 
     interface SoapResponseActionUris {
-        URI DELETE_SENSOR = URI.create(SosSoapConstants.RESP_ACTION_DELETE_SENSOR);
-
         URI DESCRIBE_SENSOR = URI.create(SosSoapConstants.RESP_ACTION_DESCRIBE_SENSOR);
 
         URI GET_CAPABILITIES = URI.create(SosSoapConstants.RESP_ACTION_GET_CAPABILITIES);
@@ -206,21 +204,9 @@ public interface WSDLConstants {
         URI GET_RESULT = URI.create(SosSoapConstants.RESP_ACTION_GET_RESULT);
 
         URI GET_RESULT_TEMPLATE = URI.create(SosSoapConstants.RESP_ACTION_GET_RESULT_TEMPLATE);
-
-        URI INSERT_OBSERVATION = URI.create(SosSoapConstants.REQ_ACTION_INSERT_OBSERVATION);
-
-        URI INSERT_RESULT = URI.create(SosSoapConstants.RESP_ACTION_INSERT_RESULT);
-
-        URI INSERT_RESULT_TEMPLATE = URI.create(SosSoapConstants.RESP_ACTION_INSERT_RESULT_TEMPLATE);
-
-        URI INSERT_SENSOR = URI.create(SosSoapConstants.RESP_ACTION_INSERT_SENSOR);
-
-        URI UPDATE_SENSOR_DESCRIPTION = URI.create(SosSoapConstants.RESP_ACTION_UPDATE_SENSOR_DESCRIPTION);
     }
 
     interface SoapRequestActionUris {
-        URI DELETE_SENSOR = URI.create(SosSoapConstants.REQ_ACTION_DELETE_SENSOR);
-
         URI DESCRIBE_SENSOR = URI.create(SosSoapConstants.REQ_ACTION_DESCRIBE_SENSOR);
 
         URI GET_CAPABILITIES = URI.create(SosSoapConstants.REQ_ACTION_GET_CAPABILITIES);
@@ -234,25 +220,9 @@ public interface WSDLConstants {
         URI GET_RESULT = URI.create(SosSoapConstants.REQ_ACTION_GET_RESULT);
 
         URI GET_RESULT_TEMPLATE = URI.create(SosSoapConstants.REQ_ACTION_GET_RESULT_TEMPLATE);
-
-        URI INSERT_OBSERVATION = URI.create(SosSoapConstants.REQ_ACTION_INSERT_OBSERVATION);
-
-        URI INSERT_RESULT = URI.create(SosSoapConstants.REQ_ACTION_INSERT_RESULT);
-
-        URI INSERT_RESULT_TEMPLATE = URI.create(SosSoapConstants.REQ_ACTION_INSERT_RESULT_TEMPLATE);
-
-        URI INSERT_SENSOR = URI.create(SosSoapConstants.REQ_ACTION_INSERT_SENSOR);
-
-        URI UPDATE_SENSOR_DESCRIPTION = URI.create(SosSoapConstants.REQ_ACTION_UPDATE_SENSOR_DESCRIPTION);
     }
 
     interface Operations {
-        WSDLOperation DELETE_SENSOR = WSDLOperation.newWSDLOperation()
-                .setName(Sos2Constants.Operations.DeleteSensor.name()).setVersion(Sos2Constants.SERVICEVERSION)
-                .setRequest(SwesConstants.QN_DELETE_SENSOR).setRequestAction(SoapRequestActionUris.DELETE_SENSOR)
-                .setResponse(SwesConstants.QN_DELETE_SENSOR_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.DELETE_SENSOR).setFaults(WSDLFault.DEFAULT_FAULTS).build();
-
         WSDLOperation DESCRIBE_SENSOR = WSDLOperation.newWSDLOperation()
                 .setName(SosConstants.Operations.DescribeSensor.name()).setVersion(Sos2Constants.SERVICEVERSION)
                 .setRequest(SwesConstants.QN_DESCRIBE_SENSOR).setRequestAction(SoapRequestActionUris.DESCRIBE_SENSOR)
@@ -280,7 +250,7 @@ public interface WSDLConstants {
                 .setName(SosConstants.Operations.GetObservation.name()).setVersion(Sos2Constants.SERVICEVERSION)
                 .setRequest(Sos2Constants.QN_GET_OBSERVATION).setRequestAction(SoapRequestActionUris.GET_OBSERVATION)
                 .setResponse(Sos2Constants.QN_GET_OBSERVATION_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.INSERT_OBSERVATION).setFaults(WSDLFault.DEFAULT_FAULTS)
+                .setResponseAction(SoapResponseActionUris.GET_OBSERVATION).setFaults(WSDLFault.DEFAULT_FAULTS)
                 .build();
 
         WSDLOperation GET_OBSERVATION_BY_ID = WSDLOperation.newWSDLOperation()
@@ -303,41 +273,5 @@ public interface WSDLConstants {
                 .setResponse(Sos2Constants.QN_GET_RESULT_TEMPLATE_RESPONSE)
                 .setResponseAction(SoapResponseActionUris.GET_RESULT_TEMPLATE).setFaults(WSDLFault.DEFAULT_FAULTS)
                 .build();
-
-        WSDLOperation INSERT_OBSERVATION = WSDLOperation.newWSDLOperation()
-                .setName(SosConstants.Operations.InsertObservation.name()).setVersion(Sos2Constants.SERVICEVERSION)
-                .setRequest(Sos2Constants.QN_INSERT_OBSERVATION)
-                .setRequestAction(SoapRequestActionUris.INSERT_OBSERVATION)
-                .setResponse(Sos2Constants.QN_INSERT_OBSERVATION_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.INSERT_OBSERVATION).setFaults(WSDLFault.DEFAULT_FAULTS)
-                .build();
-
-        WSDLOperation INSERT_RESULT = WSDLOperation.newWSDLOperation()
-                .setName(Sos2Constants.Operations.InsertResult.name()).setVersion(Sos2Constants.SERVICEVERSION)
-                .setRequest(Sos2Constants.QN_INSERT_RESULT).setRequestAction(SoapRequestActionUris.INSERT_RESULT)
-                .setResponse(Sos2Constants.QN_INSERT_RESULT_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.INSERT_RESULT).setFaults(WSDLFault.DEFAULT_FAULTS).build();
-
-        WSDLOperation INSERT_RESULT_TEMPLATE = WSDLOperation.newWSDLOperation()
-                .setName(Sos2Constants.Operations.InsertResultTemplate.name())
-                .setVersion(Sos2Constants.SERVICEVERSION).setRequest(Sos2Constants.QN_INSERT_RESULT_TEMPLATE)
-                .setRequestAction(SoapRequestActionUris.INSERT_RESULT_TEMPLATE)
-                .setResponse(Sos2Constants.QN_INSERT_RESULT_TEMPLATE_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.INSERT_RESULT_TEMPLATE).setFaults(WSDLFault.DEFAULT_FAULTS)
-                .build();
-
-        WSDLOperation INSERT_SENSOR = WSDLOperation.newWSDLOperation()
-                .setName(Sos2Constants.Operations.InsertSensor.name()).setVersion(Sos2Constants.SERVICEVERSION)
-                .setRequest(SwesConstants.QN_INSERT_SENSOR).setRequestAction(SoapRequestActionUris.INSERT_SENSOR)
-                .setResponse(SwesConstants.QN_INSERT_SENSOR_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.INSERT_SENSOR).setFaults(WSDLFault.DEFAULT_FAULTS).build();
-
-        WSDLOperation UPDATE_SENSOR_DESCRIPTION = WSDLOperation.newWSDLOperation()
-                .setName(Sos2Constants.Operations.UpdateSensorDescription.name())
-                .setVersion(Sos2Constants.SERVICEVERSION).setRequest(SwesConstants.QN_UPDATE_SENSOR_DESCRIPTION)
-                .setRequestAction(SoapRequestActionUris.UPDATE_SENSOR_DESCRIPTION)
-                .setResponse(SwesConstants.QN_UPDATE_SENSOR_DESCRIPTION_RESPONSE)
-                .setResponseAction(SoapResponseActionUris.UPDATE_SENSOR_DESCRIPTION)
-                .setFaults(WSDLFault.DEFAULT_FAULTS).build();
     }
 }

@@ -40,7 +40,7 @@ public class InvalidObservationTypeForOfferingException extends InvalidParameter
     private static final long serialVersionUID = -1598937401956045205L;
 
     public InvalidObservationTypeForOfferingException(String observationType, String offering) {
-        at(Sos2Constants.InsertObservationParams.observationType);
+        at(Sos2Constants.GetObservationParams.observationType);
         withMessage("The requested observationType (%s) is not allowed for the requested offering (%s)!",
                 observationType, offering);
     }

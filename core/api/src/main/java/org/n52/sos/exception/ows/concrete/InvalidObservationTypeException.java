@@ -40,6 +40,6 @@ public class InvalidObservationTypeException extends InvalidParameterValueExcept
     private static final long serialVersionUID = 7783723530983520961L;
 
     public InvalidObservationTypeException(String value) {
-        super(Sos2Constants.InsertObservationParams.observationType, value);
+        super(Sos2Constants.GetObservationParams.observationType, value);
     }
 }

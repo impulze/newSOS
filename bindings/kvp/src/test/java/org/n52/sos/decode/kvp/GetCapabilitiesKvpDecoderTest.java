@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.n52.sos.decode.kvp.v2.DeleteSensorKvpDecoderv20;
 import org.n52.sos.ogc.ows.OWSConstants.RequestParams;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants;
@@ -48,7 +47,7 @@ import org.n52.sos.request.GetCapabilitiesRequest;
  * @author Shane StClair <shane@axiomalaska.com>
  * @since 4.0.0
  */
-public class GetCapabilitiesKvpDecoderTest extends DeleteSensorKvpDecoderv20 {
+public class GetCapabilitiesKvpDecoderTest extends GetCapabilitiesKvpDecoder {
     private static final String ADDITIONAL_PARAMETER = "additionalParameter";
 
     private static final String ACCEPT_VERSIONS = "1.0.0,2.0";

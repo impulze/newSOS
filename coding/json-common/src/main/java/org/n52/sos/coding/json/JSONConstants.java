@@ -126,10 +126,6 @@ public interface JSONConstants {
 
     String DEFINITION = "definition";
 
-    String DELETED_OBSERVATION = "deletedObservation";
-
-    String DELETED_PROCEDURE = "deletedProcedure";
-
     String DELIVERY_POINT = "deliveryPoint";
 
     String DESCRIPTION = "description";
@@ -359,8 +355,6 @@ public interface JSONConstants {
     String UOM = "uom";
 
     String UPDATE_SEQUENCE = "updateSequence";
-
-    String UPDATED_PROCEDURE = "updatedProcedure";
 
     String UPPER_RIGHT = "upperRight";
 

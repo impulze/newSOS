@@ -48,13 +48,7 @@ public class ObservationsRequestHandler extends RequestHandler {
         if (isGetRequest(request)) {
             return new ObservationsGetRequestHandler().handleRequest(request);
 
-        } else if (request instanceof ObservationsPostRequest){
-            return new ObservationsPostRequestHandler().handleRequest((ObservationsPostRequest)request);
-            
-        } else if (request instanceof ObservationsDeleteRequest) {
-            return new ObservationsDeleteRequestHandler().handleRequest((ObservationsDeleteRequest)request);
-            
-        } 
+        }
         throw logRequestTypeNotSupportedByThisHandlerAndCreateException(request,this.getClass().getName());
     }
 

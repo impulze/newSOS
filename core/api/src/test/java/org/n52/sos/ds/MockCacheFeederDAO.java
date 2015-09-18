@@ -28,8 +28,6 @@
  */
 package org.n52.sos.ds;
 
-import java.util.Collection;
-
 import org.n52.sos.cache.WritableContentCache;
 import org.n52.sos.ds.CacheFeederDAO;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
@@ -43,12 +41,6 @@ public class MockCacheFeederDAO implements CacheFeederDAO {
     
     @Override
     public void updateCache(WritableContentCache capabilitiesCache)
-            throws OwsExceptionReport {
-        //NOOP, only used for testing
-    }
-
-    @Override
-    public void updateCacheOfferings(WritableContentCache capabilitiesCache, Collection<String> offerings)
             throws OwsExceptionReport {
         //NOOP, only used for testing
     }

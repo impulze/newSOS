@@ -422,11 +422,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
     }
 
-    private Criteria getDefaultTProcedureCriteriaIncludeDeleted(Session session) {
-        return session.createCriteria(TProcedure.class)
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
     /**
      * Get procedure identifiers for observable property identifier
      *
@@ -482,21 +477,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      */
     public TProcedure getTProcedureForIdentifier(final String identifier, final Session session) {
         Criteria criteria = getDefaultTProcedureCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getTProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        return (TProcedure) criteria.uniqueResult();
-    }
-
-    /**
-     * Get transactional procedure object for procedure identifier, include deleted
-     *
-     * @param identifier
-     *            Procedure identifier
-     * @param session
-     *            Hibernate session
-     * @return Transactional procedure object
-     */
-    public TProcedure getTProcedureForIdentifierIncludeDeleted(String identifier, Session session) {
-        Criteria criteria = getDefaultTProcedureCriteriaIncludeDeleted(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
         LOGGER.debug("QUERY getTProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
         return (TProcedure) criteria.uniqueResult();
     }

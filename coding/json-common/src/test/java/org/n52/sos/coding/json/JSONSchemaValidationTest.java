@@ -60,14 +60,13 @@ public class JSONSchemaValidationTest {
             "ObservationWithResult", "SWEArrayObservation", "SpatialFilter", "TemplateObservation", "TemporalFilter",
             "TextObservation", "TimeInstant", "TimePeriod", "TimePrimitive", "TruthObservation", "sos/request/Batch",
             "sos/request/GetObservation", "sos/request/GetObservationById", "sos/request/GetFeatureOfInterest",
-            "sos/request/InsertObservation", "sos/request/InsertResultTemplate", "sos/request/InsertSensor",
-            "sos/request/GetCapabilities", "sos/request/DeleteSensor", "sos/request/DescribeSensor",
-            "sos/request/UpdateSensorDescription", "sos/request/InsertResult", "sos/request/GetResult",
+            "sos/request/GetCapabilities", "sos/request/DescribeSensor",
+            "sos/request/GetResult",
             "sos/request/GetResultTemplate", "sos/request/Request", "sos/response/Response", "sos/response/Batch",
-            "sos/response/InsertSensor", "sos/response/GetObservation", "sos/response/GetObservationById",
-            "sos/response/InsertObservation", "sos/response/GetFeatureOfInterest", "sos/response/InsertResult",
-            "sos/response/GetResult", "sos/response/GetResultTemplate", "sos/response/UpdateSensorDescription",
-            "sos/response/DeleteSensor", "sos/response/DescribeSensor", "sos/response/GetCapabilities" };
+            "sos/response/GetObservation", "sos/response/GetObservationById",
+            "sos/response/GetFeatureOfInterest",
+            "sos/response/GetResult", "sos/response/GetResultTemplate",
+            "sos/response/DescribeSensor", "sos/response/GetCapabilities" };
 
     private String name;
 

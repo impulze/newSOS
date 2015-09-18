@@ -212,13 +212,13 @@ public class GmlDecoderv321 implements Decoder<Object, XmlObject> {
                 if (decodedObject instanceof SamplingFeature) {
                     feature = (SamplingFeature) decodedObject;
                 } else {
-                    throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+                    throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                             .withMessage("The requested featurePropertyType type is not supported by this service!");
                 }
             }
         }
         if (feature == null) {
-            throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+            throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                     .withMessage("The requested featurePropertyType type is not supported by this service!");
         }
         return feature;

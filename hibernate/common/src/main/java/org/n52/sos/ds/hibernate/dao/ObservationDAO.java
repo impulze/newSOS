@@ -61,7 +61,6 @@ import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.SweDataArrayObservation;
 import org.n52.sos.ds.hibernate.entities.TextObservation;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.ScrollableIterable;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
@@ -112,23 +111,6 @@ public class ObservationDAO extends AbstractObservationDAO {
                 .add(eq(FeatureOfInterest.IDENTIFIER, feature));
         criteria.createCriteria(AbstractObservation.OFFERINGS).add(eq(Offering.IDENTIFIER, offering));
         return criteria;
-    }
-
-    /**
-     * Update observation by setting deleted flag
-     * 
-     * @param procedure
-     *            Procedure for which the observations should be updated
-     * @param deleteFlag
-     *            New deleted flag value
-     * @param session
-     *            Hibernate Session
-     */
-    public void updateObservationSetAsDeletedForProcedure(String procedure, boolean deleteFlag, Session session) {
-        Criteria criteria = getDefaultObservationInfoCriteria(session);
-        criteria.createCriteria(AbstractObservation.PROCEDURE).add(Restrictions.eq(Procedure.IDENTIFIER, procedure));
-        ScrollableIterable<AbstractObservation> scroll = ScrollableIterable.fromCriteria(criteria);
-        updateObservation(scroll, deleteFlag, session);
     }
 
     /**

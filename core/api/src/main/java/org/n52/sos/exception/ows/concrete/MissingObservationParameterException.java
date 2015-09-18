@@ -40,6 +40,6 @@ public class MissingObservationParameterException extends MissingParameterValueE
     private static final long serialVersionUID = 5819915445639045249L;
 
     public MissingObservationParameterException() {
-        super(Sos2Constants.InsertObservationParams.observation);
+        super(Sos2Constants.GetObservationParams.observation);
     }
 }

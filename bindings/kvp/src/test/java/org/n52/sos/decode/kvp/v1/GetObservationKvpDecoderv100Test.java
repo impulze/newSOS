@@ -40,7 +40,6 @@ import java.util.Map;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.n52.sos.decode.kvp.v2.DeleteSensorKvpDecoderv20;
 import org.n52.sos.ogc.filter.TemporalFilter;
 import org.n52.sos.ogc.gml.time.TimePeriod;
 import org.n52.sos.ogc.ows.OWSConstants.RequestParams;
@@ -54,7 +53,7 @@ import org.n52.sos.util.http.MediaType;
  * @author Shane StClair <shane@axiomalaska.com>
  * @since 4.0.0
  */
-public class GetObservationKvpDecoderv100Test extends DeleteSensorKvpDecoderv20 {
+public class GetObservationKvpDecoderv100Test extends GetObservationKvpDecoderv100 {
     private static final String OFFERING = "testOffering";
 
     private static final String PROCEDURE = "testProcedure";

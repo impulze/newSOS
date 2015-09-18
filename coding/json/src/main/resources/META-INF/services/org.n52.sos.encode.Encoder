@@ -4,12 +4,6 @@ org.n52.sos.encode.json.impl.OwsExceptionReportEncoder
 org.n52.sos.encode.json.impl.GetObservationResponseEncoder
 org.n52.sos.encode.json.impl.FeatureOfInterestEncoder
 org.n52.sos.encode.json.impl.FieldEncoder
-org.n52.sos.encode.json.impl.InsertObservationResponseEncoder
-org.n52.sos.encode.json.impl.InsertResultTemplateResponseEncoder
-org.n52.sos.encode.json.impl.InsertSensorResponseEncoder
-org.n52.sos.encode.json.impl.InsertResultResponseEncoder
-org.n52.sos.encode.json.impl.DeleteSensorResponseEncoder
-org.n52.sos.encode.json.impl.UpdateSensorResponseEncoder
 org.n52.sos.encode.json.impl.GetFeatureOfInterestResponseEncoder
 org.n52.sos.encode.json.impl.GetObservationByIdResponseEncoder
 org.n52.sos.encode.json.impl.DescribeSensorResponseEncoder

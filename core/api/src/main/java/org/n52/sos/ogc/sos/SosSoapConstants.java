@@ -50,25 +50,6 @@ public interface SosSoapConstants {
     String RESP_ACTION_GET_OBSERVATION =
             "http://www.opengis.net/def/serviceOperation/sos/core/2.0/GetObservationResponse";
 
-    // SOS transactional
-    String REQ_ACTION_INSERT_OBSERVATION =
-            "http://www.opengis.net/def/serviceOperation/sos/obsInsertion/2.0/InsertObservation";
-
-    String RESP_ACTION_INSERT_OBSERVATION =
-            "http://www.opengis.net/def/serviceOperation/sos/obsInsertion/2.0/InsertObservationResponse";
-
-    String REQ_ACTION_UPDATE_SENSOR_DESCRIPTION = "http://www.opengis.net/swes/2.0/UpdateSensorDescription";
-
-    String RESP_ACTION_UPDATE_SENSOR_DESCRIPTION = "http://www.opengis.net/swes/2.0/UpdateSensorDescriptionResponse";
-
-    String REQ_ACTION_INSERT_SENSOR = "http://www.opengis.net/swes/2.0/InsertSensor";
-
-    String RESP_ACTION_INSERT_SENSOR = "http://www.opengis.net/swes/2.0/InsertSensorResponse";
-
-    String REQ_ACTION_DELETE_SENSOR = "http://www.opengis.net/swes/2.0/DeleteSensor";
-
-    String RESP_ACTION_DELETE_SENSOR = "http://www.opengis.net/swes/2.0/DeleteSensorResponse";
-
     // SOS enhanced
     String REQ_ACTION_GET_FEATURE_OF_INTEREST =
             "http://www.opengis.net/def/serviceOperation/sos/foiRetrieval/2.0/GetFeatureOfInterest";
@@ -89,22 +70,10 @@ public interface SosSoapConstants {
     String RESP_ACTION_GET_RESULT_TEMPLATE =
             "http://www.opengis.net/def/serviceOperation/sos/resultRetrieval/2.0/GetResultTemplateResponse";
 
-    String REQ_ACTION_INSERT_RESULT_TEMPLATE =
-            "http://www.opengis.net/def/serviceOperation/sos/resultInsertion/2.0/InsertResultTemplate";
-
-    String RESP_ACTION_INSERT_RESULT_TEMPLATE =
-            "http://www.opengis.net/def/serviceOperation/sos/resultInsertion/2.0/InsertResultTemplateResponse";
-
     String REQ_ACTION_GET_RESULT = "http://www.opengis.net/def/serviceOperation/sos/resultRetrieval/2.0/GetResult";
 
     String RESP_ACTION_GET_RESULT =
             "http://www.opengis.net/def/serviceOperation/sos/resultRetrieval/2.0/GetResultResponse";
-
-    String REQ_ACTION_INSERT_RESULT =
-            "http://www.opengis.net/def/serviceOperation/sos/resultInsertion/2.0/InsertResultTemplate";
-
-    String RESP_ACTION_INSERT_RESULT =
-            "http://www.opengis.net/def/serviceOperation/sos/resultInsertion/2.0/InsertResultTemplateResponse";
     
     // GetDataAVailability
     

@@ -86,18 +86,13 @@ public class RestSettings implements SettingDefinitionProvider {
 	public static final String REST_RESOURCE_RELATION_FEATURE_GET = "rest.resource.relation.feature.get";
 	public static final String REST_RESOURCE_RELATION_FEATURES_GET = "rest.resource.relation.features.get";
 	public static final String REST_RESOURCE_RELATION_OBSERVABLEPROPERTY_GET = "rest.resource.relation.observableproperty.get";
-	public static final String REST_RESOURCE_RELATION_OBSERVATION_CREATE = "rest.resource.relation.observation.create";
-	public static final String REST_RESOURCE_RELATION_OBSERVATION_DELETE = "rest.resource.relation.observation.delete";
 	public static final String REST_RESOURCE_RELATION_OBSERVATION_GET = "rest.resource.relation.observation.get";
 	public static final String REST_RESOURCE_RELATION_OBSERVATIONS_GET = "rest.resource.relation.observations.get";
 	public static final String REST_RESOURCE_RELATION_OFFERING_GET = "rest.resource.relation.offering.get";
 	public static final String REST_RESOURCE_RELATION_OFFERINGS_GET = "rest.resource.relation.offerings.get";
 	public static final String REST_RESOURCE_RELATION_SELF = "rest.resource.relation.self";
-	public static final String REST_RESOURCE_RELATION_SENSOR_CREATE = "rest.resource.relation.sensor.create";
-	public static final String REST_RESOURCE_RELATION_SENSOR_DELETE = "rest.resource.relation.sensor.delete";
 	public static final String REST_RESOURCE_RELATION_SENSOR_GET = "rest.resource.relation.sensor.get";
 	public static final String REST_RESOURCE_RELATION_SENSORS_GET = "rest.resource.relation.sensors.get";
-	public static final String REST_RESOURCE_RELATION_SENSOR_UPDATE = "rest.resource.relation.sensor.update";
 	public static final String REST_RESOURCE_SENSORS = "rest.resource.sensors";
 	public static final String REST_RESOURCE_TYPE = "rest.resource.type";
 	public static final String REST_SML_CAPABILITY_FEATUREOFINTERESTTYPE_NAME = "rest.sml.capability.featureofinteresttype.name";
@@ -421,24 +416,6 @@ public class RestSettings implements SettingDefinitionProvider {
 
 			new StringSettingDefinition().
 			setGroup(SETTINGS_GROUP).
-			setKey(REST_RESOURCE_RELATION_OBSERVATION_CREATE).
-			setDefaultValue("observation-create").
-			setTitle("Resource Relation Observation Create").
-			setDescription("TODO: Add description.").
-			setOptional(false).
-			setOrder(43),
-
-			new StringSettingDefinition().
-			setGroup(SETTINGS_GROUP).
-			setKey(REST_RESOURCE_RELATION_OBSERVATION_DELETE).
-			setDefaultValue("observation-delete").
-			setTitle("Resource Relation Observation Delete").
-			setDescription("TODO: Add description.").
-			setOptional(false).
-			setOrder(44),
-
-			new StringSettingDefinition().
-			setGroup(SETTINGS_GROUP).
 			setKey(REST_RESOURCE_RELATION_OBSERVATION_GET).
 			setDefaultValue("observation-get").
 			setTitle("Resource Relation Observation Get").
@@ -484,24 +461,6 @@ public class RestSettings implements SettingDefinitionProvider {
 
 			new StringSettingDefinition().
 			setGroup(SETTINGS_GROUP).
-			setKey(REST_RESOURCE_RELATION_SENSOR_CREATE).
-			setDefaultValue("sensor-create").
-			setTitle("Resource Relation Sensor Create").
-			setDescription("TODO: Add description.").
-			setOptional(false).
-			setOrder(50),
-
-			new StringSettingDefinition().
-			setGroup(SETTINGS_GROUP).
-			setKey(REST_RESOURCE_RELATION_SENSOR_DELETE).
-			setDefaultValue("sensor-delete").
-			setTitle("Resource Relation Sensor Delete").
-			setDescription("TODO: Add description.").
-			setOptional(false).
-			setOrder(51),
-
-			new StringSettingDefinition().
-			setGroup(SETTINGS_GROUP).
 			setKey(REST_RESOURCE_RELATION_SENSOR_GET).
 			setDefaultValue("sensor-get").
 			setTitle("Resource Relation Sensor Get").
@@ -517,15 +476,6 @@ public class RestSettings implements SettingDefinitionProvider {
 			setDescription("TODO: Add description.").
 			setOptional(false).
 			setOrder(53),
-
-			new StringSettingDefinition().
-			setGroup(SETTINGS_GROUP).
-			setKey(REST_RESOURCE_RELATION_SENSOR_UPDATE).
-			setDefaultValue("sensor-update").
-			setTitle("Resource Relation Sensor Update").
-			setDescription("TODO: Add description.").
-			setOptional(false).
-			setOrder(54),
 
 			new StringSettingDefinition().
 			setGroup(SETTINGS_GROUP).

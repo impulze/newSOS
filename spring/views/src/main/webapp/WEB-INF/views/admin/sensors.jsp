@@ -122,8 +122,6 @@
 				<option disabled="disabled" selected="selected" style="display: none;" value="">Procedures</option>
 			</select>
 			<div class="btn-group">
-				<button id="save" title="Save Procedure Description" type="button" class="btn btn-icon stcaps-edit-button"><i class="icon-ok"></i></button>
-				<button id="delete" title="Delete Procedure Description" type="button" class="btn btn-icon stcaps-edit-button"><i class="icon-remove"></i></button>
 			</div>
 		</div>
 	</div>
@@ -189,12 +187,6 @@ $.extend(Descriptons.prototype, {
 	_createGetSensorRequest: function(id) {
 		return this._soap(this._createDescribeSensorRequest(id));
 	},
-	_createUpdateSensorSoapRequest: function(id, xml) {
-		return this._soap(this._createUpdateSensorRequest(id, xml));
-	},
-	_createDeleteSensorSoapRequest: function(id) {
-		return this._soap(this._createDeleteSensorRequest(id));
-	},
 	_setServiceAndVersion: function(x) {
 		x.setAttribute("service", "SOS");
 		x.setAttribute("version", "2.0.0");
@@ -210,38 +202,6 @@ $.extend(Descriptons.prototype, {
 		describeSensor.appendChild(procedureDescriptionFormat);
 		procedureDescriptionFormat.appendChild(doc.createTextNode(this._getProcedureFormat(id)));
 		this._setServiceAndVersion(describeSensor);
-		return doc;
-	},
-	_createDeleteSensorRequest: function(id) {
-		var doc = jsxml.fromString('<?xml version="1.0" encoding="UTF-8"?>' +
-				'<swes:DeleteSensor xmlns:swes="' + this.NS.swes + '"/>'),
-			deleteSensor = doc.documentElement,
-			procedure = doc.createElement("swes:procedure"),
-			procedureDescriptionFormat = doc.createElement("swes:procedureDescriptionFormat");
-		deleteSensor.appendChild(procedure);
-		procedure.appendChild(doc.createTextNode(id));
-		this._setServiceAndVersion(deleteSensor);
-		return doc;
-	},
-	_createUpdateSensorRequest: function(id, xml) {
-		var doc = jsxml.fromString('<?xml version="1.0" encoding="UTF-8"?>' +
-				'<swes:UpdateSensorDescription xmlns:swes="' + this.NS.swes + '"/>'),
-			updateSensorDescription = doc.documentElement,
-			procedure = doc.createElement("swes:procedure"),
-			procedureDescriptionFormat = doc.createElement("swes:procedureDescriptionFormat"),
-			description = doc.createElement("swes:description"),
-			sensorDescription = doc.createElement("swes:SensorDescription"),
-			data = doc.createElement("swes:data"),
-			xml = (typeof xml === "string") ? $.parseXML(xml).documentElement : xml.documentElement;
-		updateSensorDescription.appendChild(procedure);
-		procedure.appendChild(doc.createTextNode(id));
-		updateSensorDescription.appendChild(procedureDescriptionFormat);
-		procedureDescriptionFormat.appendChild(doc.createTextNode(this._getProcedureFormat(id)));
-		updateSensorDescription.appendChild(description);
-		description.appendChild(sensorDescription);
-		sensorDescription.appendChild(data);
-		data.appendChild(xml);
-		this._setServiceAndVersion(updateSensorDescription);
 		return doc;
 	},
 	_soap: function(content) {
@@ -276,12 +236,6 @@ $.extend(Descriptons.prototype, {
 			this._sendSoapRequest(this._createGetSensorSoapRequest(id), success, error);
 		}
 	},
-	_deleteSensor: function(id, success, error) {
-		this._sendSoapRequest(this._createDeleteSensorSoapRequest(id), success, error);
-	},
-	_updateSensor: function(id, description, success, error) {
-		this._sendSoapRequest(this._createUpdateSensorSoapRequest(id, description), success, error);
-	},
 	get: function(id, success, error, context) {
 		if (arguments.length === 0) {
 			return this.sensors;
@@ -306,46 +260,11 @@ $.extend(Descriptons.prototype, {
 			}
 		});
 	},
-	delete: function(id, success, error, context) {
-		this._testId(id);
-		this._deleteSensor(id, function(response) {
-			//TODO get error message
-			var fail = this._isException(response);
-				callback = fail ? error : success;
-			if (!fail) {
-				this.sensors.splice(this.sensors.indexOf(id), 1);
-			}
-			if ($.isFunction(callback)) {
-				callback.apply(context || this, arguments);
-			}
-		}, function() {
-			if ($.isFunction(error)) {
-				error.apply(context || this, arguments);
-			}
-		});
-	},
-	update: function(id, xml, success, error, context) {
-		this._testId(id);
-		this._updateSensor(id, xml, function(response) {
-			//TODO get error message
-			var fail = this._isException(response),
-				callback = fail ? error : success;
-			if ($.isFunction(callback)) {
-				callback.apply(context || this, arguments);
-			}
-		}, function() {
-			if ($.isFunction(error)) {
-				error.apply(context || this, arguments);
-			}
-		});
-	}
 });
 
 function Controller(options) {
 	$.extend(this, options);
 	$.extend(this, {
-		$save: $("#save"),
-		$delete: $("#delete"),
 		$validate: $("#validate"),
 		$editor: $("#editor"),
 		$procedure: $("#id"),
@@ -366,12 +285,6 @@ $.extend(Controller.prototype, {
 			onChange: function() {
 				self.onEditorChange.apply(self, arguments);
 			}
-		});
-		this.$save.on("click", function() {
-			self.onSave.apply(self, arguments);
-		});
-		this.$delete.on("click", function() {
-			self.onDelete.apply(self, arguments);
 		});
 		this.$validate.on("click", function() {
 			self.onValidate.apply(self, arguments);
@@ -395,15 +308,10 @@ $.extend(Controller.prototype, {
 	setEditorContent: function(x) {
 		this.$editor.codeMirror("set", x);
 	},
-	onEditorChange: function() {
-		this.$save.disabled(false);
-	},
 	onIdChange: function() {
 		var id = this.getSelectedProcedure(),
 			onSuccess = function(response) {
 				this.setEditorContent(vkbeautify.xml(xml2string(response)));
-				this.$save.disabled(true);
-				this.$delete.disabled(false);
 				this.$validate.disabled(false);
 			},
 			onError = function(e) {
@@ -412,47 +320,11 @@ $.extend(Controller.prototype, {
 					+ "</code> " + e.responseText);
 			};
 		if (!id) {
-			this.$save.disabled(true);
-
-			this.$delete.disabled(true);
 			this.$validate.disabled(true);
 			this.setEditorContent("");
 		} else {
 			this.descriptions.get(id, onSuccess, onError, this);
 		}
-	},
-	onSave: function() {
-		var id = this.getSelectedProcedure(),
-			xml = this.getEditorContent(),
-			onSuccess = function() {
-				showSuccess("Saved procedure <code>" + id + "</code>");
-			},
-			onError = function(e) {
-				showError("Error updating procedure <code>" + id
-					+ "</code>: <code>" + e.status + " " + e.statusText
-					+ "</code> " + e.responseText);
-				this.$save.disabled(false);
-			};
-		this.$save.disabled(true);
-		this.descriptions.update(id, xml, onSuccess, onError, this);
-	},
-	onDelete: function() {
-		var id = this.getSelectedProcedure();
-			onSuccess = function() {
-				showSuccess("Deleted procedure <code>" + id + "</code>");
-				/* remove from dropdown */
-				this.$procedure.find("option:selected").remove()
-						.addBack().trigger("change");
-			},
-			onError = function(e) {
-				showError("Error deleting procedure <code>" + id
-					+ "</code>: <code>" + e.status + " " + e.statusText
-					+ "</code> " + e.responseText);
-				this.$save.disabled(false);
-
-			};
-		this.$delete.disabled(true);
-		this.descriptions.delete(id, onSuccess, onError, this);
 	},
 	onValidate: function() {
 		var xml = this.getEditorContent();
@@ -517,9 +389,7 @@ $.extend(Controller.prototype, {
 
     var procedureFormats = ${sos:mapToJson(procedureFormatMap)};
 
-	var isUpdateSensorSupported = ${isUpdateSensorSupported};
 	var isDescribeSensorSupported = ${isDescribeSensorSupported};
-	var isDeleteSensorSupported = ${isDeleteSensorSupported};
 	var baseUrl = "<c:url value="/"/>";
 	var descriptions = new Descriptons({
 		describeSensorRequestMethod: "${describeSensorRequestMethod}",

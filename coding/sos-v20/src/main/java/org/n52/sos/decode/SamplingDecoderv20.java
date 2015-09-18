@@ -237,7 +237,7 @@ public class SamplingDecoderv20 implements Decoder<AbstractFeature, XmlObject> {
                         sampledFeatures.add((AbstractFeature) decodedObject);
                     }
                 }
-                throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+                throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                         .withMessage("The requested sampledFeature type is not supported by this service!");
             }
         }
@@ -249,7 +249,7 @@ public class SamplingDecoderv20 implements Decoder<AbstractFeature, XmlObject> {
         if (decodedObject instanceof Geometry) {
             return (Geometry) decodedObject;
         }
-        throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation).withMessage(
+        throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation).withMessage(
                 "The requested geometry type of featureOfInterest is not supported by this service!");
     }
 

@@ -73,11 +73,7 @@ public class SensorDescriptionController extends AbstractAdminController {
 
     private static final String PROCEDURE_FORMAT_MAP = "procedureFormatMap";
 
-    private static final String IS_UPDATE_SENSOR_SUPPORTED = "isUpdateSensorSupported";
-
     private static final String IS_DESCRIBE_SENSOR_SUPPORTED = "isDescribeSensorSupported";
-
-    private static final String IS_DELETE_SENSOR_SUPPORTED = "isDeleteSensorSupported";
 
     private static final String DESCRIBE_SENSOR_REQUEST_METHOD = "describeSensorRequestMethod";
 
@@ -95,53 +91,17 @@ public class SensorDescriptionController extends AbstractAdminController {
             SosConstants.Operations.DescribeSensor.name(),
             MediaTypes.APPLICATION_KVP);
 
-    private static final OperationDecoderKey UPDATE_SENSOR_DECODER_KEY_KVP = new OperationDecoderKey(
-            SosConstants.SOS,
-            Sos2Constants.SERVICEVERSION,
-            Sos2Constants.Operations.UpdateSensorDescription.name(),
-            MediaTypes.APPLICATION_KVP);
-
-    private static final OperationDecoderKey DELETE_SENSOR_DECODER_KEY_KVP = new OperationDecoderKey(
-            SosConstants.SOS,
-            Sos2Constants.SERVICEVERSION,
-            Sos2Constants.Operations.DeleteSensor.name(),
-            MediaTypes.APPLICATION_KVP);
-
-    private static final OperationDecoderKey UPDATE_SENSOR_DECODER_KEY_SOAP = new OperationDecoderKey(
-            SosConstants.SOS,
-            Sos2Constants.SERVICEVERSION,
-            Sos2Constants.Operations.UpdateSensorDescription.name(),
-            MediaTypes.APPLICATION_SOAP_XML);
-
-    private static final OperationDecoderKey DELETE_SENSOR_DECODER_KEY_SOAP = new OperationDecoderKey(
-            SosConstants.SOS,
-            Sos2Constants.SERVICEVERSION,
-            Sos2Constants.Operations.DeleteSensor.name(),
-            MediaTypes.APPLICATION_SOAP_XML);
-
     @RequestMapping(method = RequestMethod.GET)
     public ModelAndView view() throws OwsExceptionReport {
         Map<String, Object> model = new HashMap<String, Object>(5);
-		boolean getKvp = false, getSoap = false, update = false, delete = false;
+		boolean getKvp = false, getSoap = false;
         try {
 			for (Binding b : BindingRepository.getInstance().getBindings().values()) {
 				if (b.checkOperationHttpGetSupported(DESCRIBE_SENSOR_DECODER_KEY_KVP)) {
 					getKvp = true;
 				}
-				if (b.checkOperationHttpPostSupported(UPDATE_SENSOR_DECODER_KEY_KVP)) {
-					update = true;
-				}
-				if (b.checkOperationHttpPostSupported(DELETE_SENSOR_DECODER_KEY_KVP)) {
-					delete = true;
-				}
 				if (b.checkOperationHttpPostSupported(DESCRIBE_SENSOR_DECODER_KEY_SOAP)) {
 					getSoap = true;
-				}
-				if (b.checkOperationHttpPostSupported(UPDATE_SENSOR_DECODER_KEY_SOAP)) {
-					update = true;
-				}
-				if (b.checkOperationHttpPostSupported(DELETE_SENSOR_DECODER_KEY_SOAP)) {
-					delete = true;
 				}
 			}
         } catch (HTTPException ex) {
@@ -153,8 +113,6 @@ public class SensorDescriptionController extends AbstractAdminController {
         } else if (getSoap) {
             model.put(DESCRIBE_SENSOR_REQUEST_METHOD, "POST");
         }
-        model.put(IS_DELETE_SENSOR_SUPPORTED, delete);
-        model.put(IS_UPDATE_SENSOR_SUPPORTED, update);
         model.put(IS_DESCRIBE_SENSOR_SUPPORTED, getKvp||getSoap);
         List<String> procedures = Lists.newArrayList(Configurator.getInstance().getCache().getProcedures());
         Collections.sort(procedures);

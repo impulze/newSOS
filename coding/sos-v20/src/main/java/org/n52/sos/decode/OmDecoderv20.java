@@ -333,7 +333,7 @@ public class OmDecoderv20 implements Decoder<Object, Object> {
             }
             // FIXME else
         }
-        throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation).withMessage(
+        throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation).withMessage(
                 "The requested phenomenonTime type is not supported by this service!");
     }
 
@@ -362,10 +362,10 @@ public class OmDecoderv20 implements Decoder<Object, Object> {
             if (decodedObject instanceof TimeInstant) {
                 return (TimeInstant) decodedObject;
             }
-            throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+            throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                     .withMessage("The requested resultTime type is not supported by this service!");
         } else {
-            throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+            throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                     .withMessage("The requested resultTime type is not supported by this service!");
         }
     }
@@ -376,7 +376,7 @@ public class OmDecoderv20 implements Decoder<Object, Object> {
             if (decodedObject instanceof TimePeriod) {
                 return (TimePeriod) decodedObject;
             }
-            throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+            throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                     .withMessage("The requested validTime type is not supported by this service!");
         }
         return null;
@@ -459,7 +459,7 @@ public class OmDecoderv20 implements Decoder<Object, Object> {
                 result.setValue(value);
                 return result;
             }
-            throw new InvalidParameterValueException().at(Sos2Constants.InsertObservationParams.observation)
+            throw new InvalidParameterValueException().at(Sos2Constants.GetObservationParams.observation)
                     .withMessage("The requested result type is not supported by this service!");
         }
     }

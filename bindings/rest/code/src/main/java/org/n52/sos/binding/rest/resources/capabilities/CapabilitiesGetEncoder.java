@@ -66,11 +66,9 @@ public class CapabilitiesGetEncoder extends ResourceEncoder {
             addFeaturesLink(xb_CapabilitiesRest);
             
             // rel:sensor
-            addSensorCreateLink(xb_CapabilitiesRest);
             addSensorsLink(xb_CapabilitiesRest);
             
             // rel:observation
-            addObservationCreateLink(xb_CapabilitiesRest);
             addObservationLink(xb_CapabilitiesRest);
             
             return createServiceResponseFromXBDocument(
@@ -89,20 +87,6 @@ public class CapabilitiesGetEncoder extends ResourceEncoder {
         setValuesOfLinkToGlobalResource(xb_CapabilitiesRest.addNewLink(),
                 bindingConstants.getResourceRelationObservationGet(),
                 bindingConstants.getResourceObservations());
-    }
-
-    private void addObservationCreateLink(CapabilitiesType xb_CapabilitiesRest)
-    {
-        setValuesOfLinkToGlobalResource(xb_CapabilitiesRest.addNewLink(),
-                bindingConstants.getResourceRelationObservationCreate(),
-                bindingConstants.getResourceObservations());
-    }
-
-    private void addSensorCreateLink(CapabilitiesType xb_CapabilitiesRest)
-    {
-        setValuesOfLinkToGlobalResource(xb_CapabilitiesRest.addNewLink(),
-                bindingConstants.getResourceRelationSensorCreate(),
-                bindingConstants.getResourceSensors());
     }
 
     private void addSensorsLink(CapabilitiesType xb_CapabilitiesRest)

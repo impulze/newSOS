@@ -53,14 +53,7 @@ public class SensorsRequestHandler extends RequestHandler {
             return new SensorsGetRequestHandler().handleRequest(request);
 
         }
-        if (request instanceof SensorsPostRequest) {
-            return new SensorsPostRequestHandler().handleRequest(request);
-            
-        }
-        if (request instanceof SensorsPutRequest) {
-            return new SensorsPutRequestHandler().handleRequest(request);
-            
-        }
+
         throw new OperationNotSupportedException(request.getClass().getName());
     }
 }

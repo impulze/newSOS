@@ -91,18 +91,14 @@ public final class Constants {
 	private String resourceRelationFeatureGet;
 	private String resourceRelationFeaturesGet;
 	private String resourceRelationObservablepropertyGet;
-	private String resourceRelationObservationCreate;
-	private String resourceRelationObservationDelete;
 	private String resourceRelationObservationGet;
 	private String resourceRelationObservationsGet;
 	private String resourceRelationOfferingGet;
 	private String resourceRelationOfferingsGet;
 	private String resourceRelationSelf;
 	private String resourceRelationSensorCreate;
-	private String resourceRelationSensorDelete;
 	private String resourceRelationSensorGet;
 	private String resourceRelationSensorsGet;
-	private String resourceRelationSensorUpdate;
 	private String resourceSensors;
 	private String resourceType;
 	private String restEncodingNamespace;
@@ -324,18 +320,6 @@ public final class Constants {
     	return resourceRelationObservablepropertyGet;
     }
 
-    public String getResourceRelationObservationCreate()
-    {
-//        return properties.getProperty("resource.relation.observation.create", "observation-create");
-    	return resourceRelationObservationCreate;
-    }
-
-    public String getResourceRelationObservationDelete()
-    {
-//        return properties.getProperty("resource.relation.observation.delete", "observation-delete");
-    	return resourceRelationObservationDelete;
-    }
-
     public String getResourceRelationObservationGet()
     {
 //        return properties.getProperty("resource.relation.observation.get", "observation-get");
@@ -372,12 +356,6 @@ public final class Constants {
     	return resourceRelationSensorCreate;
     }
 
-    public String getResourceRelationSensorDelete()
-    {
-//        return properties.getProperty("resource.relation.sensor.delete", "sensor-delete");
-    	return resourceRelationSensorDelete;
-    }
-    
     public String getResourceRelationSensorGet()
     {
 //        return properties.getProperty("resource.relation.sensor.get", "sensor-get");
@@ -390,12 +368,6 @@ public final class Constants {
     	return resourceRelationSensorsGet;
     }
     
-    public String getResourceRelationSensorUpdate()
-    {
-//        return properties.getProperty("resource.relation.sensor.update", "sensor-update");
-    	return resourceRelationSensorUpdate;
-    }
-
     public String getResourceSensors()
     {
 //        return properties.getProperty("resource.sensors", "sensors");
@@ -715,20 +687,6 @@ public final class Constants {
 		this.resourceRelationObservablepropertyGet = resourceRelationObservablepropertyGet;
 	}
 
-	@Setting(REST_RESOURCE_RELATION_OBSERVATION_CREATE)
-	public void setResourceRelationObservationCreate(final String resourceRelationObservationCreate)
-	{
-		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_OBSERVATION_CREATE, resourceRelationObservationCreate);
-		this.resourceRelationObservationCreate = resourceRelationObservationCreate;
-	}
-
-	@Setting(REST_RESOURCE_RELATION_OBSERVATION_DELETE)
-	public void setResourceRelationObservationDelete(final String resourceRelationObservationDelete)
-	{
-		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_OBSERVATION_DELETE, resourceRelationObservationDelete);
-		this.resourceRelationObservationDelete = resourceRelationObservationDelete;
-	}
-
 	@Setting(REST_RESOURCE_RELATION_OBSERVATION_GET)
 	public void setResourceRelationObservationGet(final String resourceRelationObservationGet)
 	{
@@ -764,20 +722,6 @@ public final class Constants {
 		this.resourceRelationSelf = resourceRelationSelf;
 	}
 
-	@Setting(REST_RESOURCE_RELATION_SENSOR_CREATE)
-	public void setResourceRelationSensorCreate(final String resourceRelationSensorCreate)
-	{
-		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_SENSOR_CREATE, resourceRelationSensorCreate);
-		this.resourceRelationSensorCreate = resourceRelationSensorCreate;
-	}
-
-	@Setting(REST_RESOURCE_RELATION_SENSOR_DELETE)
-	public void setResourceRelationSensorDelete(final String resourceRelationSensorDelete)
-	{
-		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_SENSOR_DELETE, resourceRelationSensorDelete);
-		this.resourceRelationSensorDelete = resourceRelationSensorDelete;
-	}
-
 	@Setting(REST_RESOURCE_RELATION_SENSOR_GET)
 	public void setResourceRelationSensorGet(final String resourceRelationSensorGet)
 	{
@@ -790,13 +734,6 @@ public final class Constants {
 	{
 		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_SENSORS_GET, resourceRelationSensorsGet);
 		this.resourceRelationSensorsGet = resourceRelationSensorsGet;
-	}
-
-	@Setting(REST_RESOURCE_RELATION_SENSOR_UPDATE)
-	public void setResourceRelationSensorUpdate(final String resourceRelationSensorUpdate)
-	{
-		Validation.notNullOrEmpty(REST_RESOURCE_RELATION_SENSOR_UPDATE, resourceRelationSensorUpdate);
-		this.resourceRelationSensorUpdate = resourceRelationSensorUpdate;
 	}
 
 	@Setting(REST_RESOURCE_SENSORS)

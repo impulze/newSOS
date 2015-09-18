@@ -119,13 +119,6 @@ public interface Sos1Constants extends SosConstants {
     }
 
     /**
-     * enum with parameter names for registerSensor request
-     */
-    enum RegisterSensorParams {
-        SensorDescription, ObservationTemplate;
-    }
-
-    /**
      * enum with parameter names for SOS 1.0 getObservationById request not
      * supported by all versions
      */

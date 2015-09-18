@@ -80,7 +80,6 @@ public class SOS40ComplianceTestSuite extends MockHttpExecutor
     public Class<?>[] getTests() {
         return new Class<?>[] {
             org.n52.sos.service.it.v2.soap.DeleteObservationTest.class,
-            org.n52.sos.service.it.v2.soap.DeleteSensorTest.class,
             org.n52.sos.service.it.v2.soap.DescribeSensorTest.class,
             org.n52.sos.service.it.v2.soap.GetCapabilitiesTest.class,
             org.n52.sos.service.it.v2.soap.GetDataAvailabilityTest.class,
@@ -89,13 +88,7 @@ public class SOS40ComplianceTestSuite extends MockHttpExecutor
             org.n52.sos.service.it.v2.soap.GetObservationTest.class,
             org.n52.sos.service.it.v2.soap.GetResultTemplateTest.class,
             org.n52.sos.service.it.v2.soap.GetResultTest.class,
-            org.n52.sos.service.it.v2.soap.InsertObservationTest.class,
-            org.n52.sos.service.it.v2.soap.InsertResultTemplateTest.class,
-            org.n52.sos.service.it.v2.soap.InsertResultTest.class,
-            org.n52.sos.service.it.v2.soap.InsertSensorTest.class,
-            org.n52.sos.service.it.v2.soap.UpdateSensorDescriptionTest.class,
             org.n52.sos.service.it.v2.kvp.DeleteObservationTest.class,
-            org.n52.sos.service.it.v2.kvp.DeleteSensorTest.class,
             org.n52.sos.service.it.v2.kvp.DescribeSensorTest.class,
             org.n52.sos.service.it.v2.kvp.GetCapabilitiesTest.class,
             org.n52.sos.service.it.v2.kvp.GetDataAvailabilityTest.class,
