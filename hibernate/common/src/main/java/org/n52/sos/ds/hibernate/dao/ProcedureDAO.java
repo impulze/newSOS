@@ -47,6 +47,7 @@ import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Procedure;
+import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
 import org.n52.sos.ds.hibernate.entities.TProcedure;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
@@ -85,14 +86,17 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     public List<Procedure> createProceduresWithSensors(List<Sensor> sensors, Session session) {
     	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
     	final List<Procedure> procedures = Lists.newArrayListWithCapacity(sensors.size());
+    	final ProcedureDescriptionFormat pdf = new ProcedureDescriptionFormat();
+
+    	pdf.setProcedureDescriptionFormat(ProcedureDescriptionFormatDAO.HZG_PROCEDURE_DESCRIPTION_FORMAT_STRING);
 
     	for (final Sensor sensor: sensors) {
     		final TProcedure procedure = new TProcedure();
 
-    		// TODOHZG: set description and format
+    		// TODOHZG: set description
     		procedure.setDeleted(false);
     		procedure.setIdentifier(sosConfiguration.getProcedureIdentifierPrefix() + sensor.getName());
-
+    		procedure.setProcedureDescriptionFormat(pdf);
     		procedures.add(procedure);
     	}
 

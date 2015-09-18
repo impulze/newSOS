@@ -87,7 +87,7 @@ public class ProcedureCacheUpdate extends AbstractQueueingDatasourceCacheUpdate<
     }
 
     private void getProcedureDescriptionFormat() {
-        getCache().setRequestableProcedureDescriptionFormat(new ProcedureDescriptionFormatDAO().getProcedureDescriptionFormat(getSession()));
+        getCache().setRequestableProcedureDescriptionFormat(Lists.newArrayList(ProcedureDescriptionFormatDAO.HZG_PROCEDURE_DESCRIPTION_FORMAT_STRING));
     }
 
     @Override

@@ -28,11 +28,7 @@
  */
 package org.n52.sos.ds.hibernate.dao;
 
-import java.util.List;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
-import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
+import org.n52.sos.ogc.sensorML.SensorML20Constants;
 
 /**
  * Hibernate data access class for procedure description format
@@ -41,11 +37,5 @@ import org.n52.sos.ds.hibernate.entities.ProcedureDescriptionFormat;
  * @since 4.0.0
  */
 public class ProcedureDescriptionFormatDAO {
-    @SuppressWarnings("unchecked")
-    public List<String> getProcedureDescriptionFormat(Session session) {
-        Criteria c = session.createCriteria(ProcedureDescriptionFormat.class);
-        c.setProjection(Projections.distinct(Projections.property(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT)));
-        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        return c.list();
-    }
+	public final static String HZG_PROCEDURE_DESCRIPTION_FORMAT_STRING = SensorML20Constants.SENSORML_20_OUTPUT_FORMAT_URL;
 }
