@@ -31,7 +31,6 @@ package org.n52.sos.ds.hibernate.util.observation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,18 +104,6 @@ public class ObservationOmObservationCreator extends AbstractOmObservationCreato
     private final Map<Integer, OmObservationConstellation> observationConstellations = Maps.newHashMap();
 
     private List<OmObservation> observationCollection;
-
-    
-    public ObservationOmObservationCreator(Collection<AbstractObservation> observations,
-            AbstractObservationRequest request, Locale language, Session session) {
-    	super(request, session);
-        this.request = request;
-        if (observations == null) {
-            this.observations = Collections.emptyList();
-        } else {
-            this.observations = observations;
-        }
-    }
     
     public ObservationOmObservationCreator(Collection<AbstractObservation> observations, AbstractObservationRequest request,
             Session session) {

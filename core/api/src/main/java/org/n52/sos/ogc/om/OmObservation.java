@@ -43,6 +43,8 @@ import org.n52.sos.ogc.om.values.NilTemplateValue;
 import org.n52.sos.ogc.om.values.TVPValue;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -376,7 +378,10 @@ public class OmObservation extends AbstractFeature implements Serializable {
      * @param observationValue
      *            Observation to merge
      */
+    static final Logger LOG = LoggerFactory.getLogger(OmObservation.class);
     private void mergeValues(final ObservationValue<?> observationValue) {
+    	LOG.info("mergeValues: " + observationValue + " //  " + observationValue.getClass());
+    	LOG.info("mergeValues: " + getValue() + " // " + (getValue() == null ? "NULL" : getValue().getClass()));
         TVPValue tvpValue;
         if (getValue() instanceof SingleObservationValue) {
             tvpValue = convertSingleValueToMultiValue((SingleObservationValue<?>) value);
@@ -385,6 +390,7 @@ public class OmObservation extends AbstractFeature implements Serializable {
         }
         if (observationValue instanceof SingleObservationValue) {
             final SingleObservationValue<?> singleValue = (SingleObservationValue<?>) observationValue;
+            LOG.info("mergeValues single: " + singleValue.getValue() + " // " + (singleValue.getValue() == null ? "NULL" : singleValue.getValue().getClass()));
             if (!(singleValue.getValue() instanceof NilTemplateValue)) {
                 final TimeValuePair timeValuePair =
                         new TimeValuePair(singleValue.getPhenomenonTime(), singleValue.getValue());

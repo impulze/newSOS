@@ -36,6 +36,7 @@ import java.util.Set;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.joda.time.DateTime;
+import org.n52.sos.ds.hibernate.HZGEReportingValue;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
 import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
@@ -90,7 +91,8 @@ public abstract class AbstractHibernateStreamingValue extends StreamingValue<Abs
                 observations.put(nextEntity.getDiscriminator(), observation);
             }
             nextEntity.mergeValueToObservation(observation, getResponseFormat());
-            sessionHolder.getSession().evict(nextEntity);
+            // TODOHZG: dangerous cast
+            sessionHolder.getSession().evict(((HZGEReportingValue)nextEntity).getSessionObject());
         }
         return observations.values();
     }

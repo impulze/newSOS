@@ -124,7 +124,7 @@ public final class XmlHelper {
         } catch (final XmlException xmle) {
             throw new NoApplicableCodeException().causedBy(xmle).withMessage(
                     "An xml error occured when parsing the request! Message: %s", xmle.getMessage());
-        }
+        } 
     }
 
     /**

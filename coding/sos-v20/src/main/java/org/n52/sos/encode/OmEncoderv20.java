@@ -217,6 +217,7 @@ public class OmEncoderv20 extends AbstractOmEncoderv20 {
     
     
 
+    static Logger LOG = LoggerFactory.getLogger(OmEncoderv20.class);
     @Override
     protected XmlObject encodeResult(ObservationValue<?> observationValue) throws OwsExceptionReport {
         if (observationValue instanceof SingleObservationValue) {

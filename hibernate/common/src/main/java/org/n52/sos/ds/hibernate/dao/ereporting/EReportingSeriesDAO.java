@@ -35,6 +35,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.internal.util.collections.CollectionHelper;
+import org.n52.sos.ds.hibernate.HZGEReportingSeries;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
@@ -104,7 +105,7 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
                 }
             }
 
-            final EReportingSeries series = new EReportingSeries();
+            final HZGEReportingSeries series = new HZGEReportingSeries();
 
             series.setDeleted(false);
             series.setFeatureOfInterest(foi);
@@ -112,6 +113,7 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
             series.setProcedure(procedure);
             series.setPublished(true);
             series.setSamplingPoint(samplingPoint);
+            series.setObservedPropertyInstance(instance);
 
             result.add(series);
         }

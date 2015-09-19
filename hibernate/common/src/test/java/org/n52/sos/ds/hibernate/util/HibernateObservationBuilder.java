@@ -35,10 +35,9 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
-
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
+import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.BooleanObservation;
 import org.n52.sos.ds.hibernate.entities.Codespace;
@@ -58,6 +57,8 @@ import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesBooleanObservation;
 import org.n52.sos.ogc.om.values.BooleanValue;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -91,11 +92,12 @@ public class HibernateObservationBuilder {
         this.session = session;
     }
 
+    final Logger LOG = LoggerFactory.getLogger(HibernateObservationBuilder.class);
     public AbstractObservation createObservation(String id, Date phenomenonTimeStart, Date phenomenonTimeEnd, Date resultTime,
             Date validTimeStart, Date validTimeEnd) throws OwsExceptionReport {
         AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
         AbstractObservation observation = observationDAO.createObservationFromValue(new BooleanValue(true), session);
-        if (observationDAO instanceof SeriesObservationDAO) {
+        if (observationDAO instanceof AbstractSeriesObservationDAO) {
             SeriesBooleanObservation seriesBooleanObservation = (SeriesBooleanObservation)observation;
             seriesBooleanObservation.setSeries(getSeries());
             seriesBooleanObservation.setValue(true);
@@ -106,6 +108,7 @@ public class HibernateObservationBuilder {
             booleanObservation.setObservableProperty(getObservableProperty());
             booleanObservation.setValue(true);
         }
+        LOG.info("creating observation");
         observation.setDeleted(false);
         observation.setIdentifier(id);
         observation.setPhenomenonTimeStart(phenomenonTimeStart);
@@ -121,43 +124,9 @@ public class HibernateObservationBuilder {
         return observation;
     }
 
-    public AbstractObservation createObservation(String id, DateTime phenomenonTimeStart, DateTime phenomenonTimeEnd,
-            DateTime resultTime, DateTime validTimeStart, DateTime validTimeEnd) throws OwsExceptionReport {
-        return createObservation(id, phenomenonTimeStart != null ? phenomenonTimeStart.toDate() : null,
-                phenomenonTimeEnd != null ? phenomenonTimeEnd.toDate() : null,
-                resultTime != null ? resultTime.toDate() : null, validTimeStart != null ? validTimeStart.toDate()
-                        : null, validTimeEnd != null ? validTimeEnd.toDate() : null);
-    }
-
-    public AbstractObservation createObservation(String id, DateTime begin, DateTime end) throws OwsExceptionReport {
-        Date s = begin != null ? begin.toDate() : null;
-        Date e = end != null ? end.toDate() : null;
-        return createObservation(id, s, e, s, s, e);
-    }
-
     public AbstractObservation createObservation(String id, DateTime position) throws OwsExceptionReport {
         Date s = position != null ? position.toDate() : null;
         return createObservation(id, s, s, s, s, s);
-    }
-
-    public AbstractObservation createObservation(Enum<?> id, Date phenomenonTimeStart, Date phenomenonTimeEnd,
-            Date resultTime, Date validTimeStart, Date validTimeEnd) throws OwsExceptionReport {
-        return createObservation(id.name(), phenomenonTimeStart, phenomenonTimeEnd, resultTime, validTimeStart,
-                validTimeEnd);
-    }
-
-    public AbstractObservation createObservation(Enum<?> id, DateTime phenomenonTimeStart, DateTime phenomenonTimeEnd,
-            DateTime resultTime, DateTime validTimeStart, DateTime validTimeEnd) throws OwsExceptionReport {
-        return createObservation(id.name(), phenomenonTimeStart, phenomenonTimeEnd, resultTime, validTimeStart,
-                validTimeEnd);
-    }
-
-    public AbstractObservation createObservation(Enum<?> id, DateTime begin, DateTime end) throws OwsExceptionReport {
-        return createObservation(id.name(), begin, end);
-    }
-
-    public AbstractObservation createObservation(Enum<?> id, DateTime time) throws OwsExceptionReport {
-        return createObservation(id.name(), time);
     }
 
     protected FeatureOfInterest getFeatureOfInterest() {

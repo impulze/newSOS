@@ -43,7 +43,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.ObservationInfo;
 import org.n52.sos.ds.hibernate.entities.Procedure;
@@ -383,7 +382,7 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
         Object min = null;
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
+            if (observationDAO instanceof AbstractSeriesObservationDAO) {
                 addProcedureRestrictionForSeries(criteria, procedure);
             } else {
                 addProcedureRestrictionForObservation(criteria, procedure);
@@ -413,7 +412,7 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria cstart = observationDAO.getDefaultObservationInfoCriteria(session);
             Criteria cend = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
+            if (observationDAO instanceof AbstractSeriesObservationDAO) {
                 addProcedureRestrictionForSeries(cstart, procedure);
                 addProcedureRestrictionForSeries(cend, procedure);
             } else {

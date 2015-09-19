@@ -67,6 +67,8 @@ import org.n52.sos.service.ServiceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hzg.values.ValueData;
+
 /**
  * SWE helper class.
  * 
@@ -177,6 +179,15 @@ public final class SweHelper {
                         dataArray.setElementType(createElementType(timeValuePair,
                                 observablePropertyIdentifier));
                     }
+
+                    if (timeValuePair.getValue() instanceof SweDataArrayValue) {
+                    	final SweDataArrayValue timeValuePairArrayValue = (SweDataArrayValue)timeValuePair.getValue();
+                    	for (final List<String> block: timeValuePairArrayValue.getValue().getValues()) {
+                    		dataArrayValue.addBlock(block);
+                    	}
+                    	continue;
+                    }
+
                     List<String> newBlock =
                             createBlock(dataArray.getElementType(), timeValuePair.getTime(),
                                     observablePropertyIdentifier, timeValuePair.getValue());
@@ -188,9 +199,14 @@ public final class SweHelper {
     }
 
     private static SweAbstractDataComponent createElementType(TimeValuePair tvp, String name) {
+        if (tvp.getValue() instanceof SweDataArrayValue) {
+        	// TODOHZG: use array element type that was previously set, ignore tvp here
+        	return ((SweDataArrayValue)tvp.getValue()).getValue().getElementType();
+        }
+        
         SweDataRecord dataRecord = new SweDataRecord();
         dataRecord.addField(getPhenomenonTimeField(tvp.getTime()));
-        dataRecord.addField(getFieldForValue(tvp.getValue(), name));
+    	dataRecord.addField(getFieldForValue(tvp.getValue(), name));
         return dataRecord;
     }
 

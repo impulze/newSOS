@@ -186,8 +186,8 @@ public class SweCommonEncoderv20 extends AbstractXmlEncoder<Object> {
         } else {
             throw new UnsupportedEncoderInputException(this, sosSweType);
         }
-        LOGGER.debug("Encoded object {} is valid: {}", encodedObject.schemaType().toString(),
-                XmlHelper.validateDocument(encodedObject));
+        //LOGGER.debug("Encoded object {} is valid: {}", encodedObject.schemaType().toString(),
+        //        XmlHelper.validateDocument(encodedObject));
         return encodedObject;
     }
 

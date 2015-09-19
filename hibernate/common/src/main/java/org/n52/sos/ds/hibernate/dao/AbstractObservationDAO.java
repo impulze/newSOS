@@ -55,7 +55,6 @@ import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.interfaces.GeometryObservation;
 import org.n52.sos.ds.hibernate.entities.interfaces.NumericObservation;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
-import org.n52.sos.ds.hibernate.entities.Observation;
 import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Procedure;
 import org.n52.sos.ds.hibernate.entities.interfaces.SweDataArrayObservation;
@@ -590,21 +589,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
     }
 
     /**
-     * Add valid time to observation object
-     *
-     * @param observation
-     *            Observation object
-     * @param validTime
-     *            SOS valid time
-     */
-    protected void addValidTimeToObservation(AbstractObservation observation, TimePeriod validTime) {
-        if (validTime != null) {
-            observation.setValidTimeStart(validTime.getStart().toDate());
-            observation.setValidTimeEnd(validTime.getEnd().toDate());
-        }
-    }
-
-    /**
      * Check if a Spatial Filtering Profile filter is requested and add to
      * criteria
      * 
@@ -628,23 +612,6 @@ public abstract class AbstractObservationDAO extends AbstractIdentifierNameDescr
                             request.getSpatialFilter().getGeometry())));
         }
 
-    }
-
-    /**
-     * Get all observation identifiers
-     *
-     * @param session
-     *            Hibernate session
-     * @return Observation identifiers
-     */
-    @SuppressWarnings("unchecked")
-    public List<String> getObservationIdentifier(Session session) {
-        Criteria criteria =
-                session.createCriteria(getObservationInfoClass()).add(Restrictions.eq(Observation.DELETED, false))
-                        .add(Restrictions.isNotNull(Observation.IDENTIFIER))
-                        .setProjection(Projections.distinct(Projections.property(Observation.IDENTIFIER)));
-        LOGGER.debug("QUERY getObservationIdentifiers(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
     }
 
     public SosEnvelope getSpatialFilteringProfileEnvelopeForOfferingId(String offeringID,

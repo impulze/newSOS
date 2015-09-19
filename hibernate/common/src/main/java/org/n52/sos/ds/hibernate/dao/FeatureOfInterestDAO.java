@@ -39,7 +39,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
+import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
@@ -115,7 +115,7 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
             final ObservationConstellation observationConstellation, final Session session) throws OwsExceptionReport {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
+            if (observationDAO instanceof AbstractSeriesObservationDAO) {
                 Criteria seriesCriteria = criteria.createCriteria(SeriesObservationInfo.SERIES);
                 seriesCriteria.add(Restrictions.eq(Series.PROCEDURE, observationConstellation.getProcedure())).add(
                         Restrictions.eq(Series.OBSERVABLE_PROPERTY, observationConstellation.getObservableProperty()));
@@ -151,7 +151,7 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
             final Session session) throws OwsExceptionReport {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria c = observationDAO.getDefaultObservationInfoCriteria(session);
-            if (observationDAO instanceof SeriesObservationDAO) {
+            if (observationDAO instanceof AbstractSeriesObservationDAO) {
                 Criteria seriesCriteria = c.createCriteria(SeriesObservationInfo.SERIES);
                 seriesCriteria.createCriteria(Series.FEATURE_OF_INTEREST).setProjection(
                         Projections.distinct(Projections.property(FeatureOfInterest.IDENTIFIER)));

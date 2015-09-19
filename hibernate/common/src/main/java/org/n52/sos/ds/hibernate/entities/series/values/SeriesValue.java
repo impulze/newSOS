@@ -32,12 +32,17 @@ import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.HibernateSeriesRelations.HasSeries;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
+import org.n52.sos.ogc.om.AbstractObservationValue;
+import org.n52.sos.ogc.om.MultiObservationValues;
 import org.n52.sos.ogc.om.OmConstants;
 import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.om.SingleObservationValue;
+import org.n52.sos.ogc.om.values.MultiValue;
 import org.n52.sos.ogc.om.values.Value;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.swes.SwesExtensions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link AbstractValue} for series concept used in streaming
@@ -67,25 +72,40 @@ public class SeriesValue extends AbstractValue implements HasSeries {
     public boolean isSetSeries() {
         return getSeries() != null;
     }
-
+    static Logger LOG = LoggerFactory.getLogger(SeriesValue.class);
     @Override
     public OmObservation mergeValueToObservation(OmObservation observation, String responseFormat) throws OwsExceptionReport {
         if (!observation.isSetValue()) {
+        	LOG.info("initial merge");
             addValuesToObservation(observation, responseFormat);
         } else {
             // TODO
             if (!OmConstants.OBS_TYPE_SWE_ARRAY_OBSERVATION.equals(observation.getObservationConstellation()
                     .getObservationType())) {
+            	LOG.info("set array type");
                 observation.getObservationConstellation().setObservationType(
                         OmConstants.OBS_TYPE_SWE_ARRAY_OBSERVATION);
             }
-            observation.mergeWithObservation(getSingleObservationValue(getValueFrom(this)));
+            LOG.info("next merge");
+            observation.mergeWithObservation(getObservationValue(getValueFrom(this)));
         }
         return observation;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private SingleObservationValue getSingleObservationValue(Value<?> value) throws OwsExceptionReport {
+    private AbstractObservationValue<?> getObservationValue(Value<?> value) throws OwsExceptionReport {
+    	/*
+    	LOG.info("setting single observation value: " + value +  " // " + value.getClass());
+    	if (value instanceof MultiValue) {
+    		final MultiValue multiValue = (MultiValue)value;
+    		final MultiObservationValues multiObservation = new MultiObservationValues();
+
+    		//multiObservation.setPhenomenonTime();
+    		multiObservation.setValue(multiValue);
+
+    		return multiObservation;
+    	}
+    	*/
         return new SingleObservationValue(createPhenomenonTime(), value);
     }
 
@@ -104,7 +124,7 @@ public class SeriesValue extends AbstractValue implements HasSeries {
     @Override
     protected void addObservationValueToObservation(OmObservation observation, Value<?> value, String responseFormat)
             throws OwsExceptionReport {
-        observation.setValue(getSingleObservationValue(value));
+        observation.setValue(getObservationValue(value));
     }
 
     @Override

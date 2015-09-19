@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.hibernate.HibernateException;
+import org.n52.sos.ds.hibernate.HZGEReportingValue;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.values.HibernateStreamingConfiguration;
@@ -43,6 +44,8 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.http.HTTPStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Hibernate series streaming value implementation for chunk results
@@ -106,13 +109,16 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
         return (AbstractValue) seriesValuesResult.next();
     }
 
+    static Logger LOG = LoggerFactory.getLogger(HibernateChunkSeriesStreamingValue.class);
     @Override
     public TimeValuePair nextValue() throws OwsExceptionReport {
+    	LOG.info("nextValue()");
         try {
             if (hasNextValue()) {
                 AbstractValue resultObject = seriesValuesResult.next();
                 TimeValuePair value = resultObject.createTimeValuePairFrom();
-                session.evict(resultObject);
+                // TODO: dangerous cast here
+                session.evict(((HZGEReportingValue)resultObject).getSessionObject());
                 return value;
             }
             return null;
@@ -125,13 +131,15 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
 
     @Override
     public OmObservation nextSingleObservation() throws OwsExceptionReport {
+    	LOG.info("nextSingle()");
         try {
             if (hasNextValue()) {
                 OmObservation observation = observationTemplate.cloneTemplate();
                 AbstractValue resultObject = seriesValuesResult.next();
                 resultObject.addValuesToObservation(observation, getResponseFormat());
                 checkForModifications(observation);
-                session.evict(resultObject);
+                // TODO: dangerous cast here
+                session.evict(((HZGEReportingValue)resultObject).getSessionObject());
                 return observation;
             }
             return null;

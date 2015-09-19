@@ -30,6 +30,8 @@ package org.n52.sos.ds.hibernate.values.series;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ScrollableResults;
+import org.n52.sos.ds.hibernate.HZGEReportingValue;
+import org.n52.sos.ds.hibernate.ScrollableConverter;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
 import org.n52.sos.exception.CodedException;
@@ -39,6 +41,8 @@ import org.n52.sos.ogc.om.TimeValuePair;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.http.HTTPStatus;
+
+import de.hzg.values.ValueData;
 
 /**
  * Hibernate series streaming value implementation for {@link ScrollableResults}
@@ -53,6 +57,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
 
     private ScrollableResults scrollableResult;
 
+    private ScrollableConverter<?, ?> scrollableConverter;
+
     /**
      * constructor
      * 
@@ -64,6 +70,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
      */
     public HibernateScrollableSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
         super(request, valueFK);
+
+        scrollableConverter = seriesValueDAO.getScrollableConverter();
     }
 
     @Override
@@ -86,7 +94,10 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
     @Override
     public SeriesValue nextEntity() throws OwsExceptionReport {
         checkMaxNumberOfReturnedValues(1);
-        return (SeriesValue) scrollableResult.get()[0];
+        final ValueData<?> valueData = (ValueData<?>) scrollableResult.get()[0];
+        @SuppressWarnings("unchecked")
+		final HZGEReportingValue value = ((ScrollableConverter<ValueData<?>, HZGEReportingValue>)scrollableConverter).convert(valueData);
+        return (SeriesValue) value;
     }
 
     @Override
@@ -94,7 +105,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
         try {
             SeriesValue resultObject = nextEntity();
             TimeValuePair value = resultObject.createTimeValuePairFrom();
-            session.evict(resultObject);
+            // TODO: dangerous cast here
+            session.evict(((HZGEReportingValue)resultObject).getSessionObject());
             return value;
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);
@@ -110,7 +122,8 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
             SeriesValue resultObject = nextEntity();
             resultObject.addValuesToObservation(observation, getResponseFormat());
             checkForModifications(observation);
-            session.evict(resultObject);
+            // TODO: dangerous cast here
+            session.evict(((HZGEReportingValue)resultObject).getSessionObject());
             return observation;
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);

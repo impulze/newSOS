@@ -67,27 +67,6 @@ import org.n52.sos.ogc.sos.SosConstants.SosIndeterminateTime;
 import org.n52.sos.request.GetObservationRequest;
 
 public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationFor(Series series, List<String> offerings,
-    		Map<String, Collection<TimeCriterion>> temporalFilterDisjunctions, Session session) {
-        return getSeriesObservationCriteriaFor(series, offerings, temporalFilterDisjunctions, session).list();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<SeriesObservation> getSeriesObservationForSosIndeterminateTimeFilter(Series series,
-            List<String> offerings, SosIndeterminateTime sosIndeterminateTime, Session session) {
-        return getSeriesObservationCriteriaForSosIndeterminateTimeFilter(series, offerings, sosIndeterminateTime,
-                session).list();
-    }
-
     @Override
     public List<SeriesObservation> getSeriesObservationsFor(GetObservationRequest request,
             Collection<String> features, Session session) throws OwsExceptionReport {
@@ -204,26 +183,4 @@ public class EReportingObservationDAO extends AbstractSeriesObservationDAO {
     protected Class<?> getTextObservationClass() {
         return EReportingTextObservation.class;
     }
-
-    protected class EReportingObservationIdentifiers extends ObservationIdentifiers {
-
-        private EReportingSamplingPoint samplingPoint;
-
-        /**
-         * @return the samplingPoint
-         */
-        public EReportingSamplingPoint getSamplingPoint() {
-            return samplingPoint;
-        }
-
-        /**
-         * @param samplingPoint
-         *            the samplingPoint to set
-         */
-        public void setSamplingPoint(EReportingSamplingPoint samplingPoint) {
-            this.samplingPoint = samplingPoint;
-        }
-
-    }
-
 }

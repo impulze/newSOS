@@ -178,24 +178,7 @@ public class HibernateGetObservationHelper {
             return CollectionHelper.conjunctCollections(featuresForConstellation, featureIdentifier);
         }
     }
-    
-    public static List<OmObservation> toSosObservation(final Collection<AbstractObservation> observations,
-            final AbstractObservationRequest request, final Session session) throws OwsExceptionReport,
-            ConverterException {
-        if (!observations.isEmpty()) {
-            List<OmObservation> sosObservations =
-                        HibernateObservationUtilities.createSosObservationsFromObservations(
-                                new HashSet<AbstractObservation>(observations), request, session);
-            final long startProcess = System.currentTimeMillis();
-           
-            LOGGER.debug("Time to process {} observations needs {} ms!", observations.size(),
-                    (System.currentTimeMillis() - startProcess));
-            return sosObservations;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-    
+ 
     public static List<OmObservation> toSosObservation(final Collection<AbstractObservation> observations,
             final AbstractObservationRequest request, final Locale language, final Session session) throws OwsExceptionReport,
             ConverterException {
@@ -211,19 +194,6 @@ public class HibernateGetObservationHelper {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public static OmObservation toSosObservation(AbstractObservation observation, final AbstractObservationRequest request, final Locale language, final Session session) throws OwsExceptionReport, ConverterException {
-        if (observation != null) {
-            OmObservation sosObservation = 
-                        HibernateObservationUtilities.createSosObservationFromObservation(observation,
-                                request, language, session);
-            final long startProcess = System.currentTimeMillis();
-            
-            LOGGER.debug("Time to process one observation needs {} ms!", (System.currentTimeMillis() - startProcess));
-            return sosObservation;
-        }
-        return null;
     }
 
     /**
