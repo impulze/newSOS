@@ -43,23 +43,18 @@ import org.n52.sos.ds.AbstractGetObservationDAO;
 import org.n52.sos.ds.HibernateDatasourceConstants;
 import org.n52.sos.ds.hibernate.dao.AbstractObservationDAO;
 import org.n52.sos.ds.hibernate.dao.DaoFactory;
-import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
-import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservation;
 import org.n52.sos.ds.hibernate.util.HibernateGetObservationHelper;
 import org.n52.sos.ds.hibernate.util.QueryHelper;
 import org.n52.sos.ds.hibernate.util.observation.HibernateObservationUtilities;
-import org.n52.sos.ds.hibernate.values.HibernateChunkStreamingValue;
-import org.n52.sos.ds.hibernate.values.HibernateScrollableStreamingValue;
 import org.n52.sos.ds.hibernate.values.HibernateStreamingConfiguration;
-import org.n52.sos.ds.hibernate.values.HibernateStreamingValue;
 import org.n52.sos.ds.hibernate.values.series.HibernateChunkSeriesStreamingValue;
 import org.n52.sos.ds.hibernate.values.series.HibernateScrollableSeriesStreamingValue;
 import org.n52.sos.ds.hibernate.values.series.HibernateSeriesStreamingValue;
@@ -368,57 +363,6 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
     }
 
     /**
-     * Query the observations for streaming datasource
-     *
-     * @param request
-     *            The GetObservation request
-     * @param session
-     *            Hibernate Session
-     * @return List of internal observations
-     * @throws OwsExceptionReport
-     *             If an error occurs.
-     * @throws ConverterException
-     *             If an error occurs during sensor description creation.
-     */
-    protected List<OmObservation> queryObservationForStreaming(GetObservationRequest request, final Session session)
-            throws OwsExceptionReport, ConverterException {
-        final long start = System.currentTimeMillis();
-        final List<OmObservation> result = new LinkedList<OmObservation>();
-        // get valid featureOfInterest identifier
-        final Set<String> features = QueryHelper.getFeatures(request, session);
-        if (features != null && features.isEmpty()) {
-            return result;
-        }
-        Criterion temporalFilterCriterion = HibernateGetObservationHelper.getTemporalFilterCriterion(request);
-        List<ObservationConstellation> observations = HibernateGetObservationHelper.getAndCheckObservationConstellationSize(
-                request, session);
-        HibernateGetObservationHelper.checkMaxNumberOfReturnedSeriesSize(observations.size());
-        int maxNumberOfValuesPerSeries = HibernateGetObservationHelper.getMaxNumberOfValuesPerSeries(observations.size());
-        for (ObservationConstellation oc : observations) {
-            final List<String> featureIds =
-                    HibernateGetObservationHelper.getAndCheckFeatureOfInterest(oc, features, session);
-            for (OmObservation observationTemplate : HibernateObservationUtilities
-                    .createSosObservationFromObservationConstellation(oc, featureIds, request, session)) {
-                FeatureOfInterest featureOfInterest =
-                        new FeatureOfInterestDAO().getFeatureOfInterest(observationTemplate
-                                .getObservationConstellation().getFeatureOfInterest().getIdentifier(),
-                                session);
-                HibernateStreamingValue streamingValue =
-                        getStreamingValue(request, oc.getProcedure().getProcedureId(), oc.getObservableProperty()
-                                .getObservablePropertyId(), featureOfInterest.getFeatureOfInterestId());
-                streamingValue.setResponseFormat(request.getResponseFormat());
-                streamingValue.setTemporalFilterCriterion(temporalFilterCriterion);
-                streamingValue.setObservationTemplate(observationTemplate);
-                streamingValue.setMaxNumberOfValues(maxNumberOfValuesPerSeries);
-                observationTemplate.setValue(streamingValue);
-                result.add(observationTemplate);
-            }
-        }
-        LOGGER.debug("Time to query observations needs {} ms!", (System.currentTimeMillis() - start));
-        return result;
-    }
-
-    /**
      * Query the series observations for streaming datasource
      *
      * @param request
@@ -480,27 +424,4 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
             return new HibernateScrollableSeriesStreamingValue(request, valueFK);
         }
     }
-
-    /**
-     * Get the streaming observation value for the observations
-     *
-     * @param request
-     *            GetObservation request
-     * @param procedure
-     *            Procedure id
-     * @param observableProperty
-     *            ObservableProperty id
-     * @param feature
-     *            FeatureOfInterest id
-     * @return Streaming observation value
-     */
-    private HibernateStreamingValue getStreamingValue(GetObservationRequest request, long procedure,
-            long observableProperty, long feature) {
-        if (HibernateStreamingConfiguration.getInstance().isChunkDatasourceStreaming()) {
-            return new HibernateChunkStreamingValue(request, procedure, observableProperty, feature);
-        } else {
-            return new HibernateScrollableStreamingValue(request, procedure, observableProperty, feature);
-        }
-    }
-
 }
