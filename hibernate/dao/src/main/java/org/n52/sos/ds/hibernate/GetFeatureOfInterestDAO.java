@@ -31,12 +31,10 @@ package org.n52.sos.ds.hibernate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
@@ -67,12 +65,8 @@ import org.n52.sos.ogc.sos.Sos1Constants;
 import org.n52.sos.ogc.sos.SosConstants;
 import org.n52.sos.request.GetFeatureOfInterestRequest;
 import org.n52.sos.response.GetFeatureOfInterestResponse;
-import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Implementation of the abstract class AbstractGetFeatureOfInterestDAO
@@ -85,23 +79,6 @@ public class GetFeatureOfInterestDAO extends AbstractGetFeatureOfInterestDAO imp
     private static final Logger LOGGER = LoggerFactory.getLogger(GetFeatureOfInterestDAO.class);
 
     private final HibernateSessionHolder sessionHolder = new HibernateSessionHolder();
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER = "getFeatureForIdentifier";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE = "getFeatureForIdentifierProcedure";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_OBSERVED_PROPERTY =
-            "getFeatureForIdentifierObservableProperty";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE_OBSERVED_PROPERTY =
-            "getFeatureForIdentifierProcedureObservableProperty";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_PROCEDURE = "getFeatureForProcedure";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_PROCEDURE_OBSERVED_PROPERTY =
-            "getFeatureForProcedureObservableProperty";
-
-    private static final String SQL_QUERY_GET_FEATURE_FOR_OBSERVED_PROPERTY = "getFeatureForObservableProperty";
 
     /**
      * constructor
@@ -287,9 +264,6 @@ public class GetFeatureOfInterestDAO extends AbstractGetFeatureOfInterestDAO imp
             LOGGER.debug("QUERY queryFeatureIdentifiersForParameter(request): {}", HibernateHelper.getSqlString(c));
             return c.list();
         }
-        if (checkForNamedQueries(req, session)) {
-            return executeNamedQuery(req, session);
-        }
         if (isSos100(req)) {
             return queryFeatureIdentifiersForParameterForSos100(req, session);
         }
@@ -451,119 +425,4 @@ public class GetFeatureOfInterestDAO extends AbstractGetFeatureOfInterestDAO imp
         detachedCriteria.setProjection(Projections.distinct(Projections.property(SeriesObservationInfo.SERIES)));
         return detachedCriteria;
     }
-
-    /**
-     * Check if named queries for GetFeatureOfInterest requests are available
-     *
-     * @param req
-     *            GetFeatureOFInterest request
-     * @param session
-     *            Hibernate session
-     * @return <code>true</code>, if a named query is available
-     */
-    private boolean checkForNamedQueries(GetFeatureOfInterestRequest req, Session session) {
-        final boolean features = req.isSetFeatureOfInterestIdentifiers();
-        final boolean observableProperties = req.isSetObservableProperties();
-        final boolean procedures = req.isSetProcedures();
-        // all
-        if (features && observableProperties && procedures) {
-            return HibernateHelper.isNamedQuerySupported(
-                    SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE_OBSERVED_PROPERTY, session);
-        }
-        // observableProperties and procedures
-        else if (!features && observableProperties && procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_PROCEDURE_OBSERVED_PROPERTY,
-                    session);
-        }
-        // only observableProperties
-        else if (!features && observableProperties && !procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_OBSERVED_PROPERTY, session);
-        }
-        // only procedures
-        else if (!features && !observableProperties && procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_PROCEDURE, session);
-        }
-        // features and observableProperties
-        else if (features && observableProperties && !procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_OBSERVED_PROPERTY,
-                    session);
-        }
-        // features and procedures
-        else if (features && !observableProperties && procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE, session);
-        }
-        // only features
-        else if (features && !observableProperties && !procedures) {
-            return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER, session);
-        }
-        return false;
-    }
-
-    /**
-     * Execute named query for GetFeatureOfInterest request
-     *
-     * @param req
-     *            GetFeatureOfInterest request
-     * @param session
-     *            Hibernate session
-     * @return FeatureOfInterest identifiers list
-     */
-    @SuppressWarnings("unchecked")
-    private List<String> executeNamedQuery(GetFeatureOfInterestRequest req, Session session) {
-        final boolean features = req.isSetFeatureOfInterestIdentifiers();
-        final boolean observableProperties = req.isSetObservableProperties();
-        final boolean procedures = req.isSetProcedures();
-        String namedQueryName = null;
-        Map<String, Collection<String>> parameter = Maps.newHashMap();
-        // all
-        if (features && observableProperties && procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE_OBSERVED_PROPERTY;
-            parameter.put(FEATURES, req.getFeatureIdentifiers());
-            parameter.put(OBSERVABLE_PROPERTIES, req.getObservedProperties());
-            parameter.put(PROCEDURES, req.getProcedures());
-        }
-        // observableProperties and procedures
-        else if (!features && observableProperties && procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_PROCEDURE_OBSERVED_PROPERTY;
-            parameter.put(OBSERVABLE_PROPERTIES, req.getObservedProperties());
-            parameter.put(PROCEDURES, req.getProcedures());
-        }
-        // only observableProperties
-        else if (!features && observableProperties && !procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_OBSERVED_PROPERTY;
-            parameter.put(OBSERVABLE_PROPERTIES, req.getObservedProperties());
-        }
-        // only procedures
-        else if (!features && !observableProperties && procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_PROCEDURE;
-            parameter.put(PROCEDURES, req.getProcedures());
-        }
-        // features and observableProperties
-        else if (features && observableProperties && !procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_OBSERVED_PROPERTY;
-            parameter.put(FEATURES, req.getFeatureIdentifiers());
-            parameter.put(OBSERVABLE_PROPERTIES, req.getObservedProperties());
-        }
-        // features and procedures
-        else if (features && !observableProperties && procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER_PROCEDURE;
-            parameter.put(FEATURES, req.getFeatureIdentifiers());
-            parameter.put(PROCEDURES, req.getProcedures());
-        }
-        // only features
-        else if (features && !observableProperties && !procedures) {
-            namedQueryName = SQL_QUERY_GET_FEATURE_FOR_IDENTIFIER;
-            parameter.put(FEATURES, req.getFeatureIdentifiers());
-        }
-        if (StringHelper.isNotEmpty(namedQueryName)) {
-            Query namedQuery = session.getNamedQuery(namedQueryName);
-            for (String key : parameter.keySet()) {
-                namedQuery.setParameterList(key, parameter.get(key));
-            }
-            LOGGER.debug("QUERY getFeatureOfInterest() with NamedQuery: {}", namedQuery);
-            return namedQuery.list();
-        }
-        return Lists.newLinkedList();
-    }
-
 }

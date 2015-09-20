@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
@@ -72,17 +71,6 @@ import com.google.common.collect.Maps;
  * @since 4.0.0
  */
 public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstants {
-
-    private static final String SQL_QUERY_OFFERING_TIME_EXTREMA = "getOfferingTimeExtrema";
-
-    private static final String SQL_QUERY_GET_MIN_DATE_FOR_OFFERING = "getMinDate4Offering";
-
-    private static final String SQL_QUERY_GET_MAX_DATE_FOR_OFFERING = "getMaxDate4Offering";
-
-    private static final String SQL_QUERY_GET_MIN_RESULT_TIME_FOR_OFFERING = "getMinResultTime4Offering";
-
-    private static final String SQL_QUERY_GET_MAX_RESULT_TIME_FOR_OFFERING = "getMaxResultTime4Offering";
-
     /**
      * Logger
      */
@@ -255,15 +243,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
     public Map<String,OfferingTimeExtrema> getOfferingTimeExtrema(final Collection<String> identifiers,
             final Session session) throws OwsExceptionReport {
         List<Object[]> results = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_OFFERING_TIME_EXTREMA, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_OFFERING_TIME_EXTREMA);
-            if (CollectionHelper.isNotEmpty(identifiers)) {
-                namedQuery.setParameterList("identifiers", identifiers);
-            }
-            LOGGER.debug("QUERY getOfferingTimeExtrema() with NamedQuery: {}",
-                    SQL_QUERY_OFFERING_TIME_EXTREMA);
-            results = namedQuery.list();
-        } else {
             Criteria criteria = DaoFactory.getInstance().getObservationDAO()
                 .getDefaultObservationInfoCriteria(session)
                 .createAlias(AbstractObservation.OFFERINGS, "off")
@@ -279,7 +258,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
             }
             LOGGER.debug("QUERY getOfferingTimeExtrema(): {}", HibernateHelper.getSqlString(criteria));
             results = criteria.list();
-        }
 
         Map<String,OfferingTimeExtrema> map = Maps.newHashMap();
         for (Object[] result : results) {
@@ -308,20 +286,12 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     public DateTime getMinDate4Offering(final String offering, final Session session) throws OwsExceptionReport {
         Object min = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MIN_DATE_FOR_OFFERING, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MIN_DATE_FOR_OFFERING);
-            namedQuery.setParameter(OFFERING, offering);
-            LOGGER.debug("QUERY getMinDate4Offering(offering) with NamedQuery: {}",
-                    SQL_QUERY_GET_MIN_DATE_FOR_OFFERING);
-            min = namedQuery.uniqueResult();
-        } else {
             Criteria criteria =
                     DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
             addOfferingRestricionForObservation(criteria, offering);
             addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.PHENOMENON_TIME_START);
             LOGGER.debug("QUERY Series-getMinDate4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
             min = criteria.uniqueResult();
-        }
         if (min != null) {
             return new DateTime(min, DateTimeZone.UTC);
         }
@@ -341,14 +311,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
     public DateTime getMaxDate4Offering(final String offering, final Session session) throws OwsExceptionReport {
         Object maxStart = null;
         Object maxEnd = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MAX_DATE_FOR_OFFERING, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MAX_DATE_FOR_OFFERING);
-            namedQuery.setParameter(OFFERING, offering);
-            LOGGER.debug("QUERY getMaxDate4Offering(offering) with NamedQuery: {}",
-                    SQL_QUERY_GET_MAX_DATE_FOR_OFFERING);
-            maxStart = namedQuery.uniqueResult();
-            maxEnd = maxStart;
-        } else {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria cstart = observationDAO.getDefaultObservationInfoCriteria(session);
             Criteria cend = observationDAO.getDefaultObservationInfoCriteria(session);
@@ -366,7 +328,6 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
                 maxStart = cstart.uniqueResult();
                 maxEnd = cend.uniqueResult();
             }
-        }
         if (maxStart == null && maxEnd == null) {
             return null;
         } else {
@@ -394,20 +355,12 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     public DateTime getMinResultTime4Offering(final String offering, final Session session) throws OwsExceptionReport {
         Object min = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MIN_RESULT_TIME_FOR_OFFERING, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MIN_RESULT_TIME_FOR_OFFERING);
-            namedQuery.setParameter(OFFERING, offering);
-            LOGGER.debug("QUERY getMinResultTime4Offering(offering) with NamedQuery: {}",
-                    SQL_QUERY_GET_MIN_RESULT_TIME_FOR_OFFERING);
-            min = namedQuery.uniqueResult();
-        } else {
             Criteria criteria =
                     DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
             addOfferingRestricionForObservation(criteria, offering);
             addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.RESULT_TIME);
             LOGGER.debug("QUERY getMinResultTime4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
             min = criteria.uniqueResult();
-        }
         if (min != null) {
             return new DateTime(min, DateTimeZone.UTC);
         }
@@ -427,20 +380,12 @@ public class OfferingDAO extends TimeCreator implements HibernateSqlQueryConstan
      */
     public DateTime getMaxResultTime4Offering(final String offering, final Session session) throws OwsExceptionReport {
         Object maxStart = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MAX_RESULT_TIME_FOR_OFFERING, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MAX_RESULT_TIME_FOR_OFFERING);
-            namedQuery.setParameter(OFFERING, offering);
-            LOGGER.debug("QUERY getMaxResultTime4Offering(offering) with NamedQuery: {}",
-                    SQL_QUERY_GET_MAX_RESULT_TIME_FOR_OFFERING);
-            maxStart = namedQuery.uniqueResult();
-        } else {
             Criteria criteria =
                     DaoFactory.getInstance().getObservationDAO().getDefaultObservationInfoCriteria(session);
             addOfferingRestricionForObservation(criteria, offering);
             addMinMaxProjection(criteria, MinMax.MAX, AbstractObservation.RESULT_TIME);
             LOGGER.debug("QUERY getMaxResultTime4Offering(offering): {}", HibernateHelper.getSqlString(criteria));
             maxStart = criteria.uniqueResult();
-        }
 
         if (maxStart == null) {
             return null;

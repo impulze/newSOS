@@ -36,15 +36,12 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.spi.NamedQueryDefinition;
-import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.spi.QueryTranslatorFactory;
 import org.hibernate.internal.CriteriaImpl;
-import org.hibernate.internal.SessionImpl;
 import org.hibernate.loader.criteria.CriteriaJoinWalker;
 import org.hibernate.loader.criteria.CriteriaQueryTranslator;
 import org.hibernate.persister.entity.OuterJoinLoadable;
@@ -105,22 +102,6 @@ public final class HibernateHelper {
                         (SessionFactoryImplementor) sessionFactory, null);
         qt.compile(null, false);
         return qt.getSQLString();
-    }
-
-    /**
-     * Checks if the specified named query is supported.
-     * 
-     * @param namedQuery
-     *            the named query
-     * @param session
-     *            Hibernate session
-     * @return if the named query supported
-     */
-    public static boolean isNamedQuerySupported(String namedQuery, Session session) {
-        NamedQueryDefinition namedQueryDef = ((SessionImpl) session).getSessionFactory().getNamedQuery(namedQuery);
-        NamedSQLQueryDefinition namedSQLQueryDef =
-                ((SessionImpl) session).getSessionFactory().getNamedSQLQuery(namedQuery);
-        return namedQueryDef != null || namedSQLQueryDef != null;
     }
 
     public static Dialect getDialect(Session session) {

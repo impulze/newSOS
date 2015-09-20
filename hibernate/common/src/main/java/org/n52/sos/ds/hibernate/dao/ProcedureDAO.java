@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
@@ -92,16 +91,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     //public class ProcedureDAO extends TimeCreator implements HibernateSqlQueryConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDAO.class);
-
-    private static final String SQL_QUERY_GET_PROCEDURES_FOR_ALL_FEATURES_OF_INTEREST = "getProceduresForAllFeaturesOfInterest";
-
-    private static final String SQL_QUERY_GET_PROCEDURES_FOR_FEATURE_OF_INTEREST = "getProceduresForFeatureOfInterest";
-
-    private static final String SQL_QUERY_GET_PROCEDURE_TIME_EXTREMA = "getProcedureTimeExtrema";
-
-    private static final String SQL_QUERY_GET_MIN_DATE_FOR_PROCEDURE = "getMinDate4Procedure";
-
-    private static final String SQL_QUERY_GET_MAX_DATE_FOR_PROCEDURE = "getMaxDate4Procedure";
 
     /**
      * Get all procedure objects
@@ -291,12 +280,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     @SuppressWarnings("unchecked")
     private List<Object[]> getFeatureProcedureResult(Session session) {
         List<Object[]> results;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_PROCEDURES_FOR_ALL_FEATURES_OF_INTEREST, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_PROCEDURES_FOR_ALL_FEATURES_OF_INTEREST);
-            LOGGER.debug("QUERY getProceduresForAllFeaturesOfInterest(feature) with NamedQuery: {}",
-                    SQL_QUERY_GET_PROCEDURES_FOR_ALL_FEATURES_OF_INTEREST);
-            results = namedQuery.list();
-        } else {
             Criteria c = null;
                 c = session.createCriteria(EReportingSeries.class)
                     .createAlias(Series.FEATURE_OF_INTEREST, "f")
@@ -307,7 +290,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
                         .add(Projections.property("p." + Procedure.IDENTIFIER))));
             LOGGER.debug("QUERY getProceduresForAllFeaturesOfInterest(feature): {}", HibernateHelper.getSqlString(c));
             results = c.list();
-        }
         return results;
     }
 
@@ -325,13 +307,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     @SuppressWarnings("unchecked")
     public List<String> getProceduresForFeatureOfInterest(final Session session, final FeatureOfInterest feature)
             throws OwsExceptionReport {
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_PROCEDURES_FOR_FEATURE_OF_INTEREST, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_PROCEDURES_FOR_FEATURE_OF_INTEREST);
-            namedQuery.setParameter(FEATURE, feature.getIdentifier());
-            LOGGER.debug("QUERY getProceduresForFeatureOfInterest(feature) with NamedQuery: {}",
-                    SQL_QUERY_GET_PROCEDURES_FOR_FEATURE_OF_INTEREST);
-            return namedQuery.list();
-        } else {
             Criteria c = null;
                 c = getDefaultCriteria(session);
                 c.add(Subqueries.propertyIn(Procedure.ID,
@@ -339,7 +314,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
                 c.setProjection(Projections.distinct(Projections.property(Procedure.IDENTIFIER)));
             LOGGER.debug("QUERY getProceduresForFeatureOfInterest(feature): {}", HibernateHelper.getSqlString(c));
             return (List<String>) c.list();
-        }
     }
 
     /**
@@ -534,23 +508,10 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
                 HibernateHelper.getSqlString(criteria));
         return (TProcedure) criteria.uniqueResult();
     }
-    
-    public boolean isProcedureTimeExtremaNamedQuerySupported(Session session) {
-        return HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_PROCEDURE_TIME_EXTREMA, session);
-    }
 
     public TimeExtrema getProcedureTimeExtremaFromNamedQuery(Session session, String procedureIdentifier) {
         Object[] result = null;
-        if (isProcedureTimeExtremaNamedQuerySupported(session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_PROCEDURE_TIME_EXTREMA);
-            namedQuery.setParameter(PROCEDURE, procedureIdentifier);
-            LOGGER.debug("QUERY getProcedureTimeExtrema(procedure) with NamedQuery: {}",
-                    SQL_QUERY_GET_PROCEDURE_TIME_EXTREMA);
-            result = (Object[]) namedQuery.uniqueResult();
-        }
         return parseProcedureTimeExtremaResult(result);
-        
-       
     }
     
     private TimeExtrema parseProcedureTimeExtremaResult(Object[] result) {
@@ -575,9 +536,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     public TimeExtrema getProcedureTimeExtrema(final Session session, String procedureIdentifier)
             throws OwsExceptionReport {
         Object[] result;
-        if (isProcedureTimeExtremaNamedQuerySupported(session)) {
-            return getProcedureTimeExtremaFromNamedQuery(session, procedureIdentifier);
-        }
         AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
         Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
         if (observationDAO instanceof AbstractSeriesObservationDAO) {
@@ -612,13 +570,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      */
     public DateTime getMinDate4Procedure(final String procedure, final Session session) throws OwsExceptionReport {
         Object min = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MIN_DATE_FOR_PROCEDURE, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MIN_DATE_FOR_PROCEDURE);
-            namedQuery.setParameter(PROCEDURE, procedure);
-            LOGGER.debug("QUERY getMinDate4Procedure(procedure) with NamedQuery: {}",
-                    SQL_QUERY_GET_MIN_DATE_FOR_PROCEDURE);
-            min = namedQuery.uniqueResult();
-        } else {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
             if (observationDAO instanceof SeriesObservationDAO) {
@@ -629,7 +580,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
             addMinMaxProjection(criteria, MinMax.MIN, AbstractObservation.PHENOMENON_TIME_START);
             LOGGER.debug("QUERY getMinDate4Procedure(procedure): {}", HibernateHelper.getSqlString(criteria));
             min = criteria.uniqueResult();
-        }
         if (min != null) {
             return new DateTime(min, DateTimeZone.UTC);
         }
@@ -649,14 +599,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     public DateTime getMaxDate4Procedure(final String procedure, final Session session) throws OwsExceptionReport {
         Object maxStart = null;
         Object maxEnd = null;
-        if (HibernateHelper.isNamedQuerySupported(SQL_QUERY_GET_MAX_DATE_FOR_PROCEDURE, session)) {
-            Query namedQuery = session.getNamedQuery(SQL_QUERY_GET_MAX_DATE_FOR_PROCEDURE);
-            namedQuery.setParameter(PROCEDURE, procedure);
-            LOGGER.debug("QUERY getMaxDate4Procedure(procedure) with NamedQuery: {}",
-                    SQL_QUERY_GET_MAX_DATE_FOR_PROCEDURE);
-            maxStart = namedQuery.uniqueResult();
-            maxEnd = maxStart;
-        } else {
             AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
             Criteria cstart = observationDAO.getDefaultObservationInfoCriteria(session);
             Criteria cend = observationDAO.getDefaultObservationInfoCriteria(session);
@@ -679,7 +621,6 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
                 maxStart = cstart.uniqueResult();
                 maxEnd = cend.uniqueResult();
             }
-        }
         if (maxStart == null && maxEnd == null) {
             return null;
         } else {
