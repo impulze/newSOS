@@ -53,6 +53,7 @@ import org.n52.sos.ogc.gml.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -186,27 +187,11 @@ public class ValidProcedureTimeDAO {
         return criteria.list();
     }
 
-    @SuppressWarnings("unchecked")
     public List<ValidProcedureTime> getValidProcedureTimes(TProcedure procedure,
             Set<String> possibleProcedureDescriptionFormats, Time validTime, Session session)
             throws UnsupportedTimeException, UnsupportedValueReferenceException, UnsupportedOperatorException {
-        Criteria criteria = session.createCriteria(ValidProcedureTime.class);
-        criteria.add(Restrictions.eq(ValidProcedureTime.PROCEDURE, procedure));
-        criteria.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
-                Restrictions.in(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
-                        possibleProcedureDescriptionFormats));
-
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
-        // if validTime == null or validTimeCriterion == null, query latest
-        // valid procedure description
-        if (validTime == null || validTimeCriterion == null) {
-            criteria.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-        } else {
-            criteria.add(validTimeCriterion);
-        }
-        LOGGER.debug("QUERY getValidProcedureTimes(procedure, possibleProcedureDescriptionFormats, validTime): {}",
-                HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	// TODOHZG: check if this is applicable
+    	return Lists.newArrayList();
     }
 
     public Map<String,String> getTProcedureFormatMap(Session session) {

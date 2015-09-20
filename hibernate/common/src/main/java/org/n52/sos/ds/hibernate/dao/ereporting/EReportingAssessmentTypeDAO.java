@@ -51,10 +51,16 @@ public class EReportingAssessmentTypeDAO {
     }
     
     public EReportingAssessmentType getEReportingAssessmentType(AssessmentType assessmentType, Session session) {
-        Criteria c = getDefaultCriteria(session);
-        c.add(Restrictions.eq(EReportingAssessmentType.ID, assessmentType.getId()));
-        LOGGER.debug("QUERY getEReportingAssessmentTypes(): {}", HibernateHelper.getSqlString(c));
-        return (EReportingAssessmentType) c.uniqueResult();
+    	if (assessmentType.equals(AssessmentType.Fixed)) {
+    		final EReportingAssessmentType type = new EReportingAssessmentType();
+
+    		type.setAssessmentType(assessmentType.getId());
+    		type.setUri(assessmentType.getConceptURI());
+
+    		return type;
+    	}
+
+    	return null;
     }
     
     public EReportingAssessmentType getEReportingAssessmentType(String assessmentType, Session session) {

@@ -31,6 +31,7 @@ package org.n52.sos.ds.hibernate.dao.ereporting;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
+import org.n52.sos.aqd.AqdConstants.AssessmentType;
 import org.n52.sos.aqd.AqdSamplingPoint;
 import org.n52.sos.ds.hibernate.dao.AbstractIdentifierNameDescriptionDAO;
 import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSamplingPoint;
@@ -49,6 +50,15 @@ public class EReportingSamplingPointDAO extends AbstractIdentifierNameDescriptio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EReportingSamplingPointDAO.class);
 
+    public EReportingSamplingPoint createSamplingPoint(Session session) {
+    	final EReportingSamplingPoint point = new EReportingSamplingPoint();
+
+    	// TODOHZG: what's a proper identifier?
+    	point.setIdentifier("http://www.hzg.de/sos/samplingPoints/1");
+    	point.setAssessmentType(new EReportingAssessmentTypeDAO().getEReportingAssessmentType(AssessmentType.Fixed, session));
+
+    	return point;
+    }
     /**
      * Get default Hibernate Criteria for querying sampling point
      * 

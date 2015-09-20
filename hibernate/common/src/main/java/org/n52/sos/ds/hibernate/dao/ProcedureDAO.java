@@ -39,16 +39,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
-import org.hibernate.sql.JoinType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesObservationDAO;
+import org.n52.sos.ds.hibernate.dao.ereporting.EReportingSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesObservationDAO;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
@@ -65,21 +61,26 @@ import org.n52.sos.ds.hibernate.entities.ereporting.EReportingSeries;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.SeriesObservationInfo;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
-import org.n52.sos.ds.hibernate.util.NoopTransformerAdapter;
-import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.ds.hibernate.util.QueryHelper;
+import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.concrete.UnsupportedOperatorException;
 import org.n52.sos.exception.ows.concrete.UnsupportedTimeException;
 import org.n52.sos.exception.ows.concrete.UnsupportedValueReferenceException;
 import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.n52.sos.ogc.sensorML.SensorML20Constants;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
-import org.n52.sos.util.DateTimeHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.Sensor;
 
 /**
  * Hibernate data access class for procedure
@@ -92,6 +93,42 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcedureDAO.class);
 
+    private List<TProcedure> createTProceduresWithSensors(List<Sensor> sensors, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<TProcedure> procedures = Lists.newArrayListWithCapacity(sensors.size());
+    	final ProcedureDescriptionFormat pdf = new ProcedureDescriptionFormatDAO().createProcedureDescriptionFormat(session);
+
+    	for (final Sensor sensor: sensors) {
+    		final TProcedure procedure = new TProcedure();
+
+    		// TODOHZG: set description and format
+    		procedure.setDeleted(false);
+    		procedure.setIdentifier(sosConfiguration.getProcedureIdentifierPrefix() + sensor.getName());
+    		procedure.setProcedureDescriptionFormat(pdf);
+
+    		procedures.add(procedure);
+    	}
+
+    	return procedures;
+    }
+
+    @SuppressWarnings("unchecked")
+	public List<Procedure> createProceduresWithSensors(List<Sensor> sensor, Session session) {
+    	final List<? extends Procedure> procedures = createTProceduresWithSensors(sensor, session);
+
+    	return (List<Procedure>) procedures;
+    }
+
+    public TProcedure createProcedureWithSensor(Sensor sensor, Session session) {
+    	final List<TProcedure> procedures = createTProceduresWithSensors(Lists.newArrayList(sensor), session);
+
+    	if (procedures.isEmpty()) {
+    		return null;
+    	}
+
+    	return procedures.get(0);
+    }
+
     /**
      * Get all procedure objects
      *
@@ -99,11 +136,11 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      *            Hibernate session
      * @return Procedure objects
      */
-    @SuppressWarnings("unchecked")
     public List<Procedure> getProcedureObjects(final Session session) {
-        Criteria criteria = session.createCriteria(Procedure.class);
-        LOGGER.debug("QUERY getProcedureObjects(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+		@SuppressWarnings("unchecked")
+		final List<Sensor> sensors = session.createCriteria(Sensor.class).list();
+
+        return createProceduresWithSensors(sensors, session);
     }
 
     /**
@@ -113,31 +150,20 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      * @return Map keyed by procedure identifier with values of parent procedure identifier collections
      */
     public Map<String,Collection<String>> getProcedureIdentifiers(final Session session) {
-        Criteria criteria = session.createCriteria(Procedure.class)
-                .add(Restrictions.eq(Procedure.DELETED, false));
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.property(Procedure.IDENTIFIER));
-            criteria.createAlias(TProcedure.PARENTS, "pp", JoinType.LEFT_OUTER_JOIN);
-            projectionList.add(Projections.property("pp." + Procedure.IDENTIFIER));
-        criteria.setProjection(projectionList);
-        //return as List<Object[]> even if there's only one column for consistency
-        criteria.setResultTransformer(NoopTransformerAdapter.INSTANCE);
+    	final List<Procedure> procedures = getProcedureObjects(session);
+    	final Map<String, Collection<String>> map = Maps.newHashMap();
 
-        LOGGER.debug("QUERY getProcedureIdentifiers(): {}", HibernateHelper.getSqlString(criteria));
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = criteria.list();
-        Map<String,Collection<String>> map = Maps.newHashMap();
-        for (Object[] result : results) {
-            String procedureIdentifier = (String) result[0];
-            String parentProcedureIdentifier = null;
-                parentProcedureIdentifier = (String) result[1];
-            if (parentProcedureIdentifier == null) {
-                map.put(procedureIdentifier, null);
-            } else {
-                CollectionHelper.addToCollectionMap(procedureIdentifier, parentProcedureIdentifier, map);
-            }
-        }
-        return map;
+    	for (final Procedure procedure: procedures) {
+    		map.put(procedure.getIdentifier(), null);
+
+    		if (procedure instanceof TProcedure) {
+    			for (final Procedure parent: ((TProcedure)procedure).getParents()) {
+    				CollectionHelper.addToCollectionMap(procedure.getIdentifier(), parent.getIdentifier(), map);
+    			}
+    		}
+    	}
+
+    	return map;
     }
 
     /**
@@ -150,17 +176,20 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      * @return Procedure object
      */
     public Procedure getProcedureForIdentifier(final String identifier, final Session session) {
-        Criteria criteria = getDefaultCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        LOGGER.debug("QUERY getProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-        Procedure procedure = (Procedure)criteria.uniqueResult();
-            criteria.createCriteria(TProcedure.VALID_PROCEDURE_TIME).add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-            LOGGER.debug("QUERY getProcedureForIdentifier(identifier): {}", HibernateHelper.getSqlString(criteria));
-            Procedure proc = (Procedure)criteria.uniqueResult();
-            if (proc != null) {
-                return proc;
-            }
-        return procedure;
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
 
+    	if (!identifier.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+    		return null;
+    	}
+
+    	final String sensorName = identifier.substring(sosConfiguration.getProcedureIdentifierPrefix().length());
+    	final Sensor sensor = (Sensor) session.createCriteria(Sensor.class).add(Restrictions.eq("name", sensorName)).uniqueResult();
+
+    	if (sensor == null) {
+    		return null;
+    	}
+
+    	return createProcedureWithSensor(sensor, session);
     }
 //
 //    private Procedure getProcedureWithLatestValidProcedureDescription(String identifier, Session session) {
@@ -277,20 +306,18 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
         return foiProcMap;
     }
     
-    @SuppressWarnings("unchecked")
     private List<Object[]> getFeatureProcedureResult(Session session) {
-        List<Object[]> results;
-            Criteria c = null;
-                c = session.createCriteria(EReportingSeries.class)
-                    .createAlias(Series.FEATURE_OF_INTEREST, "f")
-                    .createAlias(Series.PROCEDURE, "p")
-                    .add(Restrictions.eq(Series.DELETED, false))
-                    .setProjection(Projections.distinct(Projections.projectionList()
-                        .add(Projections.property("f." + FeatureOfInterest.IDENTIFIER))
-                        .add(Projections.property("p." + Procedure.IDENTIFIER))));
-            LOGGER.debug("QUERY getProceduresForAllFeaturesOfInterest(feature): {}", HibernateHelper.getSqlString(c));
-            results = c.list();
-        return results;
+    	// TODOHZG: for all series get FeatureOfInterest and Procedure
+    	final List<EReportingSeries> allSeries = new EReportingSeriesDAO().getAllSeries(session);
+    	final List<Object[]> foisAndProcedures = Lists.newArrayList();
+
+    	for (final EReportingSeries series: allSeries) {
+    		final Object[] pair = new Object[] { series.getFeatureOfInterest().getIdentifier(), series.getProcedure().getIdentifier() };
+
+    		foisAndProcedures.add(pair);
+    	}
+
+    	return foisAndProcedures;
     }
 
     /**
@@ -491,38 +518,35 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
     public TProcedure getTProcedureForIdentifier(String identifier, Set<String> possibleProcedureDescriptionFormats,
             Time validTime, Session session) throws UnsupportedTimeException, UnsupportedValueReferenceException,
             UnsupportedOperatorException {
-        Criteria criteria =
-                getDefaultTProcedureCriteria(session).add(Restrictions.eq(Procedure.IDENTIFIER, identifier));
-        Criteria createValidProcedureTime = criteria.createCriteria(TProcedure.VALID_PROCEDURE_TIME);
-        Criterion validTimeCriterion = QueryHelper.getValidTimeCriterion(validTime);
-        if (validTime == null || validTimeCriterion == null) {
-            createValidProcedureTime.add(Restrictions.isNull(ValidProcedureTime.END_TIME));
-        } else {
-            createValidProcedureTime.add(validTimeCriterion);
-        }
-        createValidProcedureTime.createCriteria(ValidProcedureTime.PROCEDURE_DESCRIPTION_FORMAT).add(
-                Restrictions.in(ProcedureDescriptionFormat.PROCEDURE_DESCRIPTION_FORMAT,
-                        possibleProcedureDescriptionFormats));
-        LOGGER.debug(
-                "QUERY getTProcedureForIdentifier(identifier, possibleProcedureDescriptionFormats, validTime): {}",
-                HibernateHelper.getSqlString(criteria));
-        return (TProcedure) criteria.uniqueResult();
-    }
+    	if (CollectionHelper.isNotEmpty(possibleProcedureDescriptionFormats)) {
+    		if (!possibleProcedureDescriptionFormats.contains(SensorML20Constants.SENSORML_20_OUTPUT_FORMAT_URL)) {
+    			return null;
+    		}
+    	}
 
-    public TimeExtrema getProcedureTimeExtremaFromNamedQuery(Session session, String procedureIdentifier) {
-        Object[] result = null;
-        return parseProcedureTimeExtremaResult(result);
-    }
-    
-    private TimeExtrema parseProcedureTimeExtremaResult(Object[] result) {
-        TimeExtrema pte = new TimeExtrema();
-        if (result != null) {
-            pte.setMinTime(DateTimeHelper.makeDateTime(result[1]));
-            DateTime maxPhenStart = DateTimeHelper.makeDateTime(result[2]);
-            DateTime maxPhenEnd = DateTimeHelper.makeDateTime(result[3]);
-            pte.setMaxTime(DateTimeHelper.max(maxPhenStart, maxPhenEnd));
-        }
-        return pte;
+    	// TODOHZG: filter by valid time
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+    	if (!identifier.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+    		return null;
+    	}
+
+    	final String sensorName = identifier.substring(sosConfiguration.getProcedureIdentifierPrefix().length());
+    	final Sensor sensor = (Sensor) session.createCriteria(Sensor.class)
+    		.add(Restrictions.eq("name", sensorName))
+    		.uniqueResult();
+
+    	if (sensor == null) {
+    		return null;
+    	}
+
+    	final List<TProcedure> procedures = createTProceduresWithSensors(Lists.newArrayList(sensor), session);
+
+    	if (procedures.isEmpty()) {
+    		return null;
+    	}
+
+    	return procedures.get(0);
     }
 
     /**
@@ -535,27 +559,10 @@ public class ProcedureDAO extends AbstractIdentifierNameDescriptionDAO implement
      */
     public TimeExtrema getProcedureTimeExtrema(final Session session, String procedureIdentifier)
             throws OwsExceptionReport {
-        Object[] result;
-        AbstractObservationDAO observationDAO = DaoFactory.getInstance().getObservationDAO();
-        Criteria criteria = observationDAO.getDefaultObservationInfoCriteria(session);
-        if (observationDAO instanceof AbstractSeriesObservationDAO) {
-            criteria.createAlias(SeriesObservationInfo.SERIES, "s");
-            criteria.createAlias("s." + Series.PROCEDURE, "p");
-        } else {
-            criteria.createAlias(ObservationInfo.PROCEDURE, "p");
-        }
-        criteria.add(Restrictions.eq("p." + Procedure.IDENTIFIER, procedureIdentifier));
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.groupProperty("p." + Procedure.IDENTIFIER));
-        projectionList.add(Projections.min(AbstractObservation.PHENOMENON_TIME_START));
-        projectionList.add(Projections.max(AbstractObservation.PHENOMENON_TIME_START));
-        projectionList.add(Projections.max(AbstractObservation.PHENOMENON_TIME_END));
-        criteria.setProjection(projectionList);
+    	// TODOHZG: can the same query be used or not?
+    	final TimeExtrema pte = new EReportingSeriesDAO().getProcedureTimeExtrema(session,  procedureIdentifier);
 
-        LOGGER.debug("QUERY getProcedureTimeExtrema(procedureIdentifier): {}", HibernateHelper.getSqlString(criteria));
-        result = (Object[]) criteria.uniqueResult();
-        
-        return parseProcedureTimeExtremaResult(result);
+    	return pte;
     }
 
     /**

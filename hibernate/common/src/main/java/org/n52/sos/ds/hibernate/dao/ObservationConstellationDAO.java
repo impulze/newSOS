@@ -35,9 +35,7 @@ import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.sql.JoinType;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.ObservationType;
@@ -50,12 +48,16 @@ import org.n52.sos.ogc.om.OmObservationConstellation;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.ogc.sos.Sos2Constants;
 import org.n52.sos.service.Configurator;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for observation constellation
@@ -175,14 +177,26 @@ public class ObservationConstellationDAO {
      *            Hibernate session
      * @return Observation constellation objects
      */
-    @SuppressWarnings("unchecked")
     public List<ObservationConstellation> getObservationConstellations(Session session) {
-        Criteria criteria =
-                session.createCriteria(ObservationConstellation.class)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                        .add(Restrictions.eq(ObservationConstellation.DELETED, false));
-        LOGGER.debug("QUERY getObservationConstellations(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<ObservedPropertyInstance> instances = new ObservablePropertyDAO().getObservedPropertyInstances(session);
+    	final List<ObservationConstellation> obsConsts = Lists.newArrayList();
+
+    	for (final ObservedPropertyInstance instance: instances) {
+    		final ObservationConstellation obsConst = new ObservationConstellation();
+
+    		obsConst.setDeleted(false);
+    		obsConst.setDisabled(false);
+    		obsConst.setHiddenChild(false);
+    		obsConst.setObservableProperty(new ObservablePropertyDAO().createObservablePropertyWithInstance(instance, session));
+    		obsConst.setObservationType(new ObservationTypeDAO().getObservationTypeObject(ObservationTypeDAO.HZG_OBSERVATION_TYPE_STRING, session));
+    		obsConst.setOffering(new OfferingDAO().getOfferingForIdentifier(sosConfiguration.getOfferingIdentifierPrefix() + sosConfiguration.getOfferingName(), session));
+    		obsConst.setProcedure(new ProcedureDAO().createProcedureWithSensor(instance.getSensor(), session));
+
+    		obsConsts.add(obsConst);
+    	}
+
+    	return obsConsts;
     }
 
     /**
@@ -193,33 +207,22 @@ public class ObservationConstellationDAO {
      * @return Observation constellation info objects
      */
     public List<ObservationConstellationInfo> getObservationConstellationInfo(Session session) {
-        List<ObservationConstellationInfo> ocis = Lists.newArrayList();        
-            Criteria criteria = session.createCriteria(ObservationConstellation.class, "oc")
-                    .createAlias(ObservationConstellation.OFFERING, "o")
-                    .createAlias(ObservationConstellation.PROCEDURE, "p")
-                    .createAlias(ObservationConstellation.OBSERVABLE_PROPERTY, "op")
-                    .createAlias(ObservationConstellation.OBSERVATION_TYPE, "ot", JoinType.LEFT_OUTER_JOIN)
-                    .add(Restrictions.eq(ObservationConstellation.DELETED, false))
-                    .setProjection(Projections.projectionList()
-                        .add(Projections.property("o." + Offering.IDENTIFIER))
-                        .add(Projections.property("p." + Procedure.IDENTIFIER))
-                        .add(Projections.property("op." + ObservableProperty.IDENTIFIER))
-                        .add(Projections.property("ot." + ObservationType.OBSERVATION_TYPE))
-                        .add(Projections.property("oc." + ObservationConstellation.HIDDEN_CHILD)));
-            LOGGER.debug("QUERY getObservationConstellationInfo(): {}", HibernateHelper.getSqlString(criteria));
-            
-            @SuppressWarnings("unchecked")
-            List<Object[]> results = criteria.list();
-            for (Object[] result : results) {
-                ObservationConstellationInfo oci = new ObservationConstellationInfo();
-                oci.setOffering((String) result[0]);
-                oci.setProcedure((String) result[1]);
-                oci.setObservableProperty((String) result[2]);
-                oci.setObservationType((String) result[3]);
-                oci.setHiddenChild((Boolean) result[4]);
-                ocis.add(oci);
-            }
-        return ocis;
+    	final List<ObservationConstellation> obsConsts = getObservationConstellations(session);
+    	final List<ObservationConstellationInfo> obsConstInfos = Lists.newArrayListWithCapacity(obsConsts.size());
+
+    	for (final ObservationConstellation obsConst: obsConsts) {
+    		final ObservationConstellationInfo obsConstInfo = new ObservationConstellationInfo();
+
+    		obsConstInfo.setOffering(obsConst.getOffering().getIdentifier());
+    		obsConstInfo.setProcedure(obsConst.getProcedure().getIdentifier());
+    		obsConstInfo.setObservableProperty(obsConst.getObservableProperty().getIdentifier());
+    		obsConstInfo.setObservationType(obsConst.getObservationType().getObservationType());
+    		obsConstInfo.setHiddenChild(false);
+
+    		obsConstInfos.add(obsConstInfo);
+    	}
+
+    	return obsConstInfos;
     }    
     
     /**

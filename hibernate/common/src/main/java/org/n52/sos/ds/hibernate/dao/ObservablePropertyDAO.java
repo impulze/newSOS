@@ -40,7 +40,6 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
 import org.n52.sos.ds.hibernate.entities.ObservationConstellation;
 import org.n52.sos.ds.hibernate.entities.Offering;
@@ -49,6 +48,12 @@ import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.ogc.om.OmObservableProperty;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
+import org.n52.sos.service.SosContextListener;
+
+import com.google.common.collect.Lists;
+
+import de.hzg.common.SOSConfiguration;
+import de.hzg.measurement.ObservedPropertyInstance;
 
 /**
  * Hibernate data access class for observable properties
@@ -59,6 +64,40 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservablePropertyDAO.class);
+
+    public List<ObservedPropertyInstance> getObservedPropertyInstances(Session session) {
+    	final Criteria criteria = session.createCriteria(ObservedPropertyInstance.class);
+    	@SuppressWarnings("unchecked")
+		final List<ObservedPropertyInstance> instances = criteria.list();
+
+    	return instances;
+    }
+
+    public List<ObservableProperty> createObservablePropertiesWithInstances(List<ObservedPropertyInstance> instances, Session session) {
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final List<ObservableProperty> observableProperties = Lists.newArrayListWithCapacity(instances.size());
+
+    	for (final ObservedPropertyInstance instance: instances) {
+    		final ObservableProperty observableProperty = new ObservableProperty();
+
+    		observableProperty.setDisabled(false);
+    		observableProperty.setIdentifier(sosConfiguration.getObservablePropertyIdentifierPrefix() + instance.getName());
+
+    		observableProperties.add(observableProperty);
+    	}
+
+    	return observableProperties;
+    }
+
+    public ObservableProperty createObservablePropertyWithInstance(ObservedPropertyInstance instance, Session session) {
+    	final List<ObservableProperty> observableProperties = createObservablePropertiesWithInstances(Lists.newArrayList(instance), session);
+
+    	if (observableProperties.isEmpty()) {
+    		return null;
+    	}
+
+    	return observableProperties.get(0);
+    }
 
     /**
      * Get observable property objects for observable property identifiers
@@ -179,11 +218,10 @@ public class ObservablePropertyDAO extends AbstractIdentifierNameDescriptionDAO 
      *            Hibernate session
      * @return Observable property objects
      */
-    @SuppressWarnings("unchecked")
     public List<ObservableProperty> getObservablePropertyObjects(final Session session) {
-        Criteria criteria = session.createCriteria(ObservableProperty.class);
-        LOGGER.debug("QUERY getObservablePropertyObjects(): {}", HibernateHelper.getSqlString(criteria));
-        return criteria.list();
+    	final List<ObservedPropertyInstance> instances = getObservedPropertyInstances(session);
+
+    	return createObservablePropertiesWithInstances(instances, session);
     }
 
     /**

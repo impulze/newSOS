@@ -31,7 +31,6 @@ package org.n52.sos.ds.hibernate.dao.series;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.CodedException;
@@ -45,27 +44,19 @@ import org.n52.sos.request.GetObservationRequest;
  */
 public class SeriesDAO extends AbstractSeriesDAO {
     @Override
-    @SuppressWarnings("unchecked")
     public List<Series> getSeries(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
-        return getSeriesCriteria(request, features, session).list();
+    	throw new RuntimeException("SeriesDAO not supported.");
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Series> getSeries(Collection<String> procedures, Collection<String> observedProperties,
             Collection<String> features, Session session) {
-        return getSeriesCriteria(procedures, observedProperties, features, session).list();
+    	throw new RuntimeException("SeriesDAO not supported.");
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Series> getSeries(String observedProperty, Collection<String> features, Session session) {
-        return getSeriesCriteria(observedProperty, features, session).list();
-    }
-
-    @Override
-    public Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session) {
-        return (Series) getSeriesCriteriaFor(procedure, observableProperty, featureOfInterest, session).uniqueResult();
+    	throw new RuntimeException("SeriesDAO not supported.");
     }
 
     @Override
@@ -77,11 +68,4 @@ public class SeriesDAO extends AbstractSeriesDAO {
     protected Class <?>getSeriesClass() {
         return Series.class;
     }
-
-    @Override
-    protected void addSpecificRestrictions(Criteria c, GetObservationRequest request) {
-        // nothing to add
-    }
-
-
 }

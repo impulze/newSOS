@@ -33,9 +33,9 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
@@ -48,13 +48,14 @@ import org.n52.sos.ds.hibernate.util.TimeExtrema;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.util.CollectionHelper;
+import org.n52.sos.service.SosContextListener;
 import org.n52.sos.util.DateTimeHelper;
-import org.n52.sos.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
+import de.hzg.common.SOSConfiguration;
+import de.hzg.values.CalculatedData;
+import de.hzg.values.RawData;
 
 public abstract class AbstractSeriesDAO {
     
@@ -106,21 +107,6 @@ public abstract class AbstractSeriesDAO {
             Collection<String> features, Session session);
     
     /**
-     * Get series for procedure, observableProperty and featureOfInterest
-     * 
-     * @param procedure
-     *            Procedure identifier parameter
-     * @param observableProperty
-     *            ObservableProperty identifier parameter
-     * @param featureOfInterest
-     *            FeatureOfInterest identifier parameter
-     * @param session
-     *            Hibernate session
-     * @return Matching series
-     */
-    public abstract Series getSeriesFor(String procedure, String observableProperty, String featureOfInterest, Session session);
-    
-    /**
      * Insert or update and get series for procedure, observable property and
      * featureOfInterest
      * 
@@ -136,8 +122,6 @@ public abstract class AbstractSeriesDAO {
      * @throws CodedException 
      */
     public abstract Series getOrInsertSeries(SeriesIdentifiers identifiers, final Session session) throws CodedException; 
-    
-    protected abstract void addSpecificRestrictions(Criteria c, GetObservationRequest request) throws CodedException;
 
     protected Series getOrInsert(SeriesIdentifiers identifiers, final Session session) throws CodedException {
         Criteria criteria = getDefaultAllSeriesCriteria(session);
@@ -169,40 +153,6 @@ public abstract class AbstractSeriesDAO {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new NoApplicableCodeException().causedBy(e).withMessage("Error while creating an instance of %s", getSeriesClass().getCanonicalName());
         }
-    }
-
-    public Criteria getSeriesCriteria(GetObservationRequest request, Collection<String> features, Session session) throws CodedException {
-        final Criteria c =
-                createCriteriaFor(request.getProcedures(), request.getObservedProperties(), features, session);
-        addSpecificRestrictions(c, request);
-        LOGGER.debug("QUERY getSeries(request, features): {}", HibernateHelper.getSqlString(c));
-        return c;
-    }
-    
-    public Criteria getSeriesCriteria(Collection<String> procedures, Collection<String> observedProperties,
-            Collection<String> features, Session session) {
-        final Criteria c = createCriteriaFor(procedures, observedProperties, features, session);
-        LOGGER.debug("QUERY getSeries(proceedures, observableProperteies, features): {}",
-                HibernateHelper.getSqlString(c));
-        return c;
-    }
-    
-    public Criteria getSeriesCriteria(String observedProperty, Collection<String> features, Session session) {
-        final Criteria c = getDefaultSeriesCriteria(session);
-        if (CollectionHelper.isNotEmpty(features)) {
-            addFeatureOfInterestToCriteria(c, features);
-        }
-        if (StringHelper.isNotEmpty(observedProperty)) {
-            addObservablePropertyToCriteria(c, observedProperty);
-        }
-        return c;
-    }
-    
-    public Criteria getSeriesCriteriaFor(String procedure, String observableProperty, String featureOfInterest, Session session) {
-        final Criteria c = createCriteriaFor(procedure, observableProperty, featureOfInterest, session);
-        LOGGER.debug("QUERY getSeriesFor(procedure, observableProperty, featureOfInterest): {}",
-                HibernateHelper.getSqlString(c));
-        return c;
     }
 
     /**
@@ -321,21 +271,6 @@ public abstract class AbstractSeriesDAO {
     }
 
     /**
-     * Get default Hibernate Criteria for querying series, deleted flag ==
-     * <code>false</code>
-     * 
-     * @param session
-     *            Hibernate Session
-     * @return Default criteria
-     */
-    public Criteria getDefaultSeriesCriteria(Session session) {
-        return session.createCriteria(getSeriesClass())
-                .add(Restrictions.eq(Series.DELETED, false))
-                .add(Restrictions.eq(Series.PUBLISHED, true))
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
-    /**
      * Get default Hibernate Criteria for querying all series
      * 
      * @param session
@@ -437,77 +372,61 @@ public abstract class AbstractSeriesDAO {
 		session.saveOrUpdate(series);
 	}
 	
-	public TimeExtrema getProcedureTimeExtrema(Session session, String procedure) {
-        Criteria c = getDefaultSeriesCriteria(session);
-        addProcedureToCriteria(c, procedure);
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.min(Series.FIRST_TIME_STAMP));
-        projectionList.add(Projections.max(Series.LAST_TIME_STAMP));
-        c.setProjection(projectionList);
-            LOGGER.debug("QUERY getProcedureTimeExtrema(procedureIdentifier): {}", HibernateHelper.getSqlString(c));
-            Object[] result = (Object[]) c.uniqueResult();
-        
-        TimeExtrema pte = new TimeExtrema();
-        if (result != null) {
-            pte.setMinTime(DateTimeHelper.makeDateTime(result[0]));
-            pte.setMaxTime(DateTimeHelper.makeDateTime(result[1]));
-        }
-        return pte;
-    }
-    
-    /**
-     * Create series query criteria for parameter
-     * 
-     * @param procedures
-     *            Procedures to get series for
-     * @param observedProperties
-     *            ObservedProperties to get series for
-     * @param features
-     *            FeatureOfInterest to get series for
-     * @param session
-     *            Hibernate session
-     * @return Criteria to query series
-     */
-    private Criteria createCriteriaFor(Collection<String> procedures, Collection<String> observedProperties,
-            Collection<String> features, Session session) {
-        final Criteria c = getDefaultSeriesCriteria(session);
-        if (CollectionHelper.isNotEmpty(features)) {
-            addFeatureOfInterestToCriteria(c, features);
-        }
-        if (CollectionHelper.isNotEmpty(observedProperties)) {
-            addObservablePropertyToCriteria(c, observedProperties);
-        }
-        if (CollectionHelper.isNotEmpty(procedures)) {
-            addProcedureToCriteria(c, procedures);
-        }
-        return c;
-    }
+	private Criteria addRestrictionsToTimeExtremaCriteria(Criteria criteria, String procedureName) {
+		return criteria
+			.createAlias("observedPropertyInstance", "opi")
+			.createAlias("opi.sensor", "sensor")
+			.add(Restrictions.eq("sensor.name", procedureName))
+			.setProjection(Projections.projectionList()
+				.add(Projections.min("date"))
+				.add(Projections.max("date")));
+	}
 
-    /**
-     * Get series query Hibernate Criteria for procedure, observableProperty and
-     * featureOfInterest
-     * 
-     * @param procedure
-     *            Procedure to get series for
-     * @param observedProperty
-     *            ObservedProperty to get series for
-     * @param feature
-     *            FeatureOfInterest to get series for
-     * @param session
-     *            Hibernate session
-     * @return Criteria to query series
-     */
-    private Criteria createCriteriaFor(String procedure, String observedProperty, String feature, Session session) {
-        final Criteria c = getDefaultSeriesCriteria(session);
-        if (Strings.isNullOrEmpty(feature)) {
-            addFeatureOfInterestToCriteria(c, feature);
-        }
-        if (Strings.isNullOrEmpty(observedProperty)) {
-            addObservablePropertyToCriteria(c, observedProperty);
-        }
-        if (Strings.isNullOrEmpty(procedure)) {
-            addProcedureToCriteria(c, procedure);
-        }
-        return c;
-    }
+	public TimeExtrema getProcedureTimeExtrema(Session session, String procedure) {
+		final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+
+		if (procedure.startsWith(sosConfiguration.getProcedureIdentifierPrefix())) {
+			return new TimeExtrema();
+		}
+
+		final String procedureName = procedure.substring(sosConfiguration.getProcedureIdentifierPrefix().length());
+		final Criteria rawCriteria = session.createCriteria(RawData.class);
+		final Criteria calcCriteria = session.createCriteria(CalculatedData.class);
+
+		addRestrictionsToTimeExtremaCriteria(rawCriteria, procedureName);
+		addRestrictionsToTimeExtremaCriteria(calcCriteria, procedureName);
+
+		final Object[] rawResult = (Object[]) rawCriteria.uniqueResult();
+		final Object[] calcResult = (Object[]) calcCriteria.uniqueResult();
+
+		DateTime min = null;
+		DateTime max = null;
+
+		if (rawResult != null) {
+			min = DateTimeHelper.makeDateTime(rawResult[0]);
+			max = DateTimeHelper.makeDateTime(rawResult[1]);
+		}
+
+		if (calcResult != null) {
+			final DateTime calcMin = DateTimeHelper.makeDateTime(rawResult[0]);
+			final DateTime calcMax = DateTimeHelper.makeDateTime(rawResult[1]);
+
+			if (calcMin.isBefore(min)) {
+				min = calcMin;
+			}
+
+			if (calcMax.isAfter(max)) {
+				max = calcMax;
+			}
+		}
+
+		final TimeExtrema pte = new TimeExtrema();
+
+		if (min != null && max != null) {
+			pte.setMinTime(min);
+			pte.setMaxTime(max);
+		}
+
+		return pte;
+	}
 }
