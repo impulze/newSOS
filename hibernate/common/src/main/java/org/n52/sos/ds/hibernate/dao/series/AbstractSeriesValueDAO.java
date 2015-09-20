@@ -89,24 +89,6 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
     }
 
     /**
-     * Query streaming value for parameter as {@link ScrollableResults}
-     * 
-     * @param request
-     *            {@link GetObservationRequest}
-     * @param series
-     *            Datasource series id
-     * @param session
-     *            Hibernate Session
-     * @return Resulting {@link ScrollableResults}
-     * @throws OwsExceptionReport
-     *             If an error occurs when querying the {@link AbstractValue}s
-     */
-    public ScrollableResults getStreamingSeriesValuesFor(GetObservationRequest request, ObservationValueFK valueFK, Session session)
-            throws OwsExceptionReport {
-        return getSeriesValueCriteriaFor(request, valueFK, null, session).scroll(ScrollMode.FORWARD_ONLY);
-    }
-
-    /**
      * Query streaming value for parameter as chunk {@link List}
      * 
      * @param request
@@ -130,32 +112,6 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
             Criterion temporalFilterCriterion, int chunkSize, int currentRow, Session session)
             throws OwsExceptionReport {
         Criteria c = getSeriesValueCriteriaFor(request, valueFK, temporalFilterCriterion, session);
-        addChunkValuesToCriteria(c, chunkSize, currentRow, request);
-        LOGGER.debug("QUERY getStreamingSeriesValuesFor(): {}", HibernateHelper.getSqlString(c));
-        return (List<AbstractValue>) c.list();
-    }
-
-    /**
-     * Query streaming value for parameter as chunk {@link List}
-     * 
-     * @param request
-     *            {@link GetObservationRequest}
-     * @param series
-     *            Datasource series id
-     * @param chunkSize
-     *            Chunk size
-     * @param currentRow
-     *            Start row
-     * @param session
-     *            Hibernate Session
-     * @return Resulting chunk {@link List}
-     * @throws OwsExceptionReport
-     *             If an error occurs when querying the {@link AbstractValue}s
-     */
-    @SuppressWarnings("unchecked")
-    public List<AbstractValue> getStreamingSeriesValuesFor(GetObservationRequest request, ObservationValueFK valueFK, int chunkSize,
-            int currentRow, Session session) throws OwsExceptionReport {
-        Criteria c = getSeriesValueCriteriaFor(request, valueFK, null, session);
         addChunkValuesToCriteria(c, chunkSize, currentRow, request);
         LOGGER.debug("QUERY getStreamingSeriesValuesFor(): {}", HibernateHelper.getSqlString(c));
         return (List<AbstractValue>) c.list();
