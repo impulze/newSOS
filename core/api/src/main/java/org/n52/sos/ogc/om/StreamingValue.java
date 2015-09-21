@@ -28,6 +28,8 @@
  */
 package org.n52.sos.ogc.om;
 
+import java.util.Collection;
+
 import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.om.values.Value;
@@ -65,7 +67,7 @@ public abstract class StreamingValue<S> extends AbstractStreaming {
      * @throws OwsExceptionReport
      *             If an error occurs
      */
-    public abstract S nextEntity() throws OwsExceptionReport;
+    public abstract Collection<S> nextEntities() throws OwsExceptionReport;
 
     /**
      * Query times

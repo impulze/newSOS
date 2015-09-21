@@ -37,6 +37,7 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.internal.util.collections.CollectionHelper;
 import org.n52.sos.ds.hibernate.dao.FeatureOfInterestDAO;
 import org.n52.sos.ds.hibernate.dao.ObservablePropertyDAO;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.dao.ProcedureDAO;
 import org.n52.sos.ds.hibernate.dao.series.AbstractSeriesDAO;
 import org.n52.sos.ds.hibernate.dao.series.SeriesIdentifiers;
@@ -52,8 +53,23 @@ import com.google.common.collect.Lists;
 
 import de.hzg.common.SOSConfiguration;
 import de.hzg.measurement.ObservedPropertyInstance;
+import de.hzg.values.CalculatedData;
+import de.hzg.values.RawData;
 
 public class EReportingSeriesDAO extends AbstractSeriesDAO {
+	private class HZGEReportingSeries extends EReportingSeries {
+		private static final long serialVersionUID = 5820271951794246346L;
+		private ObservedPropertyInstance observedPropertyInstance;
+
+		public ObservedPropertyInstance getObservedPropertyInstance() {
+			return observedPropertyInstance;
+		}
+
+		public void setObservedPropertyInstance(ObservedPropertyInstance observedPropertyInstance) {
+			this.observedPropertyInstance = observedPropertyInstance;
+		}
+	}
+
 	public List<EReportingSeries> getAllSeries(Session session) {
 		// TODOHZG: get all series
 		final ObservablePropertyDAO obsPropDAO = new ObservablePropertyDAO();
@@ -64,8 +80,9 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
 		final List<EReportingSeries> allSeries = Lists.newArrayListWithCapacity(instances.size());
 
 		for (final ObservedPropertyInstance instance: instances) {
-			final EReportingSeries series = new EReportingSeries();
+			final HZGEReportingSeries series = new HZGEReportingSeries();
 
+			series.setObservedPropertyInstance(instance);
 			series.setDeleted(false);
 			series.setFeatureOfInterest(foi);
 			series.setObservableProperty(obsPropDAO.createObservablePropertyWithInstance(instance, session));
@@ -138,8 +155,9 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
     	final ProcedureDAO procedureDAO = new ProcedureDAO();
 
     	for (final ObservedPropertyInstance instance: instances) {
-    		final EReportingSeries series = new EReportingSeries();
+    		final HZGEReportingSeries series = new HZGEReportingSeries();
 
+    		series.setObservedPropertyInstance(instance);
     		series.setDeleted(false);
     		series.setFeatureOfInterest(foi);
     		series.setObservableProperty(observablePropertyDAO.createObservablePropertyWithInstance(instance, session));
@@ -193,6 +211,14 @@ public class EReportingSeriesDAO extends AbstractSeriesDAO {
     public void addEReportingSamplingPointToCriteria(Criteria c, Collection<String> samplingPoints) {
         c.createCriteria(EReportingSeries.SAMPLING_POINT).add(Restrictions.in(EReportingSamplingPoint.IDENTIFIER, samplingPoints));
     }
+
+	@Override
+	public <T extends Series> void setValueFK(T series, ObservationValueFK valueFK) {
+		final ObservedPropertyInstance instance = ((HZGEReportingSeries)series).getObservedPropertyInstance();
+
+		valueFK.setForClass(instance.getIsRaw() ? RawData.class : CalculatedData.class);
+		valueFK.setObservedPropertyInstance(instance);
+	}
 
     /* TODOHZG: add those when needed
     @Override

@@ -82,6 +82,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import de.hzg.values.ValueData;
+
 /**
  * Implementation of the abstract class AbstractGetObservationDAO
  *
@@ -394,8 +396,8 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
                             .createSosObservationFromSeries(series, request, session);
             OmObservation observationTemplate = createSosObservationFromSeries.iterator().next();
             final ObservationValueFK valueFK = new ObservationValueFK();
-            valueFK.setSeriesID(series.getSeriesId());
-            HibernateSeriesStreamingValue streamingValue = getSeriesStreamingValue(request, valueFK);
+            DaoFactory.getInstance().getSeriesDAO().setValueFK(series, valueFK);
+            HibernateSeriesStreamingValue<ValueData<?>> streamingValue = getSeriesStreamingValue(request, valueFK);
             streamingValue.setResponseFormat(request.getResponseFormat());
             streamingValue.setTemporalFilterCriterion(temporalFilterCriterion);
             streamingValue.setObservationTemplate(observationTemplate);
@@ -417,11 +419,11 @@ public class GetObservationDAO extends AbstractGetObservationDAO {
      * @return Streaming observation value
      * @throws CodedException 
      */
-    private HibernateSeriesStreamingValue getSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
+    private <T> HibernateSeriesStreamingValue<T> getSeriesStreamingValue(GetObservationRequest request, ObservationValueFK valueFK) throws CodedException {
         if (HibernateStreamingConfiguration.getInstance().isChunkDatasourceStreaming()) {
-            return new HibernateChunkSeriesStreamingValue(request, valueFK);
+            return new HibernateChunkSeriesStreamingValue<T>(request, valueFK);
         } else {
-            return new HibernateScrollableSeriesStreamingValue(request, valueFK);
+            return new HibernateScrollableSeriesStreamingValue<T>(request, valueFK);
         }
     }
 }

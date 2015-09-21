@@ -31,7 +31,6 @@ package org.n52.sos.ds.hibernate.dao;
 import static org.n52.sos.util.http.HTTPStatus.BAD_REQUEST;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -185,17 +184,18 @@ public class FeatureOfInterestDAO extends AbstractIdentifierNameDescriptionDAO i
      *            Hibernate session
      * @return FeatureOfInterest objects
      */
-    @SuppressWarnings("unchecked")
     public List<FeatureOfInterest> getFeatureOfInterestObject(final Collection<String> identifiers,
             final Session session) {
-        if (identifiers != null && !identifiers.isEmpty()) {
-            Criteria criteria =
-                    session.createCriteria(FeatureOfInterest.class).add(
-                            Restrictions.in(FeatureOfInterest.IDENTIFIER, identifiers));
-            LOGGER.debug("QUERY getFeatureOfInterestObject(identifiers): {}", HibernateHelper.getSqlString(criteria));
-            return criteria.list();
-        }
-        return Collections.emptyList();
+    	final SOSConfiguration sosConfiguration = SosContextListener.hzgSOSConfiguration;
+    	final String presentIdentifier = sosConfiguration.getFeatureOfInterestIdentifierPrefix() + sosConfiguration.getFeatureOfInterestName();
+
+    	for (final String identifier: identifiers) {
+    		if (identifier.equals(presentIdentifier)) {
+    			return Lists.newArrayList(createFeatureOfInterest(session));
+    		}
+    	}
+
+    	return Lists.newArrayList();
     }
 
     /**

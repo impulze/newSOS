@@ -39,6 +39,7 @@ import org.joda.time.DateTime;
 import org.n52.sos.ds.hibernate.HibernateSessionHolder;
 import org.n52.sos.ds.hibernate.entities.AbstractObservationTime;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
+import org.n52.sos.ds.hibernate.values.series.ValueCreator;
 import org.n52.sos.ogc.gml.time.Time;
 import org.n52.sos.ogc.gml.time.TimeInstant;
 import org.n52.sos.ogc.om.OmObservation;
@@ -60,7 +61,7 @@ import com.google.common.collect.Maps;
  * @since 4.1.0
  *
  */
-public abstract class AbstractHibernateStreamingValue extends StreamingValue<AbstractValue> {
+public abstract class AbstractHibernateStreamingValue<T> extends StreamingValue<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHibernateStreamingValue.class);
 
@@ -79,7 +80,9 @@ public abstract class AbstractHibernateStreamingValue extends StreamingValue<Abs
 
         Map<String, OmObservation> observations = Maps.newHashMap();
         while (hasNextValue()) {
-            AbstractValue nextEntity = nextEntity();
+            final Collection<T> nextEntitiesRaw = nextEntities();
+            final ValueCreator<T> creator = new ValueCreator<T>();
+            final AbstractValue nextEntity = creator.createValue(nextEntitiesRaw);
             OmObservation observation = null;
             if (observations.containsKey(nextEntity.getDiscriminator())) {
                 observation = observations.get(nextEntity.getDiscriminator());
@@ -89,7 +92,9 @@ public abstract class AbstractHibernateStreamingValue extends StreamingValue<Abs
                 observations.put(nextEntity.getDiscriminator(), observation);
             }
             nextEntity.mergeValueToObservation(observation, getResponseFormat());
-            sessionHolder.getSession().evict(nextEntity);
+            for (final T nextEntityRaw: nextEntitiesRaw) {
+            	sessionHolder.getSession().evict(nextEntityRaw);
+            }
         }
         return observations.values();
     }

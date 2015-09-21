@@ -36,6 +36,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.joda.time.DateTime;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.AbstractObservation;
 import org.n52.sos.ds.hibernate.entities.FeatureOfInterest;
 import org.n52.sos.ds.hibernate.entities.ObservableProperty;
@@ -429,4 +430,6 @@ public abstract class AbstractSeriesDAO {
 
 		return pte;
 	}
+
+	public abstract <T extends Series> void setValueFK(T series, ObservationValueFK valueFK);
 }

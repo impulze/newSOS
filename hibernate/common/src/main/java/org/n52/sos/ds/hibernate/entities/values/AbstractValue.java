@@ -56,6 +56,7 @@ import org.n52.sos.ogc.om.NamedValue;
 import org.n52.sos.ogc.om.OmConstants;
 import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.om.TimeValuePair;
+import org.n52.sos.ogc.om.values.HZGSpecificSweDataArrayValue;
 import org.n52.sos.ogc.om.values.QuantityValue;
 import org.n52.sos.ogc.om.values.UnknownValue;
 import org.n52.sos.ogc.om.values.Value;
@@ -216,8 +217,7 @@ public abstract class AbstractValue extends AbstractObservationTime implements H
         } else if (abstractValue instanceof BlobValue) {
             value = new UnknownValue(((BlobValue) abstractValue).getValue());
         } else if (abstractValue instanceof SweDataArrayValue) {
-            org.n52.sos.ogc.om.values.SweDataArrayValue sweDataArrayValue =
-                    new org.n52.sos.ogc.om.values.SweDataArrayValue();
+        	final HZGSpecificSweDataArrayValue sweDataArrayValue = new HZGSpecificSweDataArrayValue();
             final XmlObject xml = XmlHelper.parseXmlString(((SweDataArrayValue) abstractValue).getValue());
             sweDataArrayValue.setValue((SweDataArray) CodingHelper.decodeXmlElement(xml));
             value = sweDataArrayValue;

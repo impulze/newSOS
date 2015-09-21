@@ -40,15 +40,12 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.n52.sos.ds.hibernate.dao.AbstractValueDAO;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
-import org.n52.sos.ds.hibernate.entities.Offering;
 import org.n52.sos.ds.hibernate.entities.Unit;
-import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
 import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
 import org.n52.sos.ds.hibernate.util.HibernateHelper;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
-import org.n52.sos.util.CollectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,13 +105,13 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
      *             If an error occurs when querying the {@link AbstractValue}s
      */
     @SuppressWarnings("unchecked")
-    public List<AbstractValue> getStreamingSeriesValuesFor(GetObservationRequest request, ObservationValueFK valueFK,
+    public <T> List<T> getStreamingSeriesValuesFor(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, int chunkSize, int currentRow, Session session)
             throws OwsExceptionReport {
         Criteria c = getSeriesValueCriteriaFor(request, valueFK, temporalFilterCriterion, session);
         addChunkValuesToCriteria(c, chunkSize, currentRow, request);
         LOGGER.debug("QUERY getStreamingSeriesValuesFor(): {}", HibernateHelper.getSqlString(c));
-        return (List<AbstractValue>) c.list();
+        return (List<T>) c.list();
     }
 
     /**
@@ -135,38 +132,12 @@ public abstract class AbstractSeriesValueDAO extends AbstractValueDAO {
      */
     private Criteria getSeriesValueCriteriaFor(GetObservationRequest request, ObservationValueFK valueFK,
             Criterion temporalFilterCriterion, Session session) throws OwsExceptionReport {
-        final Criteria c = getDefaultObservationCriteria(session).createAlias(SeriesValue.SERIES, "s");
+    	final Criteria criteria = session.createCriteria(valueFK.getForClass())
+    		.add(Restrictions.eq("observedPropertyInstance", valueFK.getObservedPropertyInstance()));
 
-        checkAndAddSpatialFilteringProfileCriterion(c, request, session);
+    	// TODOHZG: check for offering match here? do spatial and temporal filtering here
 
-        c.add(Restrictions.eq("s." + Series.ID, valueFK.getSeriesID()));
-
-        if (CollectionHelper.isNotEmpty(request.getOfferings())) {
-            c.createCriteria(SeriesValue.OFFERINGS).add(Restrictions.in(Offering.IDENTIFIER, request.getOfferings()));
-        }
-
-        String logArgs = "request, series, offerings";
-        if (temporalFilterCriterion != null) {
-            logArgs += ", filterCriterion";
-            c.add(temporalFilterCriterion);
-        }
-        addSpecificRestrictions(c, request);
-        LOGGER.debug("QUERY getStreamingSeriesValuesFor({}): {}", logArgs, HibernateHelper.getSqlString(c));
-        return c.setReadOnly(true);
-    }
-
-    /**
-     * Get default {@link Criteria} for {@link Class}
-     * 
-     * @param clazz
-     *            {@link Class} to get default {@link Criteria} for
-     * @param session
-     *            Hibernate Session
-     * @return Default {@link Criteria}
-     */
-    protected Criteria getDefaultObservationCriteria(Session session) {
-        return session.createCriteria(getSeriesValueClass()).add(Restrictions.eq(SeriesValue.DELETED, false))
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+    	return criteria.setReadOnly(true);
     }
 
     /**

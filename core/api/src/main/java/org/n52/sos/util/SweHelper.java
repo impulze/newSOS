@@ -42,6 +42,7 @@ import org.n52.sos.ogc.om.TimeValuePair;
 import org.n52.sos.ogc.om.values.BooleanValue;
 import org.n52.sos.ogc.om.values.CategoryValue;
 import org.n52.sos.ogc.om.values.CountValue;
+import org.n52.sos.ogc.om.values.HZGSpecificSweDataArrayValue;
 import org.n52.sos.ogc.om.values.NilTemplateValue;
 import org.n52.sos.ogc.om.values.QuantityValue;
 import org.n52.sos.ogc.om.values.SweDataArrayValue;
@@ -177,6 +178,16 @@ public final class SweHelper {
                         dataArray.setElementType(createElementType(timeValuePair,
                                 observablePropertyIdentifier));
                     }
+                    if (timeValuePair.getValue() instanceof HZGSpecificSweDataArrayValue) {
+                    	final HZGSpecificSweDataArrayValue value = (HZGSpecificSweDataArrayValue) timeValuePair.getValue();
+
+                    	for (final List<String> block: value.getValue().getValues()) {
+                    		dataArrayValue.addBlock(block);
+                    	}
+
+                    	continue;
+                    }
+
                     List<String> newBlock =
                             createBlock(dataArray.getElementType(), timeValuePair.getTime(),
                                     observablePropertyIdentifier, timeValuePair.getValue());
@@ -188,6 +199,12 @@ public final class SweHelper {
     }
 
     private static SweAbstractDataComponent createElementType(TimeValuePair tvp, String name) {
+        if (tvp.getValue() instanceof HZGSpecificSweDataArrayValue) {
+        	final HZGSpecificSweDataArrayValue dataArray = (HZGSpecificSweDataArrayValue) tvp.getValue();
+
+        	return dataArray.getValue().getElementType();
+        }
+
         SweDataRecord dataRecord = new SweDataRecord();
         dataRecord.addField(getPhenomenonTimeField(tvp.getTime()));
         dataRecord.addField(getFieldForValue(tvp.getValue(), name));

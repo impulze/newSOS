@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.2
  *
  */
-public abstract class HibernateSeriesStreamingValue extends AbstractHibernateStreamingValue {
+public abstract class HibernateSeriesStreamingValue<T> extends AbstractHibernateStreamingValue<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HibernateSeriesStreamingValue.class);
 

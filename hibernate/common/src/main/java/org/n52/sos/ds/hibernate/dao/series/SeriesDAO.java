@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Session;
+import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
 import org.n52.sos.ds.hibernate.entities.series.Series;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.request.GetObservationRequest;
@@ -68,4 +69,9 @@ public class SeriesDAO extends AbstractSeriesDAO {
     protected Class <?>getSeriesClass() {
         return Series.class;
     }
+
+	@Override
+	public <T extends Series> void setValueFK(T series, ObservationValueFK valueFK) {
+		throw new RuntimeException("SeriesDAO not supported.");
+	}
 }

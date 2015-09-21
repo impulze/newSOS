@@ -110,17 +110,14 @@ public class HibernateFeatureQueryHandler implements FeatureQueryHandler, Hibern
 
     @Override
     public AbstractFeature getFeatureByID(FeatureQueryHandlerQueryObject queryObject) throws OwsExceptionReport {
-        final Session session = HibernateSessionHolder.getSession(queryObject.getConnection());
-        try {
-            final Criteria q =
-                    session.createCriteria(FeatureOfInterest.class).add(
-                            Restrictions.eq(FeatureOfInterest.IDENTIFIER, queryObject.getFeatureIdentifier()));
-            return createSosAbstractFeature((FeatureOfInterest) q.uniqueResult(), queryObject);
-        } catch (final HibernateException he) {
-            throw new NoApplicableCodeException().causedBy(he).withMessage(
-                    "An error occurred while querying feature data for a featureOfInterest identifier!");
-        }
+    	final Session session = HibernateSessionHolder.getSession(queryObject.getConnection());
+    	final List<FeatureOfInterest> fois = new FeatureOfInterestDAO().getFeatureOfInterestObject(queryObject.getFeatureIdentifiers(), session);
 
+    	if (CollectionHelper.isNotEmpty(fois)) {
+    		return createSosAbstractFeature(fois.get(0), queryObject);
+    	}
+
+    	return createSosAbstractFeature(null, queryObject);
     }
 
     @Deprecated

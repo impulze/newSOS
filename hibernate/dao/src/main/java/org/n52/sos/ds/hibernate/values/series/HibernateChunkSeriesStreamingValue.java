@@ -29,7 +29,6 @@
 package org.n52.sos.ds.hibernate.values.series;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.hibernate.HibernateException;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
@@ -41,6 +40,7 @@ import org.n52.sos.ogc.om.OmObservation;
 import org.n52.sos.ogc.om.TimeValuePair;
 import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
+import org.n52.sos.service.ServiceConfiguration;
 import org.n52.sos.util.CollectionHelper;
 import org.n52.sos.util.http.HTTPStatus;
 
@@ -51,11 +51,11 @@ import org.n52.sos.util.http.HTTPStatus;
  * @since 4.0.2
  *
  */
-public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreamingValue {
+public class HibernateChunkSeriesStreamingValue<T> extends HibernateSeriesStreamingValue<T> {
 
     private static final long serialVersionUID = -1990901204421577265L;
 
-    private Iterator<AbstractValue> seriesValuesResult;
+    private Collection<T> seriesValuesResult;
 
     private int chunkSize;
 
@@ -81,8 +81,7 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
 
     @Override
     public boolean hasNextValue() throws OwsExceptionReport {
-        boolean next = false;
-        if (seriesValuesResult == null || !seriesValuesResult.hasNext()) {
+        if (seriesValuesResult == null) {
             if (!noChunk) {
                 getNextResults();
                 if (chunkSize <= 0 || currentResultSize < chunkSize) {
@@ -90,29 +89,33 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
                 }
             }
         }
-        if (seriesValuesResult != null) {
-            next = seriesValuesResult.hasNext();
-        }
-        if (!next) {
-            sessionHolder.returnSession(session);
-        }
-        
 
-        return next;
+        if (seriesValuesResult == null) {
+            sessionHolder.returnSession(session);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
-    public AbstractValue nextEntity() throws OwsExceptionReport {
-        return (AbstractValue) seriesValuesResult.next();
+    public Collection<T> nextEntities() throws OwsExceptionReport {
+        final Collection<T> result = seriesValuesResult;
+        seriesValuesResult = null;
+        return result;
     }
 
     @Override
     public TimeValuePair nextValue() throws OwsExceptionReport {
         try {
             if (hasNextValue()) {
-                AbstractValue resultObject = seriesValuesResult.next();
-                TimeValuePair value = resultObject.createTimeValuePairFrom();
-                session.evict(resultObject);
+                final ValueCreator<T> creator = new ValueCreator<T>();
+                final Collection<T> nextEntities = nextEntities();
+                final AbstractValue abstractValue = creator.createValue(nextEntities);
+                final TimeValuePair value = abstractValue.createTimeValuePairFrom();
+                for (final T nextEntity: nextEntities) {
+                	session.evict(nextEntity);
+                }
                 return value;
             }
             return null;
@@ -128,10 +131,14 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
         try {
             if (hasNextValue()) {
                 OmObservation observation = observationTemplate.cloneTemplate();
-                AbstractValue resultObject = seriesValuesResult.next();
-                resultObject.addValuesToObservation(observation, getResponseFormat());
+                final ValueCreator<T> creator = new ValueCreator<T>();
+                final Collection<T> nextEntities = nextEntities();
+                final AbstractValue abstractValue = creator.createValue(nextEntities);
+                abstractValue.addValuesToObservation(observation, getResponseFormat());
                 checkForModifications(observation);
-                session.evict(resultObject);
+                for (final T nextEntity: nextEntities) {
+                	session.evict(nextEntity);
+                }
                 return observation;
             }
             return null;
@@ -153,7 +160,7 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
             session = sessionHolder.getSession();
         }
         try {
-            Collection<AbstractValue> seriesValuesResult = null;
+            Collection<T> seriesValuesResult = null;
                 seriesValuesResult =
                         seriesValueDAO.getStreamingSeriesValuesFor(request, valueFK, temporalFilterCriterion,
                                 chunkSize, currentRow, session);
@@ -174,10 +181,10 @@ public class HibernateChunkSeriesStreamingValue extends HibernateSeriesStreaming
      * @param seriesValuesResult
      *            Queried {@link AbstractValue}s
      */
-    private void setSeriesValuesResult(Collection<AbstractValue> seriesValuesResult) {
+    private void setSeriesValuesResult(Collection<T> seriesValuesResult) {
         if (CollectionHelper.isNotEmpty(seriesValuesResult)) {
             this.currentResultSize = seriesValuesResult.size();
-            this.seriesValuesResult = seriesValuesResult.iterator();
+            this.seriesValuesResult = seriesValuesResult;
         }
 
     }

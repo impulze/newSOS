@@ -28,10 +28,14 @@
  */
 package org.n52.sos.ds.hibernate.values.series;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.hibernate.HibernateException;
 import org.hibernate.ScrollableResults;
 import org.n52.sos.ds.hibernate.dao.ObservationValueFK;
-import org.n52.sos.ds.hibernate.entities.series.values.SeriesValue;
+import org.n52.sos.ds.hibernate.entities.values.AbstractValue;
+import org.n52.sos.ds.hibernate.values.HibernateStreamingConfiguration;
 import org.n52.sos.exception.CodedException;
 import org.n52.sos.exception.ows.NoApplicableCodeException;
 import org.n52.sos.ogc.om.OmObservation;
@@ -40,6 +44,8 @@ import org.n52.sos.ogc.ows.OwsExceptionReport;
 import org.n52.sos.request.GetObservationRequest;
 import org.n52.sos.util.http.HTTPStatus;
 
+import com.google.common.collect.Lists;
+
 /**
  * Hibernate series streaming value implementation for {@link ScrollableResults}
  * 
@@ -47,7 +53,7 @@ import org.n52.sos.util.http.HTTPStatus;
  * @since 4.0.2
  *
  */
-public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStreamingValue {
+public class HibernateScrollableSeriesStreamingValue<T> extends HibernateSeriesStreamingValue<T> {
 
     private static final long serialVersionUID = -6439122088572009613L;
 
@@ -83,18 +89,35 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
         return next;
     }
 
-    @Override
-    public SeriesValue nextEntity() throws OwsExceptionReport {
-        checkMaxNumberOfReturnedValues(1);
-        return (SeriesValue) scrollableResult.get()[0];
+    @SuppressWarnings("unchecked")
+	@Override
+    public Collection<T> nextEntities() throws OwsExceptionReport {
+    	final int chunkSize = HibernateStreamingConfiguration.getInstance().getChunkSize();
+        checkMaxNumberOfReturnedValues(chunkSize);
+
+        final List<T> list = Lists.newArrayListWithCapacity(chunkSize);
+
+        for (int i = 0; i < chunkSize; i++) {
+        	list.add((T)scrollableResult.get()[0]);
+
+        	if (!scrollableResult.next()) {
+        		break;
+        	}
+        }
+
+        return list;
     }
 
     @Override
     public TimeValuePair nextValue() throws OwsExceptionReport {
         try {
-            SeriesValue resultObject = nextEntity();
-            TimeValuePair value = resultObject.createTimeValuePairFrom();
-            session.evict(resultObject);
+            final Collection<T> nextEntities = nextEntities();
+            final ValueCreator<T> creator = new ValueCreator<T>();
+            final AbstractValue abstractValue = creator.createValue(nextEntities);
+            final TimeValuePair value = abstractValue.createTimeValuePairFrom();
+            for (final T nextEntity: nextEntities) {
+            	session.evict(nextEntity);
+            }
             return value;
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);
@@ -107,10 +130,14 @@ public class HibernateScrollableSeriesStreamingValue extends HibernateSeriesStre
     public OmObservation nextSingleObservation() throws OwsExceptionReport {
         try {
             OmObservation observation = observationTemplate.cloneTemplate();
-            SeriesValue resultObject = nextEntity();
-            resultObject.addValuesToObservation(observation, getResponseFormat());
+            final Collection<T> nextEntities = nextEntities();
+            final ValueCreator<T> creator = new ValueCreator<T>();
+            final AbstractValue abstractValue = creator.createValue(nextEntities);
+            abstractValue.addValuesToObservation(observation, getResponseFormat());
             checkForModifications(observation);
-            session.evict(resultObject);
+            for (final T nextEntity: nextEntities) {
+            	session.evict(nextEntity);
+            }
             return observation;
         } catch (final HibernateException he) {
             sessionHolder.returnSession(session);
